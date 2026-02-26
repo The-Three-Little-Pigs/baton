@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "729164587947",
+    "project_id": "baton-18034",
+    "storage_bucket": "baton-18034.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:729164587947:android:582814a964d04d957528ee",
+        "android_client_info": {
+          "package_name": "com.threepigs.baton"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_oLjABZuCJQAj4yJM4F9EgB7ET_1SGXQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
