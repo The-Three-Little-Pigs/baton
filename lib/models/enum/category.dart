@@ -1,11 +1,11 @@
 enum Category {
-  helath,
+  fitness,
+  course,
   beauty,
-  baby,
-  food,
-  fashion,
-  sports,
-  digital,
-  home,
+  rental,
+  yoga,
+  music,
+  golf,
+  resort,
   etc,
 }
