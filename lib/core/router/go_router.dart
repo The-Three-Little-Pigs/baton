@@ -54,7 +54,7 @@ final router = GoRouter(
       ],
     ),
     GoRoute(
-      path: '/product/:productId', // param
+      path: '/product/:productId',
       name: 'productDetail',
       builder: (context, state) {
         final productId = state.pathParameters['productId']!;
