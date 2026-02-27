@@ -1,6 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final router = GoRouter(
+  navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
   routes: [
     GoRoute(
@@ -9,23 +13,36 @@ final router = GoRouter(
       builder: (context, state) => const LoginPage(),
     ),
     GoRoute(
-      path: '/register',
-      name: 'register',
+      path: '/signUp',
+      name: 'signUp',
       builder: (context, state) => const SignUpPage(),
     ),
     StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {},
       branches: [
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/main',
-              name: 'main',
+              path: '/home',
+              name: 'home',
               builder: (context, state) => const HomeTap(),
             ),
             GoRoute(
               path: '/chat',
               name: 'chat',
               builder: (context, state) => const ChatTap(),
+              routes: [
+                GoRoute(
+                  parentNavigatorKey: _rootNavigatorKey,
+                  path: ':roomId',
+                  name: 'chatDetail',
+                  builder: (context, state) {
+                    final roomId = state.pathParameters['roomId']!;
+
+                    return ChatDetailPage(roomId: roomId);
+                  },
+                ),
+              ],
             ),
             GoRoute(
               path: '/profile',
@@ -37,17 +54,11 @@ final router = GoRouter(
       ],
     ),
     GoRoute(
-      path: '/product',
-      name: 'product',
-      builder: (context, state) => const ProductPage(),
-    ),
-    GoRoute(
-      path: ':chatId',
-      name: 'chatDetail',
+      path: '/product/:productId', // param
+      name: 'productDetail',
       builder: (context, state) {
-        final chatId = state.pathParameters['chatId']!;
-
-        return ChatDetailPage(chatId: chatId);
+        final productId = state.pathParameters['productId']!;
+        return ProductDetailPage(productId: productId);
       },
     ),
   ],

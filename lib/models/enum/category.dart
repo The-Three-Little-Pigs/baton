@@ -1,11 +1,1 @@
-enum Category {
-  helath,
-  beauty,
-  baby,
-  food,
-  fashion,
-  sports,
-  digital,
-  home,
-  etc,
-}
+enum Category { fitness, course, beauty, rental, etc }
