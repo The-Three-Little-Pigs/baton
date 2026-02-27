@@ -63,6 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '729164587947',
     projectId: 'baton-18034',
     storageBucket: 'baton-18034.firebasestorage.app',
+    iosClientId: '729164587947-hgg24ik9h6u0v3jjkaq3nbh923il1msj.apps.googleusercontent.com',
     iosBundleId: 'com.threepigs.baton',
   );
+
 }

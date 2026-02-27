@@ -12,7 +12,12 @@
           "package_name": "com.threepigs.baton"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "729164587947-rphql6oafqspn7c8hevqaakup15vuaeo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC_oLjABZuCJQAj4yJM4F9EgB7ET_1SGXQ"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "729164587947-rphql6oafqspn7c8hevqaakup15vuaeo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "729164587947-hgg24ik9h6u0v3jjkaq3nbh923il1msj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.threepigs.baton"
+              }
+            }
+          ]
         }
       }
     }
