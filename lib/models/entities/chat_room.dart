@@ -2,14 +2,14 @@ class ChatRoom {
   final List<String> participants;
   final Map<String, int> unReadCount;
   final DateTime updatedAt;
-  final String prdImageUrl;
+  final String postId;
   final String lastMessage;
 
   ChatRoom({
     required this.participants,
     required this.unReadCount,
     required this.updatedAt,
-    required this.prdImageUrl,
+    required this.postId,
     required this.lastMessage,
   });
 
@@ -18,7 +18,7 @@ class ChatRoom {
       participants: json['participants'],
       unReadCount: json['unReadCount'],
       updatedAt: json['updatedAt'],
-      prdImageUrl: json['prdImageUrl'],
+      postId: json['postId'],
       lastMessage: json['lastMessage'],
     );
   }
@@ -28,7 +28,7 @@ class ChatRoom {
       'participants': participants,
       'unReadCount': unReadCount,
       'updatedAt': updatedAt,
-      'prdImageUrl': prdImageUrl,
+      'postId': postId,
       'lastMessage': lastMessage,
     };
   }
@@ -37,14 +37,14 @@ class ChatRoom {
     List<String>? participants,
     Map<String, int>? unReadCount,
     DateTime? updatedAt,
-    String? prdImageUrl,
+    String? postId,
     String? lastMessage,
   }) {
     return ChatRoom(
       participants: participants ?? this.participants,
       unReadCount: unReadCount ?? this.unReadCount,
       updatedAt: updatedAt ?? this.updatedAt,
-      prdImageUrl: prdImageUrl ?? this.prdImageUrl,
+      postId: postId ?? this.postId,
       lastMessage: lastMessage ?? this.lastMessage,
     );
   }

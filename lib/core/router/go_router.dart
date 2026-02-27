@@ -11,7 +11,7 @@ final router = GoRouter(
     GoRoute(
       path: '/register',
       name: 'register',
-      builder: (context, state) => const RegisterPage(),
+      builder: (context, state) => const SignUpPage(),
     ),
     StatefulShellRoute.indexedStack(
       branches: [
@@ -20,28 +20,17 @@ final router = GoRouter(
             GoRoute(
               path: '/main',
               name: 'main',
-              builder: (context, state) => const HomePage(),
+              builder: (context, state) => const HomeTap(),
             ),
             GoRoute(
               path: '/chat',
               name: 'chat',
-              builder: (context, state) => const ChatPage(),
-              routes: [
-                GoRoute(
-                  path: ':chatId',
-                  name: 'chatDetail',
-                  builder: (context, state) {
-                    final chatId = state.pathParameters['chatId']!;
-
-                    return ChatDetailPage(chatId: chatId);
-                  },
-                ),
-              ],
+              builder: (context, state) => const ChatTap(),
             ),
             GoRoute(
               path: '/profile',
               name: 'profile',
-              builder: (context, state) => const ProfilePage(),
+              builder: (context, state) => const ProfileTap(),
             ),
           ],
         ),
@@ -51,6 +40,15 @@ final router = GoRouter(
       path: '/product',
       name: 'product',
       builder: (context, state) => const ProductPage(),
+    ),
+    GoRoute(
+      path: ':chatId',
+      name: 'chatDetail',
+      builder: (context, state) {
+        final chatId = state.pathParameters['chatId']!;
+
+        return ChatDetailPage(chatId: chatId);
+      },
     ),
   ],
 );
