@@ -15,6 +15,4 @@ class AuthFailure extends Failure {
   AuthFailure(super.message);
 }
 
-
-
 // connetivity plus
