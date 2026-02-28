@@ -1,17 +1,17 @@
-class UserEntity {
+class User {
   final String uid;
   final String profileUrl;
   final String nickname;
   final double? score;
 
-  UserEntity({
+  User({
     required this.uid,
     required this.profileUrl,
     required this.nickname,
     required this.score,
   });
-  factory UserEntity.fromJson(Map<String, dynamic> json) {
-    return UserEntity(
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
       uid: json['uid'] as String,
       profileUrl: json['profileUrl'] as String,
       nickname: json['nickname'] as String,
