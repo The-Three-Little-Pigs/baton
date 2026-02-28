@@ -1,10 +1,10 @@
-import 'package:baton/models/entities/user_entity.dart';
+import 'package:baton/models/entities/user.dart';
 import 'package:baton/models/repositories/repository/user_repository.dart';
 import 'package:baton/models/repositories/repository_impl/auth_repository_impl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
-class UserNotifier extends StateNotifier<UserEntity?> {
+class UserNotifier extends StateNotifier<User?> {
   final AuthRepository _authRepo;
   final UserRepository _userRepo;
 
@@ -18,9 +18,7 @@ class UserNotifier extends StateNotifier<UserEntity?> {
       if (firebaseUser == null) return;
 
       // 2. [추가] DB에 기존 유저 정보가 있는지 먼저 확인
-      UserEntity? existingUser = await _userRepo.fetchUserData(
-        firebaseUser.uid,
-      );
+      User? existingUser = await _userRepo.fetchUserData(firebaseUser.uid);
 
       if (existingUser != null) {
         // [CASE A] 기존 유저라면 DB 정보를 그대로 상태에 반영
@@ -58,15 +56,13 @@ class UserNotifier extends StateNotifier<UserEntity?> {
       if (firebaseUser == null) return;
 
       // 2. DB에 기존 유저 정보가 있는지 확인
-      UserEntity? existingUser = await _userRepo.fetchUserData(
-        firebaseUser.uid,
-      );
+      User? existingUser = await _userRepo.fetchUserData(firebaseUser.uid);
 
       if (existingUser != null) {
         state = existingUser;
         print("카카오 로그인 성공 (기존 유저): ${existingUser.nickname}");
       } else {
-        final newUser = UserEntity(
+        final newUser = User(
           uid: firebaseUser.uid,
           profileUrl: firebaseUser.photoURL ?? '',
           nickname: firebaseUser.displayName ?? '새 사용자',
@@ -85,8 +81,8 @@ class UserNotifier extends StateNotifier<UserEntity?> {
 }
 
 // 2. 의존성 주입 (Provider 정의)
-final loginViewModelProvider = StateNotifierProvider<UserNotifier, UserEntity?>(
-  (ref) {
-    return UserNotifier(AuthRepository(), UserRepository());
-  },
-);
+final loginViewModelProvider = StateNotifierProvider<UserNotifier, User?>((
+  ref,
+) {
+  return UserNotifier(AuthRepository(), UserRepository());
+});
