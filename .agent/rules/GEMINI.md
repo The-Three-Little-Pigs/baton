@@ -40,7 +40,7 @@ lib/
 ├── models/            # 데이터 계층
 │   ├── enum/          # Category, TransactionStatus 등
 │   ├── entities/      # Pure Dart 모델 (fromFirestore, copyWith 포함)
-│   └── repositories/  # 추상 인터페이스 및 구현체(_impl)
+│   └── repositories/  # 추상 인터페이스(abstract class) 및 구현체(_impl)
 │
 ├── notifier/          # Riverpod Notifier (Business Logic & State)
 │   ├── user/          # 사용자 관련 상태 및 로직

@@ -1,3 +1,10 @@
+import 'package:baton/views/_tap/chat/chat_tap.dart';
+import 'package:baton/views/_tap/home/home_tap.dart';
+import 'package:baton/views/_tap/profile/porilfe_tap.dart';
+import 'package:baton/views/chat_detail/chat_detail_page.dart';
+import 'package:baton/views/login/login_page.dart';
+import 'package:baton/views/product_detail/product_detail_page.dart';
+import 'package:baton/views/sign_up/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -54,11 +61,11 @@ final router = GoRouter(
       ],
     ),
     GoRoute(
-      path: '/product/:productId',
+      path: '/product/:postId',
       name: 'productDetail',
       builder: (context, state) {
-        final productId = state.pathParameters['productId']!;
-        return ProductDetailPage(productId: productId);
+        final postId = state.pathParameters['postId']!;
+        return ProductDetailPage(postId: postId);
       },
     ),
   ],

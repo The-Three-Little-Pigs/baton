@@ -15,7 +15,7 @@ class FirebaseErrorMapper {
       case 'cancelled':
         return AuthFailure("로그인이 취소되었습니다.");
       default:
-        return ServerFailure(e.message ?? '알 수 없는 오류가 발생했습니다.');
+        return ServerFailure('알 수 없는 오류가 발생했습니다.');
     }
   }
 }
