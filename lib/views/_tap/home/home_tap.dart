@@ -10,10 +10,8 @@ class HomeTap extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Padding(
-          padding: EdgeInsets.only(left: 4),
-          child: Text("Baton"),
-        ),
+        titleSpacing: 20,
+        title: const Text("Home", style: TextStyle(fontSize: 22)),
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         backgroundColor: Colors.transparent,
@@ -21,8 +19,8 @@ class HomeTap extends StatelessWidget {
           const Icon(Icons.notifications),
           const SizedBox(width: 10),
           const Icon(Icons.more_vert),
-          const SizedBox(width: 20),
         ],
+        actionsPadding: const EdgeInsets.only(right: 20),
       ),
       body: Column(
         children: [
@@ -65,9 +63,9 @@ class HomeTap extends StatelessWidget {
         width: 100,
         height: 40,
         child: FloatingActionButton.extended(
-          icon: Icon(Icons.add, size: 16),
+          icon: const Icon(Icons.add, size: 16),
           foregroundColor: Colors.white,
-          extendedPadding: EdgeInsets.only(
+          extendedPadding: const EdgeInsets.only(
             top: 10,
             bottom: 10,
             left: 12,
@@ -79,7 +77,7 @@ class HomeTap extends StatelessWidget {
             borderRadius: BorderRadius.circular(999),
           ),
           backgroundColor: Colors.blue,
-          label: Text(
+          label: const Text(
             "상품 등록",
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),

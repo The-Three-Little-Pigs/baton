@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,29 +9,26 @@ class MainScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(bottom: false, child: navigationShell),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: BottomNavigationBar(
-          currentIndex: navigationShell.currentIndex,
-          backgroundColor: const Color(0xFFFCFDFF),
-          elevation: 0,
-          onTap: (index) {
-            navigationShell.goBranch(index);
-          },
-          iconSize: 30,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: '홈'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_rounded),
-              label: '채팅',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded),
-              label: '마이',
-            ),
-          ],
-        ),
+      body: SafeArea(child: navigationShell),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: navigationShell.currentIndex,
+        backgroundColor: const Color(0xFFFCFDFF),
+        elevation: 0,
+        onTap: (index) {
+          navigationShell.goBranch(index);
+        },
+        iconSize: 30,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: '홈'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_rounded),
+            label: '채팅',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_rounded),
+            label: '마이',
+          ),
+        ],
       ),
     );
   }
