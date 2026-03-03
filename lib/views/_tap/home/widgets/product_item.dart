@@ -28,13 +28,47 @@ class ItemImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Image.network(
-        imageUrl,
-        height: 160,
-        width: 160,
-        fit: BoxFit.cover,
+    return AspectRatio(
+      aspectRatio: 1,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(imageUrl, fit: BoxFit.cover),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () {},
+                child: Icon(
+                  Icons.favorite_border,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  "약속 중",
+                  style: TextStyle(
+                    color: Color(0xFF808080),
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
