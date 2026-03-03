@@ -37,13 +37,24 @@ class PostRepositoryImpl implements PostRepository {
   }
 
   @override
-  Future<Result<List<Post>, Failure>> getPosts() async {
+  Future<Result<List<Post>, Failure>> getPosts(List<String>? categories) async {
     try {
-      final snapshot = await _firestore.collection('posts').get();
+      final docRef = _firestore.collection('posts');
+
+      if (categories != null) {
+        final snapshot = await docRef
+            .where('category', whereIn: categories)
+            .get();
+        final posts = snapshot.docs
+            .map((doc) => Post.fromJson(doc.data()))
+            .toList();
+        return Success(posts);
+      }
+
+      final snapshot = await docRef.get();
       final posts = snapshot.docs
           .map((doc) => Post.fromJson(doc.data()))
           .toList();
-
       return Success(posts);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));

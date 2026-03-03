@@ -9,17 +9,26 @@ class MainScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: navigationShell,
+      body: SafeArea(child: navigationShell),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: '채팅'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '마이'),
-        ],
+        backgroundColor: const Color(0xFFFCFDFF),
+        elevation: 0,
         onTap: (index) {
           navigationShell.goBranch(index);
         },
+        iconSize: 30,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: '홈'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_rounded),
+            label: '채팅',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_rounded),
+            label: '마이',
+          ),
+        ],
       ),
     );
   }
