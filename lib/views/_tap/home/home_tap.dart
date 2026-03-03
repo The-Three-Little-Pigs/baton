@@ -1,5 +1,5 @@
-import 'package:baton/models/enum/category.dart';
-import 'package:baton/views/_tap/home/widgets/category_chip.dart';
+import 'package:baton/views/_tap/home/widgets/category_chips.dart';
+import 'package:baton/views/_tap/home/widgets/category_select_button.dart';
 import 'package:baton/views/_tap/home/widgets/product_item.dart';
 import 'package:flutter/material.dart';
 
@@ -19,21 +19,22 @@ class HomeTap extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: SizedBox(
-              height: 50,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: Category.values.length,
-                itemBuilder: (context, index) {
-                  return CategoryChip(label: Category.values[index].name);
-                },
-                separatorBuilder: (context, index) {
-                  return const SizedBox(width: 8);
-                },
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: const CategorySelectButton(),
               ),
-            ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  child: CategoryChips(),
+                ),
+              ),
+            ],
           ),
           Expanded(
             child: Padding(
