@@ -1,7 +1,7 @@
 import 'package:baton/models/entities/user.dart';
 import 'package:baton/models/repositories/repository/user_repository.dart';
 import 'package:baton/models/repositories/repository_impl/auth_repository_impl.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_riverpod/legacy.dart';
 
 class UserNotifier extends StateNotifier<User?> {
@@ -26,7 +26,7 @@ class UserNotifier extends StateNotifier<User?> {
         print("기존 유저 로그인 성공: ${existingUser.nickname}");
       } else {
         // [CASE B] 신규 유저라면 새로 포장해서 DB에 저장
-        final newUser = UserEntity(
+        final newUser = User(
           uid: firebaseUser.uid,
           profileUrl: firebaseUser.photoURL ?? '',
           nickname: firebaseUser.displayName ?? '새 사용자',
@@ -49,9 +49,8 @@ class UserNotifier extends StateNotifier<User?> {
       final credential = await _authRepo.signInWithKakao();
       if (credential == null) return;
 
-      final userCredential = await FirebaseAuth.instance.signInWithCredential(
-        credential,
-      );
+      final userCredential = await auth.FirebaseAuth.instance
+          .signInWithCredential(credential);
       final firebaseUser = userCredential.user;
       if (firebaseUser == null) return;
 
