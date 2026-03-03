@@ -13,16 +13,16 @@ class ProductItem extends ConsumerWidget {
 
     return Column(
       children: [
-        ItemImage(imageUrl: 'https://picsum.photos/160/160'),
+        _ItemImage(imageUrl: 'https://picsum.photos/160/160'),
         const SizedBox(height: 9),
-        ItemInfo(title: "post.title", date: "post.date", price: 10000),
+        _ItemInfo(title: "post.title", date: "post.date", price: 10000),
       ],
     );
   }
 }
 
-class ItemImage extends StatelessWidget {
-  const ItemImage({super.key, required this.imageUrl});
+class _ItemImage extends StatelessWidget {
+  const _ItemImage({required this.imageUrl});
 
   final String imageUrl;
 
@@ -74,9 +74,8 @@ class ItemImage extends StatelessWidget {
   }
 }
 
-class ItemInfo extends StatelessWidget {
-  const ItemInfo({
-    super.key,
+class _ItemInfo extends StatelessWidget {
+  const _ItemInfo({
     required this.title,
     required this.date,
     required this.price,
@@ -104,7 +103,10 @@ class ItemInfo extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   maxFontSize: 14,
                   minFontSize: 14,
-                  style: const TextStyle(fontSize: 14),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               const Icon(Icons.more_vert, size: 20),
@@ -118,7 +120,7 @@ class ItemInfo extends StatelessWidget {
                 '$price원',
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
               ),

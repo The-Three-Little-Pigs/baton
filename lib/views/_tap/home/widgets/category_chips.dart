@@ -12,7 +12,7 @@ class CategoryChips extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: Category.values.length,
         itemBuilder: (context, index) {
-          return CategoryChip(label: Category.values[index].name);
+          return _CategoryChip(label: Category.values[index].name);
         },
         separatorBuilder: (context, index) {
           return const SizedBox(width: 8);
@@ -22,8 +22,8 @@ class CategoryChips extends StatelessWidget {
   }
 }
 
-class CategoryChip extends StatelessWidget {
-  const CategoryChip({super.key, required this.label});
+class _CategoryChip extends StatelessWidget {
+  const _CategoryChip({required this.label});
 
   final String label;
 
