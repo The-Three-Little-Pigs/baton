@@ -1,40 +1,10 @@
+import 'package:baton/core/error/failure.dart';
+import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/user.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-class UserRepository {
-  final _firestore = FirebaseFirestore.instance;
-
-  Future<User?> fetchUserData(String uid) async {
-    try {
-      final snapshot = await _firestore.collection("user").doc(uid).get();
-      final data = snapshot.data();
-
-      if (data == null) return null;
-
-      return User.fromJson(data);
-    } catch (e) {
-      print("유저 데이터 조회 실패: $e");
-      return null;
-    }
-  }
-
-  Future<void> updateUserData(User user) async {
-    try {
-      await _firestore
-          .collection("user")
-          .doc(user.uid)
-          .set(user.toJson(), SetOptions(merge: true));
-    } catch (e) {
-      print("유저 데이터 업데이트 실패: $e");
-    }
-  }
-
-  // 3. 신규 유저 생성 (Initial Create)
-  Future<void> userCreate(User user) async {
-    try {
-      await _firestore.collection("user").doc(user.uid).set(user.toJson());
-    } catch (e) {
-      print("유저 생성 실패: $e");
-    }
-  }
+abstract class UserRepository {
+  Future<Result<User?, Failure>> fetchUserData(String uid);
+  Future<Result<void, Failure>> updateUserData(User user);
+  Future<Result<void, Failure>> userCreate(User user);
+  Future<Result<void, Failure>> updateFCMToken(String uid, String token);
 }

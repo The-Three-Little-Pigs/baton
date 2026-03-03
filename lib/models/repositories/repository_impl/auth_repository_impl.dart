@@ -1,28 +1,48 @@
+import 'package:baton/core/error/failure.dart';
+import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
+import 'package:baton/core/result/result.dart';
+import 'package:baton/models/repositories/repository/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart' hide User;
 
-class AuthRepository {
+class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
 
-  Future<User?> signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    final GoogleSignInAuthentication? googleAuth =
-        await googleUser?.authentication;
+  @override
+  Future<Result<User, Failure>> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
 
-    if (googleAuth == null) return null;
+      if (googleAuth == null) {
+        return Error(AuthFailure('Google 로그인 정보가 없습니다.'));
+      }
 
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
 
-    final userCredential = await _auth.signInWithCredential(credential);
-    return userCredential.user;
+      final userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user;
+
+      if (user == null) {
+        return Error(AuthFailure('Firebase 사용자 정보를 가져오지 못했습니다.'));
+      }
+
+      return Success(user);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('Google 로그인 중 알 수 없는 오류가 발생했습니다: $e'));
+    }
   }
 
-  Future<OAuthCredential?> signInWithKakao() async {
+  @override
+  Future<Result<OAuthCredential, Failure>> signInWithKakao() async {
     try {
       bool isInstalled = await isKakaoTalkInstalled();
 
@@ -30,12 +50,15 @@ class AuthRepository {
           ? await UserApi.instance.loginWithKakaoTalk()
           : await UserApi.instance.loginWithKakaoAccount();
 
-      return OAuthProvider(
+      final credential = OAuthProvider(
         'oidc.kakao',
       ).credential(idToken: token.idToken, accessToken: token.accessToken);
-    } catch (error) {
-      print('카카오 로그인 실패: $error');
-      return null;
+
+      return Success(credential);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('카카오 로그인 중 알 수 없는 오류가 발생했습니다: $e'));
     }
   }
 }
