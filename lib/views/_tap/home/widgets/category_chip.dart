@@ -7,13 +7,10 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 20,
-      child: Chip(
-        label: Text(label),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(999)),
-        ),
+    return Chip(
+      label: Text(label),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(999)),
       ),
     );
   }

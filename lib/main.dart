@@ -1,4 +1,5 @@
 import 'package:baton/core/router/go_router.dart';
+import 'package:baton/core/theme/app_theme.dart';
 import 'package:baton/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,10 @@ class BatonApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(title: 'Baton', routerConfig: router);
+    return MaterialApp.router(
+      title: 'Baton',
+      routerConfig: router,
+      theme: AppTheme.light,
+    );
   }
 }
