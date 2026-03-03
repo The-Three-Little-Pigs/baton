@@ -3,12 +3,14 @@ class User {
   final String profileUrl;
   final String nickname;
   final double? score;
+  final String? fcmToken;
 
   User({
     required this.uid,
     required this.profileUrl,
     required this.nickname,
     required this.score,
+    this.fcmToken,
   });
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -16,6 +18,7 @@ class User {
       profileUrl: json['profileUrl'] as String,
       nickname: json['nickname'] as String,
       score: (json['score'] as num?)?.toDouble(),
+      fcmToken: json['fcmToken'] as String?,
     );
   }
 
@@ -25,6 +28,7 @@ class User {
       'profileUrl': profileUrl,
       'nickname': nickname,
       'score': score,
+      'fcmToken': fcmToken,
     };
   }
 }
