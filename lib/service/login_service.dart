@@ -13,7 +13,7 @@ class UserNotifier extends StateNotifier<User?> {
 
   UserNotifier(this._authRepo, this._userRepo) : super(null);
 
-  Future<void> googleLogin() async {
+  Future<bool> googleLogin() async {
     try {
       // 1. 구글/파이어베이스 인증 시도
       final authResult = await _authRepo.signInWithGoogle();
@@ -21,7 +21,7 @@ class UserNotifier extends StateNotifier<User?> {
       if (authResult is Error) {
         state = null;
         print("구글 로그인 인증 실패");
-        return;
+        return false;
       }
 
       final firebaseUser = (authResult as Success<auth.User, dynamic>).value;
@@ -34,7 +34,7 @@ class UserNotifier extends StateNotifier<User?> {
         if (existingUser != null) {
           state = existingUser;
           print("기존 유저 로그인 성공: ${existingUser.nickname}");
-          return;
+          return true;
         }
       }
 
@@ -50,24 +50,27 @@ class UserNotifier extends StateNotifier<User?> {
       if (createResult is Success) {
         state = newUser;
         print("신규 유저 가입 및 로그인 성공");
+        return true;
       } else {
         state = null;
         print("신규 유저 저장 실패");
+        return false;
       }
     } catch (e) {
       state = null;
       print("로그인 프로세스 에러: $e");
+      return false;
     }
   }
 
-  Future<void> kakaoLogin() async {
+  Future<bool> kakaoLogin() async {
     try {
       // 1. 카카오 인증 시도
       final authResult = await _authRepo.signInWithKakao();
       if (authResult is Error) {
         state = null;
         print("카카오 인증 실패");
-        return;
+        return false;
       }
 
       final credential =
@@ -76,7 +79,7 @@ class UserNotifier extends StateNotifier<User?> {
       final userCredential = await auth.FirebaseAuth.instance
           .signInWithCredential(credential);
       final firebaseUser = userCredential.user;
-      if (firebaseUser == null) return;
+      if (firebaseUser == null) return false;
 
       // 2. DB에 기존 유저 정보가 있는지 확인
       final userResult = await _userRepo.fetchUserData(firebaseUser.uid);
@@ -86,7 +89,7 @@ class UserNotifier extends StateNotifier<User?> {
         if (existingUser != null) {
           state = existingUser;
           print("카카오 로그인 성공 (기존 유저): ${existingUser.nickname}");
-          return;
+          return true;
         }
       }
 
@@ -102,13 +105,16 @@ class UserNotifier extends StateNotifier<User?> {
       if (createResult is Success) {
         state = newUser;
         print("카카오 로그인 성공 (신규 유저)");
+        return true;
       } else {
         state = null;
         print("카카오 신규 유저 저장 실패");
+        return false;
       }
     } catch (e) {
       state = null;
       print("카카오 로그인 프로세스 에러: $e");
+      return false;
     }
   }
 }
