@@ -1,4 +1,5 @@
 import 'package:baton/models/enum/category.dart';
+import 'package:baton/views/widgets/chip_button.dart';
 import 'package:flutter/material.dart';
 
 class CategoryChips extends StatelessWidget {
@@ -12,29 +13,11 @@ class CategoryChips extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: Category.values.length,
         itemBuilder: (context, index) {
-          return _CategoryChip(label: Category.values[index].name);
+          return ChipButton(label: Category.values[index].name);
         },
         separatorBuilder: (context, index) {
           return const SizedBox(width: 8);
         },
-      ),
-    );
-  }
-}
-
-class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: false,
-      onSelected: (value) {},
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(999)),
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:baton/views/login/login_page.dart';
 import 'package:baton/views/product_detail/product_detail_page.dart';
 import 'package:baton/views/sign_up/sign_up_page.dart';
 import 'package:baton/views/widgets/main_scaffold.dart';
+import 'package:baton/views/write/write_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,7 +14,7 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/product/1',
+  initialLocation: '/write',
   routes: [
     GoRoute(
       path: '/',
@@ -77,6 +78,11 @@ final router = GoRouter(
         final postId = state.pathParameters['postId']!;
         return ProductDetailPage(postId: postId);
       },
+    ),
+    GoRoute(
+      path: '/write',
+      name: 'write',
+      builder: (context, state) => const WritePage(),
     ),
   ],
 );
