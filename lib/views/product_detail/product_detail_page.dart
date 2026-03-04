@@ -1,4 +1,5 @@
 import 'package:baton/views/product_detail/widgets/bottom_chat_bar.dart';
+import 'package:baton/views/product_detail/widgets/image_section.dart';
 import 'package:baton/views/product_detail/widgets/other_product.dart';
 import 'package:baton/views/product_detail/widgets/product_detail_info.dart';
 import 'package:baton/views/product_detail/widgets/profile_header.dart';
@@ -12,40 +13,72 @@ class ProductDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(actions: [Icon(Icons.more_vert)]),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: ProfileHeader(authorId: '1'),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            elevation: 0,
+            backgroundColor: Colors.white,
+            flexibleSpace: FlexibleSpaceBar(
+              background: ImageSection(
+                imageUrls: [
+                  "https://picsum.photos/160/160",
+                  "https://picsum.photos/160/160",
+                  "https://picsum.photos/160/160",
+                  "https://picsum.photos/160/160",
+                  "https://picsum.photos/160/160",
+                ],
               ),
-              Divider(),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: ProductDetailInfo(postId: '1'),
-              ),
-              Divider(),
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  bottom: 40,
-                  top: 10,
-                ),
-                child: OtherProduct(postId: '1'),
-              ),
+            ),
+            actions: [
+              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
             ],
           ),
-        ),
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  child: ProfileHeader(authorId: '1'),
+                ),
+                const Divider(color: Color(0xffF2F2F2)),
+                const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: ProductDetailInfo(
+                    title: 'title',
+                    purchasePrice: 'purchasePrice',
+                    salePrice: 'salePrice',
+                    category: 'category',
+                    createdAt: 'createdAt',
+                    content: 'content',
+                    likeCount: 'likeCount',
+                    chatCount: 'chatCount',
+                  ),
+                ),
+                const Divider(color: Color(0xffF2F2F2)),
+                const Padding(
+                  padding: EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    bottom: 20,
+                    top: 10,
+                  ),
+                  child: OtherProduct(),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(20),
-        child: BottomChatBar(),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: BottomChatBar(),
+        ),
       ),
     );
   }
