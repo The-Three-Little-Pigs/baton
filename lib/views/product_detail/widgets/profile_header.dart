@@ -17,7 +17,12 @@ class ProfileHeader extends StatelessWidget {
         AppSpacing.w8,
         const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [Text('authorId.nickname', style: TextStyle(fontSize: 16))],
+          children: [
+            Text(
+              'authorId.nickname',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ],
         ),
         const Spacer(),
         // user - score

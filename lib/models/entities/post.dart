@@ -3,7 +3,7 @@ class Post {
   final String title;
   final double? purchasePrice;
   final double salePrice;
-  final String imageUrl;
+  final List<String> imageUrls;
   final String content;
   final int likeCount;
   final int chatCount;
@@ -16,7 +16,7 @@ class Post {
     required this.title,
     this.purchasePrice,
     required this.salePrice,
-    required this.imageUrl,
+    required this.imageUrls,
     required this.content,
     required this.likeCount,
     required this.chatCount,
@@ -31,7 +31,7 @@ class Post {
       title: json['title'],
       purchasePrice: json['purchase_price'],
       salePrice: json['sale_price'],
-      imageUrl: json['image_url'],
+      imageUrls: json['image_url'],
       content: json['content'],
       likeCount: json['like_count'],
       chatCount: json['chat_count'],
@@ -47,7 +47,7 @@ class Post {
       'title': title,
       'purchase_price': purchasePrice,
       'sale_price': salePrice,
-      'image_url': imageUrl,
+      'image_url': imageUrls,
       'content': content,
       'like_count': likeCount,
       'chat_count': chatCount,
@@ -62,7 +62,7 @@ class Post {
     String? title,
     double? purchasePrice,
     double? salePrice,
-    String? imageUrl,
+    List<String>? imageUrls,
     String? content,
     int? likeCount,
     int? chatCount,
@@ -75,7 +75,7 @@ class Post {
       title: title ?? this.title,
       purchasePrice: purchasePrice ?? this.purchasePrice,
       salePrice: salePrice ?? this.salePrice,
-      imageUrl: imageUrl ?? this.imageUrl,
+      imageUrls: imageUrls ?? this.imageUrls,
       content: content ?? this.content,
       likeCount: likeCount ?? this.likeCount,
       chatCount: chatCount ?? this.chatCount,

@@ -5,15 +5,12 @@ class BottomChatBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 94,
-      child: Row(
-        spacing: 4,
-        children: [
-          _FavoriteButton(),
-          Expanded(child: _ChatButton()),
-        ],
-      ),
+    return Row(
+      spacing: 4,
+      children: [
+        _FavoriteButton(),
+        Expanded(child: _ChatButton()),
+      ],
     );
   }
 }
