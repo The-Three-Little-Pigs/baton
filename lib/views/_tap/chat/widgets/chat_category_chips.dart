@@ -15,6 +15,7 @@ class ChatCategoryChips extends StatelessWidget {
           return const SizedBox(width: 8);
         },
         itemBuilder: (context, index) {
+          // 패딩값 수정
           return ChoiceChip(
             label: Text(ChatStatus.values[index].name),
             selected: false,
