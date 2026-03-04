@@ -1,6 +1,7 @@
 import 'package:baton/service/login_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
@@ -19,11 +20,14 @@ class LoginPage extends ConsumerWidget {
               children: [
                 Center(
                   child: GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       final viewModel = ref.read(
                         loginViewModelProvider.notifier,
                       );
-                      viewModel.googleLogin();
+                      final success = await viewModel.googleLogin();
+                      if (success && context.mounted) {
+                        context.go('/signUp');
+                      }
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(
@@ -41,11 +45,14 @@ class LoginPage extends ConsumerWidget {
                 ),
                 Center(
                   child: GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       final viewModel = ref.read(
                         loginViewModelProvider.notifier,
                       );
-                      viewModel.kakaoLogin();
+                      final success = await viewModel.kakaoLogin();
+                      if (success && context.mounted) {
+                        context.go('/signUp');
+                      }
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(

@@ -5,6 +5,7 @@ import 'package:baton/views/chat_detail/chat_detail_page.dart';
 import 'package:baton/views/login/login_page.dart';
 import 'package:baton/views/product_detail/product_detail_page.dart';
 import 'package:baton/views/sign_up/sign_up_page.dart';
+import 'package:baton/views/sign_up_profile_page/sign_up_profile_page.dart';
 import 'package:baton/views/widgets/main_scaffold.dart';
 import 'package:baton/views/write/write_page.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/write',
+  initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',
@@ -25,6 +26,11 @@ final router = GoRouter(
       path: '/signUp',
       name: 'signUp',
       builder: (context, state) => const SignUpPage(),
+    ),
+    GoRoute(
+      path: '/signUpProfile',
+      name: 'signUpProfile',
+      builder: (context, state) => const SignUpProfilePage(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
