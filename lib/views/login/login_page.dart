@@ -1,4 +1,6 @@
+import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/service/login_service.dart';
+import 'package:baton/views/login/widgets/social_login_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,84 +10,51 @@ class LoginPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(loginViewModelProvider);
     return Scaffold(
       appBar: AppBar(),
       body: Column(
         children: [
-          Expanded(flex: 6, child: SizedBox(height: 400)),
+          const Expanded(flex: 6, child: SizedBox(height: 400)),
           Expanded(
             flex: 6,
-            child: Column(
-              children: [
-                Center(
-                  child: GestureDetector(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  SocialLoginButton(
+                    text: '구글로 로그인하기',
+                    backgroundColor: Colors.white,
                     onTap: () async {
-                      final viewModel = ref.read(
-                        loginViewModelProvider.notifier,
-                      );
-                      final success = await viewModel.googleLogin();
+                      final success = await ref
+                          .read(loginViewModelProvider.notifier)
+                          .googleLogin();
                       if (success && context.mounted) {
                         context.go('/signUp');
                       }
                     },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 100,
-                      ),
-                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text('구글로 로그인하기'),
-                    ),
                   ),
-                ),
-                Center(
-                  child: GestureDetector(
+                  SocialLoginButton(
+                    text: '카카오로 로그인하기',
+                    backgroundColor: const Color(0xFFFEE500),
                     onTap: () async {
-                      final viewModel = ref.read(
-                        loginViewModelProvider.notifier,
-                      );
-                      final success = await viewModel.kakaoLogin();
+                      final success = await ref
+                          .read(loginViewModelProvider.notifier)
+                          .kakaoLogin();
                       if (success && context.mounted) {
                         context.go('/signUp');
                       }
                     },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 95,
-                      ),
-                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.amber,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text('카카오로 로그인하기'),
-                    ),
                   ),
-                ),
-                Center(
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 100,
-                      ),
-                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.greenAccent,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text('애플로 로그인하기'),
-                    ),
+                  SocialLoginButton(
+                    text: '애플로 로그인하기',
+                    backgroundColor: Colors.black,
+                    textColor: Colors.white,
+                    onTap: () {
+                      // TODO: Apple Login Implementation
+                    },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

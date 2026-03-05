@@ -21,8 +21,6 @@ class UserRepositoryImpl implements UserRepository {
       return Success(User.fromJson(data));
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
-    } catch (e) {
-      return Error(ServerFailure('유저 데이터 조회 중 오류가 발생했습니다: $e'));
     }
   }
 
@@ -36,8 +34,6 @@ class UserRepositoryImpl implements UserRepository {
       return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
-    } catch (e) {
-      return Error(ServerFailure('유저 데이터 업데이트 중 오류가 발생했습니다: $e'));
     }
   }
 
@@ -48,8 +44,6 @@ class UserRepositoryImpl implements UserRepository {
       return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
-    } catch (e) {
-      return Error(ServerFailure('유저 생성 중 오류가 발생했습니다: $e'));
     }
   }
 
@@ -60,8 +54,6 @@ class UserRepositoryImpl implements UserRepository {
       return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
-    } catch (e) {
-      return Error(ServerFailure('FCM 토큰 업데이트 중 오류가 발생했습니다: $e'));
     }
   }
 }

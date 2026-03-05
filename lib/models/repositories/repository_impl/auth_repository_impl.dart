@@ -36,8 +36,6 @@ class AuthRepositoryImpl implements AuthRepository {
       return Success(user);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
-    } catch (e) {
-      return Error(ServerFailure('Google 로그인 중 알 수 없는 오류가 발생했습니다: $e'));
     }
   }
 
@@ -57,8 +55,6 @@ class AuthRepositoryImpl implements AuthRepository {
       return Success(credential);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
-    } catch (e) {
-      return Error(ServerFailure('카카오 로그인 중 알 수 없는 오류가 발생했습니다: $e'));
     }
   }
 }
