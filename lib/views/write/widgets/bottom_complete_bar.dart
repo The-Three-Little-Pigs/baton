@@ -9,7 +9,7 @@ class BottomCompleteBar extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: CompleteButton(label: "완료", onPressed: () {}),
+          child: CompleteButton(label: "작성 완료", onPressed: () {}),
         ),
       ],
     );

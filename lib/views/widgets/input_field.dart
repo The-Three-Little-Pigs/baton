@@ -1,5 +1,6 @@
 import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class InputField extends StatelessWidget {
   const InputField({
@@ -11,6 +12,7 @@ class InputField extends StatelessWidget {
     this.maxLines,
     this.contentPadding,
     this.border,
+    this.isPriceSection,
   });
 
   final String hintText;
@@ -20,6 +22,7 @@ class InputField extends StatelessWidget {
   final int? maxLines;
   final EdgeInsetsGeometry? contentPadding;
   final InputBorder? border;
+  final bool? isPriceSection;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +32,11 @@ class InputField extends StatelessWidget {
       onChanged: onChanged,
       maxLength: maxLength,
       maxLines: maxLines,
+      inputFormatters: isPriceSection == true
+          ? [FilteringTextInputFormatter.digitsOnly]
+          : null,
       decoration: InputDecoration(
+        counterText: "",
         contentPadding:
             contentPadding ??
             const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
