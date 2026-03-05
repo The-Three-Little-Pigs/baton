@@ -44,6 +44,7 @@ class PostRepositoryImpl implements PostRepository {
       if (categories != null) {
         final snapshot = await docRef
             .where('category', whereIn: categories)
+            // .where('authorId', isEqualTo: !user.uid)
             .get();
         final posts = snapshot.docs
             .map((doc) => Post.fromJson(doc.data()))

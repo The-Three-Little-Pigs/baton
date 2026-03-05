@@ -33,6 +33,10 @@ class ContentSection extends ConsumerWidget {
           },
           maxLength: 1000,
           maxLines: 4,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFFB5C1D0), width: 1),
+          ),
         ),
       ],
     );

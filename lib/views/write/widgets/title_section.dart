@@ -19,6 +19,10 @@ class TitleSection extends ConsumerWidget {
           onChanged: (value) {
             ref.read(contentProvider.notifier).setTitle(value);
           },
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFFB5C1D0), width: 1),
+          ),
         ),
       ],
     );

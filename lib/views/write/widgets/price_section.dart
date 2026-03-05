@@ -24,6 +24,7 @@ class PriceSection extends ConsumerWidget {
             final price = double.tryParse(value) ?? 0;
             ref.read(saleProvider.notifier).setPurchasePrice(price);
           },
+          border: Border.all(color: const Color(0xFFB5C1D0), width: 1),
         ),
         if (!isSharing)
           LabeledInputField(
@@ -34,6 +35,7 @@ class PriceSection extends ConsumerWidget {
               final price = double.tryParse(value) ?? 0;
               ref.read(saleProvider.notifier).setSalePrice(price);
             },
+            border: Border.all(color: const Color(0xFFB5C1D0), width: 1),
           ),
       ],
     );
