@@ -8,11 +8,13 @@ class LabeledInputField extends StatelessWidget {
     required this.label,
     required this.hintText,
     required this.isPriceSection,
+    this.onChanged,
   });
 
   final String label;
   final String hintText;
   final bool isPriceSection;
+  final void Function(String)? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +47,7 @@ class LabeledInputField extends StatelessWidget {
                 maxLines: 1,
                 isPriceSection: isPriceSection,
                 hintText: hintText,
+                onChanged: onChanged,
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,

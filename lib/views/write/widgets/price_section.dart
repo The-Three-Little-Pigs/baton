@@ -16,16 +16,24 @@ class PriceSection extends ConsumerWidget {
       spacing: 4,
       children: [
         const SubTitle(title: "가격", required: true),
-        const LabeledInputField(
+        LabeledInputField(
           label: "구매가",
           hintText: "가격을 입력해주세요.",
           isPriceSection: true,
+          onChanged: (value) {
+            final price = double.tryParse(value) ?? 0;
+            ref.read(saleProvider.notifier).setPurchasePrice(price);
+          },
         ),
         if (!isSharing)
-          const LabeledInputField(
+          LabeledInputField(
             label: "판매가",
             hintText: "가격을 입력해주세요.",
             isPriceSection: true,
+            onChanged: (value) {
+              final price = double.tryParse(value) ?? 0;
+              ref.read(saleProvider.notifier).setSalePrice(price);
+            },
           ),
       ],
     );
