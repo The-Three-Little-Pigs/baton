@@ -17,7 +17,11 @@ class ChatRoomListTile extends StatelessWidget {
               height: 60.7326,
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Center(
-                child: Icon(Icons.image, size: 14, color: Colors.grey.shade500),
+                child: Icon(
+                  Icons.image,
+                  size: 14,
+                  color: AppColors.textTertiary,
+                ),
               ),
             ),
           ),

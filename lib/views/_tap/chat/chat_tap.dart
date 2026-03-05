@@ -18,10 +18,7 @@ class ChatTap extends StatelessWidget {
       ),
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: ChatCategoryChips(),
-          ),
+          ChatCategoryChips(),
           Expanded(
             child: ListView.builder(
               itemCount: 5,
