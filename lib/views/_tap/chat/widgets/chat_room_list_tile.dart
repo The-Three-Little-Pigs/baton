@@ -61,7 +61,7 @@ class ChatRoomListTile extends StatelessWidget {
                 SizedBox(height: 8),
                 Text(
                   '마지막 메세지마지막 메세지마지막 메세지마지막 메세지',
-                  // TODO: ... 위치 재설정
+
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
