@@ -1,3 +1,4 @@
+import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/user.dart';
 import 'package:baton/models/repositories/repository/auth_repository.dart';
@@ -18,22 +19,20 @@ class UserNotifier extends StateNotifier<User?> {
       // 1. 구글/파이어베이스 인증 시도
       final authResult = await _authRepo.signInWithGoogle();
 
-      if (authResult is Error) {
+      if (authResult is! Success<auth.User, Failure>) {
         state = null;
-        print("구글 로그인 인증 실패");
         return false;
       }
 
-      final firebaseUser = (authResult as Success<auth.User, dynamic>).value;
+      final firebaseUser = authResult.value;
 
       // 2. DB에 기존 유저 정보가 있는지 먼저 확인
       final userResult = await _userRepo.fetchUserData(firebaseUser.uid);
 
-      if (userResult is Success) {
-        final existingUser = (userResult as Success<User?, dynamic>).value;
+      if (userResult is Success<User?, Failure>) {
+        final existingUser = userResult.value;
         if (existingUser != null) {
           state = existingUser;
-          print("기존 유저 로그인 성공: ${existingUser.nickname}");
           return true;
         }
       }
@@ -49,16 +48,13 @@ class UserNotifier extends StateNotifier<User?> {
       final createResult = await _userRepo.updateUserData(newUser);
       if (createResult is Success) {
         state = newUser;
-        print("신규 유저 가입 및 로그인 성공");
         return true;
       } else {
         state = null;
-        print("신규 유저 저장 실패");
         return false;
       }
     } catch (e) {
       state = null;
-      print("로그인 프로세스 에러: $e");
       return false;
     }
   }
@@ -67,14 +63,12 @@ class UserNotifier extends StateNotifier<User?> {
     try {
       // 1. 카카오 인증 시도
       final authResult = await _authRepo.signInWithKakao();
-      if (authResult is Error) {
+      if (authResult is! Success<auth.OAuthCredential, Failure>) {
         state = null;
-        print("카카오 인증 실패");
         return false;
       }
 
-      final credential =
-          (authResult as Success<auth.OAuthCredential, dynamic>).value;
+      final credential = authResult.value;
 
       final userCredential = await auth.FirebaseAuth.instance
           .signInWithCredential(credential);
@@ -84,11 +78,10 @@ class UserNotifier extends StateNotifier<User?> {
       // 2. DB에 기존 유저 정보가 있는지 확인
       final userResult = await _userRepo.fetchUserData(firebaseUser.uid);
 
-      if (userResult is Success) {
-        final existingUser = (userResult as Success<User?, dynamic>).value;
+      if (userResult is Success<User?, Failure>) {
+        final existingUser = userResult.value;
         if (existingUser != null) {
           state = existingUser;
-          print("카카오 로그인 성공 (기존 유저): ${existingUser.nickname}");
           return true;
         }
       }
@@ -104,16 +97,13 @@ class UserNotifier extends StateNotifier<User?> {
       final createResult = await _userRepo.updateUserData(newUser);
       if (createResult is Success) {
         state = newUser;
-        print("카카오 로그인 성공 (신규 유저)");
         return true;
       } else {
         state = null;
-        print("카카오 신규 유저 저장 실패");
         return false;
       }
     } catch (e) {
       state = null;
-      print("카카오 로그인 프로세스 에러: $e");
       return false;
     }
   }
