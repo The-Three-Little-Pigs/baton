@@ -1,7 +1,6 @@
 import 'package:baton/views/_tap/home/widgets/category_chips.dart';
 import 'package:baton/views/_tap/home/widgets/category_select_button.dart';
 import 'package:baton/views/widgets/product_item.dart';
-
 import 'package:flutter/material.dart';
 
 class HomeTap extends StatelessWidget {

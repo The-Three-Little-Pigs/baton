@@ -10,6 +10,7 @@ class ChatCategoryChips extends StatelessWidget {
       height: 50,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(left: 20, right: 0, top: 8, bottom: 8),
         itemCount: ChatStatus.values.length,
         separatorBuilder: (context, index) {
           return const SizedBox(width: 8);
