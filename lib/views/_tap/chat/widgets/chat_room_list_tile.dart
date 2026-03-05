@@ -15,7 +15,7 @@ class ChatRoomListTile extends StatelessWidget {
             child: Container(
               width: 60.7326,
               height: 60.7326,
-              color: Colors.grey.shade300,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Center(
                 child: Icon(Icons.image, size: 14, color: Colors.grey.shade500),
               ),
@@ -87,7 +87,7 @@ class ChatRoomListTile extends StatelessWidget {
                 width: 18.22,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(999),
-                  color: AppColors.lightprimary,
+                  color: AppColors.primary,
                 ),
                 child: Center(
                   child: Text(

@@ -76,7 +76,7 @@ class ChatDetailPage extends StatelessWidget {
                   height: 25,
                   width: 55,
                   decoration: BoxDecoration(
-                    color: AppColors.lightprimary,
+                    color: AppColors.primary,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Center(
@@ -102,7 +102,7 @@ class ChatDetailPage extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               border: Border(
-                top: BorderSide(color: AppColors.lightsecondary, width: 1),
+                top: BorderSide(color: AppColors.secondary, width: 1),
               ),
             ),
             child: Padding(
@@ -151,7 +151,7 @@ class ChatDetailPage extends StatelessWidget {
                     Container(
                       margin: EdgeInsets.only(bottom: 8, right: 20),
                       decoration: BoxDecoration(
-                        color: AppColors.lightprimary,
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Padding(
@@ -198,7 +198,7 @@ class ChatDetailPage extends StatelessWidget {
             ),
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.lightsecondary),
+                border: Border.all(color: AppColors.secondary),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Row(

@@ -18,7 +18,6 @@ class ChatTap extends StatelessWidget {
       ),
       body: Column(
         children: [
-          ChatCategoryChips(),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: ChatCategoryChips(),
@@ -35,27 +34,6 @@ class ChatTap extends StatelessWidget {
                     );
                   },
                   child: ChatRoomListTile(),
-                return Padding(
-                  padding: const EdgeInsets.only(
-                    left: 27.89,
-                    right: 20,
-                    top: 8,
-                    bottom: 8,
-                  ),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          width: 60.7326,
-                          height: 60.7326,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerHighest,
-                        ),
-                      ),
-                    ],
-                  ),
                 );
               },
             ),
