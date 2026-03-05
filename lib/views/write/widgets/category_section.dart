@@ -59,20 +59,14 @@ class CategoryBottomSheet extends ConsumerWidget {
     final onSelected = ref.read(categoryProvider.notifier).setCategory;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-        20.5,
-        20.5,
-        20.5,
-        0,
-      ), // 아래쪽 패딩은 스크롤 영역에 맡김
+      padding: const EdgeInsets.fromLTRB(20.5, 20.5, 20.5, 0),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min, // 자식 높이만큼만 차지
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // 1. 드래그 핸들
           Container(
             width: 40,
             height: 4,
@@ -82,7 +76,6 @@ class CategoryBottomSheet extends ConsumerWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          // 2. 헤더
           Row(
             children: [
               const Text(
@@ -91,7 +84,6 @@ class CategoryBottomSheet extends ConsumerWidget {
               ),
               const Spacer(),
               IconButton(
-                // GestureDetector보다 접근성이 좋은 IconButton 추천
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(
                   Icons.close,
@@ -101,14 +93,12 @@ class CategoryBottomSheet extends ConsumerWidget {
               ),
             ],
           ),
-          // 3. 스크롤 가능한 카테고리 영역
           Flexible(
-            // 남은 공간을 효율적으로 사용하도록 함
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 20.5), // 하단 여백 추가
+              padding: const EdgeInsets.only(bottom: 20.5),
               child: Wrap(
-                spacing: 10, // 칩 사이의 가로 간격
-                runSpacing: 10, // 칩 사이의 세로 간격
+                spacing: 10,
+                runSpacing: 10,
                 children: Category.values.map((cat) {
                   return ChipButton(
                     label: cat.name,
