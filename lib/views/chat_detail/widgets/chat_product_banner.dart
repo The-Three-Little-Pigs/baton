@@ -26,7 +26,7 @@ class ChatProductBanner extends StatelessWidget {
                   child: Icon(
                     Icons.image,
                     size: 14,
-                    color: Colors.grey.shade500,
+                    color: AppColors.textTertiary,
                   ),
                 ),
               ),

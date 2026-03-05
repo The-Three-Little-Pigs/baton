@@ -22,7 +22,9 @@ class ChatDetailPage extends StatelessWidget {
         ),
         title: Container(
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: Colors.black, width: 1.6)),
+            border: Border(
+              bottom: BorderSide(color: AppColors.black, width: 1.6),
+            ),
           ),
           child: Text(
             '홍길동',
@@ -44,7 +46,7 @@ class ChatDetailPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: Colors.grey.shade500,
+                  color: AppColors.textTertiary,
                 ),
               ),
             ),
@@ -74,7 +76,7 @@ class _AppointmentButton extends StatelessWidget {
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
-          color: Colors.blueGrey.shade800,
+          color: AppColors.textTertiary,
         ),
       ),
     );
