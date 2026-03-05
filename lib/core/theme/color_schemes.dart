@@ -3,14 +3,19 @@ import 'package:flutter/material.dart';
 
 class ColorSchemes {
   static const ColorScheme lightColorScheme = ColorScheme.light(
-    primary: AppColors.lightprimary,
-    onPrimary: AppColors.lightOnPrimary,
-    secondary: AppColors.lightsecondary,
-    onSecondary: AppColors.lightOnSecondary,
-    surface: AppColors.lightSurface,
-    onSurface: AppColors.lightText,
-    error: AppColors.lightError,
-    surfaceContainerHighest: AppColors.lightVariant,
-    outline: AppColors.lightBorder,
+    primary: AppColors.primary,
+    onPrimary: AppColors.white,
+    primaryContainer: AppColors.surfaceVariant,
+    onPrimaryContainer: AppColors.primary,
+    secondary: AppColors.secondary,
+    onSecondary: AppColors.white,
+    surface: AppColors.surface,
+    onSurface: AppColors.textPrimary,
+    error: AppColors.error,
+    onError: AppColors.white,
+    surfaceContainerHighest: AppColors.surfaceVariant,
+    outline: AppColors.outline,
+    outlineVariant: AppColors.textDisabled,
+    shadow: AppColors.black,
   );
 }

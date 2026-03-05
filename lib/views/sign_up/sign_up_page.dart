@@ -1,3 +1,4 @@
+import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,6 +7,10 @@ class SignUpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final appColors = theme.extension<AppColorExtension>();
+
     return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -18,7 +23,7 @@ class SignUpPage extends StatelessWidget {
                   child: Text(
                     "회원가입",
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.outline,
+                      color: colors.onSurface,
 
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -28,10 +33,14 @@ class SignUpPage extends StatelessWidget {
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.circle, size: 8, color: Colors.blue),
-                    SizedBox(width: 4),
-                    Icon(Icons.circle, size: 8, color: Colors.grey),
+                  children: [
+                    Icon(Icons.circle, size: 8, color: colors.primary),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.circle,
+                      size: 8,
+                      color: appColors?.textTertiary ?? Colors.grey,
+                    ),
                   ],
                 ),
                 const Expanded(child: SizedBox()),
@@ -47,12 +56,12 @@ class SignUpPage extends StatelessWidget {
                 const SizedBox(height: 77),
                 Row(
                   children: [
-                    Container(width: 2, height: 20, color: Colors.black),
+                    Container(width: 2, height: 20, color: colors.onSurface),
                     const SizedBox(width: 8),
                     Text(
                       "닉네임을 설정해주세요.",
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.outline,
+                        color: colors.onSurface,
 
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -65,7 +74,7 @@ class SignUpPage extends StatelessWidget {
                 Text(
                   "닉네임은 가입후에도 언제든 변경할 수 있어요.",
                   style: TextStyle(
-                    color: const Color(0xFF8894A3),
+                    color: appColors?.textTertiary,
 
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -75,24 +84,24 @@ class SignUpPage extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 59),
+          const SizedBox(height: 59),
           // 2. 텍스트 입력 영역
           Padding(
             padding: const EdgeInsets.only(left: 37.0, right: 32.0),
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: Colors.grey, width: 1.0),
+                  bottom: BorderSide(color: colors.outline, width: 1.0),
                 ),
               ),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: "입력해주세요.",
                         hintStyle: TextStyle(
-                          color: Colors.grey,
+                          color: appColors?.textHint,
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
                           height: 1.45,
@@ -103,20 +112,20 @@ class SignUpPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Text("0/8"),
+                  const Text("0/8"),
                   const SizedBox(width: 8),
                   Container(
                     width: 68,
                     height: 36,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: appColors?.textDisabled,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       "중복 확인",
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.outline,
+                        color: colors.onSurface,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         height: 1.4,
@@ -145,13 +154,13 @@ class SignUpPage extends StatelessWidget {
                 height: 54,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.blueAccent,
+                  color: colors.primary,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
+                child: Text(
                   "다음",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: colors.onPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

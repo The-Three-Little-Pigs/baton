@@ -1,3 +1,4 @@
+import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/views/product_detail/widgets/bottom_chat_bar.dart';
 import 'package:baton/views/product_detail/widgets/image_section.dart';
 import 'package:baton/views/product_detail/widgets/other_product.dart';
@@ -12,6 +13,10 @@ class ProductDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final appColors = theme.extension<AppColorExtension>();
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -19,8 +24,9 @@ class ProductDetailPage extends StatelessWidget {
             expandedHeight: 300,
             pinned: true,
             elevation: 0,
-            backgroundColor: Colors.white,
-            flexibleSpace: FlexibleSpaceBar(
+            backgroundColor: colors.surface,
+            surfaceTintColor: Colors.transparent,
+            flexibleSpace: const FlexibleSpaceBar(
               background: ImageSection(
                 imageUrls: [
                   "https://picsum.photos/160/160",
@@ -38,14 +44,11 @@ class ProductDetailPage extends StatelessWidget {
           SliverToBoxAdapter(
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: ProfileHeader(authorId: '1'),
                 ),
-                const Divider(color: Color(0xffF2F2F2)),
+                Divider(color: appColors?.divider),
                 const Padding(
                   padding: EdgeInsets.all(20),
                   child: ProductDetailInfo(
@@ -59,7 +62,7 @@ class ProductDetailPage extends StatelessWidget {
                     chatCount: 'chatCount',
                   ),
                 ),
-                const Divider(color: Color(0xffF2F2F2)),
+                Divider(color: appColors?.divider),
                 const Padding(
                   padding: EdgeInsets.only(
                     left: 20,

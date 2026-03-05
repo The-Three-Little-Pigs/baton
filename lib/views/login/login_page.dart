@@ -1,3 +1,4 @@
+import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/service/login_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,11 +10,15 @@ class LoginPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(loginViewModelProvider);
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final appColors = theme.extension<AppColorExtension>();
+
     return Scaffold(
       appBar: AppBar(),
       body: Column(
         children: [
-          Expanded(flex: 6, child: SizedBox(height: 400)),
+          const Expanded(flex: 6, child: SizedBox(height: 400)),
           Expanded(
             flex: 6,
             child: Column(
@@ -30,16 +35,20 @@ class LoginPage extends ConsumerWidget {
                       }
                     },
                     child: Container(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         vertical: 15,
                         horizontal: 100,
                       ),
-                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 10,
                       ),
-                      child: Text('구글로 로그인하기'),
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colors.outline),
+                      ),
+                      child: const Text('구글로 로그인하기'),
                     ),
                   ),
                 ),
@@ -55,16 +64,19 @@ class LoginPage extends ConsumerWidget {
                       }
                     },
                     child: Container(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         vertical: 15,
                         horizontal: 95,
                       ),
-                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 10,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.amber,
+                        color: appColors?.kakaoYellow,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text('카카오로 로그인하기'),
+                      child: const Text('카카오로 로그인하기'),
                     ),
                   ),
                 ),
@@ -72,16 +84,19 @@ class LoginPage extends ConsumerWidget {
                   child: GestureDetector(
                     onTap: () {},
                     child: Container(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         vertical: 15,
                         horizontal: 100,
                       ),
-                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 10,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.greenAccent,
+                        color: appColors?.naverGreen,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text('애플로 로그인하기'),
+                      child: const Text('네이버로 로그인하기'),
                     ),
                   ),
                 ),

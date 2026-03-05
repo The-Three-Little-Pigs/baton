@@ -1,3 +1,5 @@
+import 'package:baton/core/theme/app_color_extension.dart';
+import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/core/theme/color_schemes.dart';
 import 'package:baton/core/theme/component_themes/button_themes.dart';
 import 'package:baton/core/theme/component_themes/content_themes.dart';
@@ -13,6 +15,18 @@ class AppTheme {
       useMaterial3: true,
       fontFamily: 'PretendardGOV',
       colorScheme: colors,
+      extensions: [
+        AppColorExtension(
+          textPrimary: AppColors.textPrimary,
+          textSecondary: AppColors.textSecondary,
+          textTertiary: AppColors.textTertiary,
+          textHint: AppColors.textHint,
+          textDisabled: AppColors.textDisabled,
+          divider: AppColors.divider,
+          kakaoYellow: AppColors.kakaoYellow,
+          naverGreen: AppColors.naverGreen,
+        ),
+      ],
       floatingActionButtonTheme: ButtonThemes.floatingActionButtonThemeData(
         colors,
       ),
