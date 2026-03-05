@@ -56,6 +56,7 @@ class _ItemImage extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
+                  // ignore: deprecated_member_use
                   color: colors.surface.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(8),
                 ),

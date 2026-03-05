@@ -4,12 +4,12 @@ part 'sale_notifier.g.dart';
 
 class SaleState {
   final double purchasePrice;
-  final double salePrice;
+  final double? salePrice;
   final bool isSharing;
 
   SaleState({
     required this.purchasePrice,
-    required this.salePrice,
+    this.salePrice,
     required this.isSharing,
   });
 

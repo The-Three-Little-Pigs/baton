@@ -1,4 +1,3 @@
-import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/service/login_service.dart';
 import 'package:baton/views/login/widgets/social_login_button.dart';
 import 'package:flutter/material.dart';
@@ -49,9 +48,7 @@ class LoginPage extends ConsumerWidget {
                     text: '애플로 로그인하기',
                     backgroundColor: Colors.black,
                     textColor: Colors.white,
-                    onTap: () {
-                      // TODO: Apple Login Implementation
-                    },
+                    onTap: () {},
                   ),
                 ],
               ),
