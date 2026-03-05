@@ -8,11 +8,15 @@ class LabeledInputField extends StatelessWidget {
     required this.label,
     required this.hintText,
     required this.isPriceSection,
+    this.onChanged,
+    this.border,
   });
 
   final String label;
   final String hintText;
   final bool isPriceSection;
+  final void Function(String)? onChanged;
+  final BoxBorder? border;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +26,7 @@ class LabeledInputField extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: colors.outline),
+        border: border,
         borderRadius: BorderRadius.circular(8),
       ),
       child: IntrinsicHeight(
@@ -45,6 +49,7 @@ class LabeledInputField extends StatelessWidget {
                 maxLines: 1,
                 isPriceSection: isPriceSection,
                 hintText: hintText,
+                onChanged: onChanged,
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
