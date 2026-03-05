@@ -1,3 +1,4 @@
+import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -30,6 +31,10 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final appColors = theme.extension<AppColorExtension>();
+
     return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,10 +57,14 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.circle, size: 8, color: Colors.blue),
-                    SizedBox(width: 4),
-                    Icon(Icons.circle, size: 8, color: Colors.grey),
+                  children: [
+                    Icon(Icons.circle, size: 8, color: colors.primary),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.circle,
+                      size: 8,
+                      color: appColors?.textTertiary ?? Colors.grey,
+                    ),
                   ],
                 ),
                 const Expanded(child: SizedBox()),
@@ -71,7 +80,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 const SizedBox(height: 77),
                 Row(
                   children: [
-                    Container(width: 2, height: 20, color: Colors.black),
+                    Container(width: 2, height: 20, color: colors.onSurface),
                     const SizedBox(width: 8),
                     Text(
                       "닉네임을 설정해주세요.",

@@ -13,8 +13,8 @@ class ChatTap extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: ChatCategoryChips(),
           ),
           Expanded(
@@ -35,7 +35,9 @@ class ChatTap extends StatelessWidget {
                         child: Container(
                           width: 60.7326,
                           height: 60.7326,
-                          color: Colors.grey.shade300,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
                         ),
                       ),
                     ],

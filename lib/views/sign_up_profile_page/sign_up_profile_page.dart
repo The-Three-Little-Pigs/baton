@@ -1,3 +1,4 @@
+import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:flutter/material.dart';
 
 class SignUpProfilePage extends StatelessWidget {
@@ -5,6 +6,10 @@ class SignUpProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final appColors = theme.extension<AppColorExtension>();
+
     return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -18,7 +23,7 @@ class SignUpProfilePage extends StatelessWidget {
                   child: Text(
                     "회원가입",
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
+                      color: colors.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       height: 1.4,
@@ -28,17 +33,9 @@ class SignUpProfilePage extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.circle,
-                      size: 8,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
+                    Icon(Icons.circle, size: 8, color: colors.secondary),
                     const SizedBox(width: 4),
-                    Icon(
-                      Icons.circle,
-                      size: 8,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                    Icon(Icons.circle, size: 8, color: colors.primary),
                   ],
                 ),
                 Expanded(
@@ -46,7 +43,7 @@ class SignUpProfilePage extends StatelessWidget {
                     "건너뛰기",
                     textAlign: TextAlign.right,
                     style: TextStyle(
-                      color: const Color(0xFF999999),
+                      color: appColors?.textTertiary,
                       fontSize: 14,
                     ),
                   ),
@@ -64,16 +61,12 @@ class SignUpProfilePage extends StatelessWidget {
                 const SizedBox(height: 77),
                 Row(
                   children: [
-                    Container(
-                      width: 2,
-                      height: 20,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+                    Container(width: 2, height: 20, color: colors.onSurface),
                     const SizedBox(width: 8),
                     Text(
                       "프로필 이미지를 등록해주세요.",
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: colors.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         height: 1.4,
@@ -83,9 +76,9 @@ class SignUpProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "이미지는 가입 후에도 언제든 변경할 수 있어요",
+                  "이미지는 가입 후에 도 언제든 변경할 수 있어요",
                   style: TextStyle(
-                    color: const Color(0xFF8894A3),
+                    color: appColors?.textTertiary,
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     height: 1.45,
@@ -94,7 +87,7 @@ class SignUpProfilePage extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 34),
+          const SizedBox(height: 34),
           // 프로필 이미지 영역
           Center(
             child: Stack(
@@ -102,22 +95,20 @@ class SignUpProfilePage extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 60,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest,
+                  backgroundColor: colors.surfaceContainerHighest,
                   child: Icon(
                     Icons.person,
                     size: 50,
-                    color: const Color(0xFF999999),
+                    color: appColors?.textTertiary,
                   ),
                 ),
                 CircleAvatar(
                   radius: 18,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  backgroundColor: colors.primary,
                   child: Icon(
                     Icons.camera_alt,
                     size: 20,
-                    color: Theme.of(context).colorScheme.onPrimary,
+                    color: colors.onPrimary,
                   ),
                 ),
               ],
