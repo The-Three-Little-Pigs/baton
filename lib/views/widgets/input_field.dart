@@ -1,3 +1,4 @@
+import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:flutter/material.dart';
 
 class InputField extends StatelessWidget {
@@ -22,6 +23,8 @@ class InputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorExtension>();
+
     return TextField(
       onChanged: onChanged,
       maxLength: maxLength,
@@ -34,7 +37,7 @@ class InputField extends StatelessWidget {
         enabledBorder: border,
         focusedBorder: border,
         hintText: hintText,
-        hintStyle: TextStyle(color: Color(0xFFB3B3B3)),
+        hintStyle: TextStyle(color: appColors?.textHint),
         prefixIcon: icon,
       ),
     );

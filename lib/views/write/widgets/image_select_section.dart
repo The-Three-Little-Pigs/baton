@@ -6,20 +6,22 @@ class ImageSelectSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Column(
       spacing: 10,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SubTitle(title: "사진 등록", required: false),
         Container(
-          padding: EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
           width: 60,
           height: 60,
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFFCDD8E7), width: 1),
+            border: Border.all(color: colors.outline, width: 1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(Icons.add, color: Theme.of(context).colorScheme.primary),
+          child: Icon(Icons.add, color: colors.primary),
         ),
       ],
     );

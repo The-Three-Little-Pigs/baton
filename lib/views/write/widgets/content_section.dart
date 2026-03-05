@@ -1,3 +1,4 @@
+import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/views/widgets/input_field.dart';
 import 'package:baton/views/widgets/sub_title.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,8 @@ class ContentSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColorExtension>();
+
     return Column(
       spacing: 4,
       children: [
@@ -18,7 +21,7 @@ class ContentSection extends StatelessWidget {
             const SubTitle(title: "내용", required: true),
             Text(
               "(1/1000)",
-              style: TextStyle(color: Color(0xFFB3B3B3), fontSize: 14),
+              style: TextStyle(color: appColors?.textTertiary, fontSize: 14),
             ),
           ],
         ),

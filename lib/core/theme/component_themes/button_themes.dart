@@ -21,8 +21,8 @@ class ButtonThemes {
   ) {
     return FloatingActionButtonThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-      backgroundColor: Colors.blue,
-      foregroundColor: Colors.white,
+      backgroundColor: colors.primary,
+      foregroundColor: colors.onPrimary,
       elevation: 0,
       extendedPadding: const EdgeInsets.only(
         top: 10,
