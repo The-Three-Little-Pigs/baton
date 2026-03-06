@@ -6,46 +6,43 @@ class ChatInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 30, top: 10),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.secondary),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 4.0),
-              child: IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.image, size: 24, color: Colors.grey.shade500),
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.secondary),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0),
+            child: IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.image, size: 24, color: Colors.grey.shade500),
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+            ),
+          ),
+          Expanded(
+            child: TextField(
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
               ),
             ),
-            Expanded(
-              child: TextField(
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                ),
-              ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.send, size: 24, color: Colors.grey.shade500),
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
             ),
-            Padding(
-              padding: const EdgeInsets.only(right: 4.0),
-              child: IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.send, size: 24, color: Colors.grey.shade500),
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
