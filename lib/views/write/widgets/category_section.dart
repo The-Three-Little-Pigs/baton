@@ -25,9 +25,16 @@ class CategorySelectButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final categoryState = ref.watch(categoryProvider);
+
+    String label = "카테고리를 선택해주세요.";
+    if (categoryState is CategorySelected) {
+      label = categoryState.category.displayName;
+    }
+
     return GestureDetector(
       onTap: () {
-        showModalBottomSheet<String>(
+        showModalBottomSheet(
           context: context,
           builder: (context) {
             return CategoryBottomSheet();
@@ -44,7 +51,20 @@ class CategorySelectButton extends ConsumerWidget {
           border: Border.all(color: const Color(0xFFB5C1D0), width: 1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Icon(Icons.chevron_right, size: 24),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const Icon(Icons.chevron_right, size: 24),
+          ],
+        ),
       ),
     );
   }
@@ -55,7 +75,7 @@ class CategoryBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final category = ref.watch(categoryProvider);
+    final categoryState = ref.watch(categoryProvider);
     final onSelected = ref.read(categoryProvider.notifier).setCategory;
 
     return Container(
@@ -100,10 +120,16 @@ class CategoryBottomSheet extends ConsumerWidget {
                 spacing: 10,
                 runSpacing: 10,
                 children: Category.values.map((cat) {
+                  final isSelected =
+                      categoryState is CategorySelected &&
+                      categoryState.category == cat;
                   return ChipButton(
-                    label: cat.name,
-                    isSelected: cat.name == category,
-                    onSelected: (value) => onSelected(cat.name),
+                    label: cat.displayName,
+                    isSelected: isSelected,
+                    onSelected: (value) {
+                      onSelected(cat);
+                      Navigator.pop(context);
+                    },
                   );
                 }).toList(),
               ),

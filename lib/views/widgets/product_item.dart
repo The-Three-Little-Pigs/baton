@@ -1,20 +1,19 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:baton/core/theme/app_color_extension.dart';
+import 'package:baton/models/entities/post.dart' show Post;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProductItem extends ConsumerWidget {
-  const ProductItem({super.key, required this.postId});
+  const ProductItem({super.key, required this.post});
 
-  final String postId;
+  final Post post;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final post = ref.watch(postProvider(postId));
-
     return Column(
       children: [
-        const _ItemImage(imageUrl: 'https://picsum.photos/160/160'),
+        _ItemImage(imageUrl: post.imageUrl),
         const SizedBox(height: 9),
         _ItemInfo(title: "post.title", date: "post.date", price: 10000),
       ],

@@ -19,7 +19,7 @@ class ChipButton extends StatelessWidget {
     final colors = theme.colorScheme;
     final appColors = theme.extension<AppColorExtension>();
 
-    final inactiveColor = appColors?.textSecondary ?? Colors.grey;
+    final inactiveColor = appColors?.textSecondary ?? Colors.black26;
 
     return ChoiceChip(
       label: Text(label),
@@ -37,8 +37,9 @@ class ChipButton extends StatelessWidget {
         color: isSelected ? colors.primary : inactiveColor,
         width: 1,
       ),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(999)),
+      shape: RoundedRectangleBorder(
+        side: BorderSide(width: 1, color: const Color(0xFFB5C1D0)),
+        borderRadius: BorderRadius.circular(999),
       ),
     );
   }

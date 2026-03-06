@@ -5,6 +5,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'post_provider.g.dart';
 
 @riverpod
-PostRepository postRepositoryProvider(Ref ref) {
+PostRepository postRepository(Ref ref) {
   return PostRepositoryImpl();
 }

@@ -15,8 +15,7 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/write',
-  // initialLocation: '/chat/chatDetail',
+  initialLocation: '/home',
   routes: [
     GoRoute(
       path: '/',

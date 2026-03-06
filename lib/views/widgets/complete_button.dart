@@ -6,11 +6,13 @@ class CompleteButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.isLoading = false,
+    this.condition = false,
   });
 
   final String label;
   final VoidCallback onPressed;
   final bool isLoading;
+  final bool condition;
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +21,9 @@ class CompleteButton extends StatelessWidget {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: isLoading
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.6)
-              : Theme.of(context).colorScheme.primary,
+          color: condition
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.secondary,
           borderRadius: BorderRadius.circular(12),
         ),
         child: SizedBox.square(

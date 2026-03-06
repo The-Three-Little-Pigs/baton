@@ -9,25 +9,25 @@ part of 'post_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(postRepositoryProvider)
-final postRepositoryProviderProvider = PostRepositoryProviderProvider._();
+@ProviderFor(postRepository)
+final postRepositoryProvider = PostRepositoryProvider._();
 
-final class PostRepositoryProviderProvider
+final class PostRepositoryProvider
     extends $FunctionalProvider<PostRepository, PostRepository, PostRepository>
     with $Provider<PostRepository> {
-  PostRepositoryProviderProvider._()
+  PostRepositoryProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'postRepositoryProviderProvider',
+        name: r'postRepositoryProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$postRepositoryProviderHash();
+  String debugGetCreateSourceHash() => _$postRepositoryHash();
 
   @$internal
   @override
@@ -36,7 +36,7 @@ final class PostRepositoryProviderProvider
 
   @override
   PostRepository create(Ref ref) {
-    return postRepositoryProvider(ref);
+    return postRepository(ref);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -48,5 +48,4 @@ final class PostRepositoryProviderProvider
   }
 }
 
-String _$postRepositoryProviderHash() =>
-    r'dc090a17eba42c2ff1cbf47d35f8bd165b2c8c13';
+String _$postRepositoryHash() => r'6cd99a988f1b37d7be9f9b26b65a64da8f9dcdc9';
