@@ -13,7 +13,7 @@ part of 'category_notifier.dart';
 final categoryProvider = CategoryNotifierProvider._();
 
 final class CategoryNotifierProvider
-    extends $NotifierProvider<CategoryNotifier, String?> {
+    extends $NotifierProvider<CategoryNotifier, CategoryState> {
   CategoryNotifierProvider._()
     : super(
         from: null,
@@ -33,27 +33,27 @@ final class CategoryNotifierProvider
   CategoryNotifier create() => CategoryNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(String? value) {
+  Override overrideWithValue(CategoryState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<String?>(value),
+      providerOverride: $SyncValueProvider<CategoryState>(value),
     );
   }
 }
 
-String _$categoryNotifierHash() => r'6f973eadfb1726fe7f4feb1436a4ac6722199d45';
+String _$categoryNotifierHash() => r'9e456d9e2296a97a5d5dade89c777c6a98917e15';
 
-abstract class _$CategoryNotifier extends $Notifier<String?> {
-  String? build();
+abstract class _$CategoryNotifier extends $Notifier<CategoryState> {
+  CategoryState build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<String?, String?>;
+    final ref = this.ref as $Ref<CategoryState, CategoryState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<String?, String?>,
-              String?,
+              AnyNotifier<CategoryState, CategoryState>,
+              CategoryState,
               Object?,
               Object?
             >;

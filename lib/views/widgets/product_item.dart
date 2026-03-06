@@ -1,37 +1,43 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:baton/core/theme/app_color_extension.dart';
+import 'package:baton/models/entities/post.dart' show Post;
+import 'package:baton/core/utils/format_currency.dart';
+import 'package:baton/models/mapper/format_time_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProductItem extends ConsumerWidget {
-  const ProductItem({super.key, required this.postId});
+  const ProductItem({super.key, required this.post});
 
-  final String postId;
+  final Post post;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final post = ref.watch(postProvider(postId));
-
     return Column(
       children: [
-        const _ItemImage(imageUrl: 'https://picsum.photos/160/160'),
+        _ItemImage(thumbnailUrl: post.thumbnailUrl),
         const SizedBox(height: 9),
-        _ItemInfo(title: "post.title", date: "post.date", price: 10000),
+        _ItemInfo(
+          title: post.title,
+          date: formatTime(post.createdAt),
+          price: post.salePrice,
+        ),
       ],
     );
   }
 }
 
 class _ItemImage extends StatelessWidget {
-  const _ItemImage({required this.imageUrl});
+  const _ItemImage({this.thumbnailUrl});
 
-  final String imageUrl;
+  final String? thumbnailUrl;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final appColors = theme.extension<AppColorExtension>();
+    final hasThumbNail = thumbnailUrl != null;
 
     return AspectRatio(
       aspectRatio: 1,
@@ -40,7 +46,9 @@ class _ItemImage extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(imageUrl, fit: BoxFit.cover),
+            hasThumbNail
+                ? Image.network(thumbnailUrl!, fit: BoxFit.cover)
+                : Center(child: Icon(Icons.image)),
             Positioned(
               top: 8,
               right: 8,
@@ -124,7 +132,7 @@ class _ItemInfo extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '$price원',
+                '${formatCurrency(price)}원',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

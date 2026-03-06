@@ -1,3 +1,5 @@
+import 'package:baton/models/enum/category.dart';
+
 class Post {
   final String postId;
   final String title;
@@ -7,7 +9,8 @@ class Post {
   final String content;
   final int likeCount;
   final int chatCount;
-  final String category;
+  final String? thumbnailUrl;
+  final Category category;
   final String authorId;
   final String createdAt;
 
@@ -20,6 +23,7 @@ class Post {
     required this.content,
     required this.likeCount,
     required this.chatCount,
+    required this.thumbnailUrl,
     required this.category,
     required this.authorId,
     required this.createdAt,
@@ -27,17 +31,21 @@ class Post {
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      postId: json['post_id'],
-      title: json['title'],
-      purchasePrice: json['purchase_price'],
-      salePrice: json['sale_price'],
-      imageUrls: json['image_url'],
-      content: json['content'],
-      likeCount: json['like_count'],
-      chatCount: json['chat_count'],
-      category: json['category'],
-      authorId: json['author_id'],
-      createdAt: json['created_at'],
+      postId: json['post_id'] ?? '',
+      title: json['title'] ?? '',
+      purchasePrice: (json['purchase_price'] as num?)?.toDouble(),
+      salePrice: (json['sale_price'] as num?)?.toDouble() ?? 0.0,
+      imageUrls: List<String>.from(json['image_url'] ?? []),
+      content: json['content'] ?? '',
+      likeCount: json['like_count'] ?? 0,
+      chatCount: json['chat_count'] ?? 0,
+      thumbnailUrl: json['thumbnail_url'],
+      category: Category.values.firstWhere(
+        (e) => e.name == json['category'],
+        orElse: () => Category.etc,
+      ),
+      authorId: json['author_id'] ?? '',
+      createdAt: json['created_at'] ?? '',
     );
   }
 
@@ -51,7 +59,8 @@ class Post {
       'content': content,
       'like_count': likeCount,
       'chat_count': chatCount,
-      'category': category,
+      'thumbnail_url': thumbnailUrl,
+      'category': category.name,
       'author_id': authorId,
       'created_at': createdAt,
     };
@@ -66,7 +75,8 @@ class Post {
     String? content,
     int? likeCount,
     int? chatCount,
-    String? category,
+    String? thumbnailUrl,
+    Category? category,
     String? authorId,
     String? createdAt,
   }) {
@@ -79,6 +89,7 @@ class Post {
       content: content ?? this.content,
       likeCount: likeCount ?? this.likeCount,
       chatCount: chatCount ?? this.chatCount,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       category: category ?? this.category,
       authorId: authorId ?? this.authorId,
       createdAt: createdAt ?? this.createdAt,

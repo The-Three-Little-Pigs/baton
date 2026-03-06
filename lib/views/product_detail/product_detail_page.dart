@@ -1,4 +1,5 @@
 import 'package:baton/core/theme/app_color_extension.dart';
+import 'package:baton/models/enum/category.dart';
 import 'package:baton/views/product_detail/widgets/bottom_chat_bar.dart';
 import 'package:baton/views/product_detail/widgets/image_section.dart';
 import 'package:baton/views/product_detail/widgets/other_product.dart';
@@ -63,14 +64,18 @@ class ProductDetailPage extends StatelessWidget {
                   ),
                 ),
                 Divider(color: appColors?.divider),
-                const Padding(
-                  padding: EdgeInsets.only(
+                Padding(
+                  padding: const EdgeInsets.only(
                     left: 20,
                     right: 20,
                     bottom: 20,
                     top: 10,
                   ),
-                  child: OtherProduct(),
+                  child: OtherProduct(
+                    category:
+                        Category.fitness, // 임시 카테고리 (이후 상세 페이지 로직에 맞게 변경 필요)
+                    currentPostId: postId,
+                  ),
                 ),
               ],
             ),

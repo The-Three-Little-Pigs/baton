@@ -37,7 +37,6 @@ class FirebaseErrorMapper {
         return ServerFailure('이미 존재하는 데이터입니다.');
       case 'deadline-exceeded':
         return NetworkFailure('요청 시간이 초과되었습니다.');
-
       default:
         return ServerFailure('알 수 없는 오류가 발생했습니다.');
     }
