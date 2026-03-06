@@ -7,4 +7,5 @@ abstract class UserRepository {
   Future<Result<void, Failure>> updateUserData(User user);
   Future<Result<void, Failure>> userCreate(User user);
   Future<Result<void, Failure>> updateFCMToken(String uid, String token);
+  Future<Result<bool, Failure>> checkNicknameDuplicate(String nickname);
 }
