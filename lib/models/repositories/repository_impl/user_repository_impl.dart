@@ -56,4 +56,19 @@ class UserRepositoryImpl implements UserRepository {
       return Error(FirebaseErrorMapper.toFailure(e));
     }
   }
+
+  @override
+  Future<Result<bool, Failure>> checkNicknameDuplicate(String nickname) async {
+    try {
+      final query = await _firestore
+          .collection("user")
+          .where('nickname', isEqualTo: nickname)
+          .limit(1)
+          .get();
+      // 문서가 존재하면 중복 (true = 중복)
+      return Success(query.docs.isNotEmpty);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    }
+  }
 }

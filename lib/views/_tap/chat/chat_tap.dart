@@ -21,6 +21,7 @@ class ChatTap extends StatelessWidget {
           ChatCategoryChips(),
           Expanded(
             child: ListView.builder(
+              padding: const EdgeInsets.only(left: 27.89, right: 20),
               itemCount: 5,
               itemBuilder: (context, index) {
                 return InkWell(

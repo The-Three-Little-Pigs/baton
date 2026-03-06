@@ -7,7 +7,7 @@ class ChatRoomListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 27.89, right: 20, top: 8, bottom: 8),
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
       child: Row(
         children: [
           ClipRRect(

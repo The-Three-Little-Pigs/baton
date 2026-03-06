@@ -1,4 +1,6 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
+import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
 import 'package:baton/views/chat_detail/widgets/chat_message_list.dart';
 import 'package:baton/views/chat_detail/widgets/chat_product_banner.dart';
@@ -12,6 +14,11 @@ class ChatDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TODO: 약속하기 버튼 완성하면 지우기
+    Future.delayed(
+      Duration.zero,
+      () => AppointmentBottomSheet.showAppointmentDialog(context),
+    );
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -52,32 +59,17 @@ class ChatDetailPage extends StatelessWidget {
             ),
           ),
           ChatMessageList(),
-          _AppointmentButton(),
-          ChatInputField(),
+          AppointmentButton(),
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 10,
+              right: 10,
+              bottom: 30,
+              top: 10,
+            ),
+            child: ChatInputField(),
+          ),
         ],
-      ),
-    );
-  }
-}
-
-class _AppointmentButton extends StatelessWidget {
-  const _AppointmentButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        '약속하기',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textTertiary,
-        ),
       ),
     );
   }
