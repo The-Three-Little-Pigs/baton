@@ -49,23 +49,29 @@ class PostRepositoryImpl implements PostRepository {
     try {
       final docRef = _firestore.collection('posts');
 
+      final thirtyDaysAgo = DateTime.now()
+          .subtract(const Duration(days: 30))
+          .toIso8601String();
+
+      var query = docRef.where(
+        'created_at',
+        isGreaterThanOrEqualTo: thirtyDaysAgo,
+      );
+
       if (categories?.isNotEmpty ?? false) {
-        // Firestore는 Enum 타입을 직접 이해하지 못하므로, String(e.name)으로 변환하여 전달
         final categoryNames = categories!.map((e) => e.name).toList();
-        final snapshot = await docRef
-            .where('category', whereIn: categoryNames)
-            .orderBy('createdAt', descending: true)
-            .get();
-        final posts = snapshot.docs
-            .map((doc) => Post.fromJson(doc.data()))
-            .toList();
-        return Success(posts);
+        if (categoryNames.isNotEmpty) {
+          query = query.where('category', whereIn: categoryNames);
+        }
       }
 
-      final snapshot = await docRef.get();
+      final snapshot = await query.get();
       final posts = snapshot.docs
           .map((doc) => Post.fromJson(doc.data()))
           .toList();
+
+      posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
       return Success(posts);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));

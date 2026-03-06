@@ -9,7 +9,7 @@ class Post {
   final String content;
   final int likeCount;
   final int chatCount;
-  fianl String thumbnailUrl;
+  final String? thumbnailUrl;
   final Category category;
   final String authorId;
   final String createdAt;
@@ -23,6 +23,7 @@ class Post {
     required this.content,
     required this.likeCount,
     required this.chatCount,
+    required this.thumbnailUrl,
     required this.category,
     required this.authorId,
     required this.createdAt,
@@ -38,6 +39,7 @@ class Post {
       content: json['content'] ?? '',
       likeCount: json['like_count'] ?? 0,
       chatCount: json['chat_count'] ?? 0,
+      thumbnailUrl: json['thumbnail_url'],
       category: Category.values.firstWhere(
         (e) => e.name == json['category'],
         orElse: () => Category.etc,
@@ -57,6 +59,7 @@ class Post {
       'content': content,
       'like_count': likeCount,
       'chat_count': chatCount,
+      'thumbnail_url': thumbnailUrl,
       'category': category.name,
       'author_id': authorId,
       'created_at': createdAt,
@@ -72,6 +75,7 @@ class Post {
     String? content,
     int? likeCount,
     int? chatCount,
+    String? thumbnailUrl,
     Category? category,
     String? authorId,
     String? createdAt,
@@ -85,6 +89,7 @@ class Post {
       content: content ?? this.content,
       likeCount: likeCount ?? this.likeCount,
       chatCount: chatCount ?? this.chatCount,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       category: category ?? this.category,
       authorId: authorId ?? this.authorId,
       createdAt: createdAt ?? this.createdAt,

@@ -1,7 +1,7 @@
-import 'package:baton/core/theme/app_tokens/app_spacing.dart';
 import 'package:baton/views/_tap/home/viewmodel/home_tap_viewmodel.dart';
 import 'package:baton/views/_tap/home/widgets/category_chips.dart';
 import 'package:baton/views/_tap/home/widgets/category_select_button.dart';
+import 'package:baton/views/_tap/home/widgets/no_product.dart';
 import 'package:baton/views/widgets/product_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,6 +41,11 @@ class HomeTap extends ConsumerWidget {
             Expanded(
               child: postAsyncValue.when(
                 data: (posts) {
+                  print(posts);
+                  if (posts.isEmpty) {
+                    return Center(child: const NoProduct());
+                  }
+
                   return GridView.builder(
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
@@ -58,6 +63,7 @@ class HomeTap extends ConsumerWidget {
                 error: (error, stackTrace) {
                   return Center(
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(error.toString()),
                         ElevatedButton(
