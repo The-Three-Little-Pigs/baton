@@ -41,7 +41,6 @@ class HomeTap extends ConsumerWidget {
             Expanded(
               child: postAsyncValue.when(
                 data: (posts) {
-                  print(posts);
                   if (posts.isEmpty) {
                     return Center(child: const NoProduct());
                   }

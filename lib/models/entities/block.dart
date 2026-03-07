@@ -5,7 +5,10 @@ class Block {
   Block({required this.blockerId, required this.blokedId});
 
   factory Block.fromJson(Map<String, dynamic> json) {
-    return Block(blockerId: json['blocker_id'], blokedId: json['bloked_id']);
+    return Block(
+      blockerId: json['blocker_id'] as String,
+      blokedId: json['bloked_id'] as String,
+    );
   }
 
   Map<String, dynamic> toJson() {

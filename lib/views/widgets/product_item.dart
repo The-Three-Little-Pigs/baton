@@ -15,7 +15,7 @@ class ProductItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
-        _ItemImage(thumbnailUrl: post.thumbnailUrl),
+        _ItemImage(imageUrl: post.imageUrls.first),
         const SizedBox(height: 9),
         _ItemInfo(
           title: post.title,
@@ -28,16 +28,15 @@ class ProductItem extends ConsumerWidget {
 }
 
 class _ItemImage extends StatelessWidget {
-  const _ItemImage({this.thumbnailUrl});
+  const _ItemImage({this.imageUrl});
 
-  final String? thumbnailUrl;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final appColors = theme.extension<AppColorExtension>();
-    final hasThumbNail = thumbnailUrl != null;
 
     return AspectRatio(
       aspectRatio: 1,
@@ -46,8 +45,8 @@ class _ItemImage extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            hasThumbNail
-                ? Image.network(thumbnailUrl!, fit: BoxFit.cover)
+            imageUrl != null
+                ? Image.network(imageUrl!, fit: BoxFit.cover)
                 : Center(child: Icon(Icons.image)),
             Positioned(
               top: 8,
@@ -94,7 +93,7 @@ class _ItemInfo extends StatelessWidget {
 
   final String title;
   final String date;
-  final double price;
+  final int price;
 
   @override
   Widget build(BuildContext context) {
