@@ -15,11 +15,11 @@ class ChatRoom {
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) {
     return ChatRoom(
-      participants: json['participants'],
-      unReadCount: json['unReadCount'],
-      updatedAt: json['updatedAt'],
-      postId: json['postId'],
-      lastMessage: json['lastMessage'],
+      participants: json['participants'] as List<String>,
+      unReadCount: json['unReadCount'] as Map<String, int>,
+      updatedAt: json['updatedAt'] as DateTime,
+      postId: json['postId'] as String,
+      lastMessage: json['lastMessage'] as String,
     );
   }
 

@@ -21,7 +21,7 @@ class PriceSection extends ConsumerWidget {
           hintText: "가격을 입력해주세요.",
           isPriceSection: true,
           onChanged: (value) {
-            final price = double.tryParse(value) ?? 0;
+            final price = int.tryParse(value) ?? 0;
             ref.read(saleProvider.notifier).setPurchasePrice(price);
           },
           border: Border.all(color: const Color(0xFFB5C1D0), width: 1),
@@ -32,7 +32,7 @@ class PriceSection extends ConsumerWidget {
             hintText: "가격을 입력해주세요.",
             isPriceSection: true,
             onChanged: (value) {
-              final price = double.tryParse(value) ?? 0;
+              final price = int.tryParse(value) ?? 0;
               ref.read(saleProvider.notifier).setSalePrice(price);
             },
             border: Border.all(color: const Color(0xFFB5C1D0), width: 1),
