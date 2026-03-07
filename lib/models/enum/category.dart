@@ -9,6 +9,6 @@ enum Category {
   resort('호텔/숙박'),
   etc('기타');
 
-  final String displayName;
-  const Category(this.displayName);
+  final String name;
+  const Category(this.name);
 }

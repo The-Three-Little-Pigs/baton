@@ -12,7 +12,7 @@ class Post {
   final int chatCount;
   final Category category;
   final String authorId;
-  final String createdAt;
+  final DateTime createdAt;
   final ProductStatus status;
 
   Post({
@@ -42,7 +42,7 @@ class Post {
       chatCount: json['chat_count'] as int,
       category: Category.values.firstWhere((e) => e.name == json['category']),
       authorId: json['author_id'] as String,
-      createdAt: json['created_at'] as String,
+      createdAt: json['created_at'] as DateTime,
       status: ProductStatus.values.firstWhere((e) => e.name == json['status']),
     );
   }
@@ -75,7 +75,7 @@ class Post {
     int? chatCount,
     Category? category,
     String? authorId,
-    String? createdAt,
+    DateTime? createdAt,
     ProductStatus? status,
   }) {
     return Post(

@@ -2,6 +2,7 @@ import 'package:baton/core/di/repository/post_provider.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/core/utils/validation/write_validation.dart';
 import 'package:baton/models/entities/post.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/service/image_picker_service.dart';
 import 'package:baton/views/write/viewmodel/category_notifier.dart';
 import 'package:baton/views/write/viewmodel/content_notifier.dart';
@@ -55,17 +56,10 @@ class WritePageViewModel extends _$WritePageViewModel {
     final category = ref.read(categoryProvider);
     final images = ref.read(imageProvider);
 
-    if (category is! CategorySelected) {
-      return '카테고리를 선택해 주세요.';
-    }
-
-    final selectedCategory = category.category;
-
     state = const AsyncLoading();
 
     List<String> imageUrls = [];
 
-    // 이미지 업로드 수행
     if (images.isNotEmpty) {
       final uploadResult = await ImagePickerService().getDownloadUrls(images);
 
@@ -78,21 +72,19 @@ class WritePageViewModel extends _$WritePageViewModel {
       }
     }
 
-    final String? thumbnailUrl = imageUrls.isNotEmpty ? imageUrls.first : null;
-
     final post = Post(
       imageUrls: imageUrls,
       title: contentState.title,
       content: contentState.content,
-      category: selectedCategory,
+      category: category!,
       purchasePrice: saleState.purchasePrice,
-      salePrice: saleState.salePrice ?? 0,
+      salePrice: saleState.salePrice,
       likeCount: 0,
       chatCount: 0,
-      thumbnailUrl: thumbnailUrl,
-      createdAt: DateTime.now().toIso8601String(),
+      createdAt: DateTime.now(),
       authorId: "",
       postId: "",
+      status: ProductStatus.available,
     );
 
     final result = await ref.read(postRepositoryProvider).createPost(post);
