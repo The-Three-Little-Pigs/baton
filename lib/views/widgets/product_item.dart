@@ -93,7 +93,7 @@ class _ItemInfo extends StatelessWidget {
 
   final String title;
   final String date;
-  final int price;
+  final int? price;
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +131,7 @@ class _ItemInfo extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${formatCurrency(price)}원',
+                price == null ? '나눔' : '${formatCurrency(price!)}원',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

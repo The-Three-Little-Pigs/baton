@@ -2,6 +2,7 @@ import 'package:baton/core/di/repository/post_provider.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/core/utils/validation/write_validation.dart';
 import 'package:baton/models/entities/post.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/service/image_picker_service.dart';
 import 'package:baton/views/write/viewmodel/category_notifier.dart';
 import 'package:baton/views/write/viewmodel/content_notifier.dart';
@@ -78,21 +79,19 @@ class WritePageViewModel extends _$WritePageViewModel {
       }
     }
 
-    final String? thumbnailUrl = imageUrls.isNotEmpty ? imageUrls.first : null;
-
     final post = Post(
       imageUrls: imageUrls,
       title: contentState.title,
       content: contentState.content,
       category: selectedCategory,
       purchasePrice: saleState.purchasePrice,
-      salePrice: saleState.salePrice ?? 0,
+      salePrice: saleState.salePrice,
       likeCount: 0,
       chatCount: 0,
-      thumbnailUrl: thumbnailUrl,
       createdAt: DateTime.now().toIso8601String(),
       authorId: "",
       postId: "",
+      status: ProductStatus.available,
     );
 
     final result = await ref.read(postRepositoryProvider).createPost(post);

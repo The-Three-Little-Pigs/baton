@@ -3,21 +3,13 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'sale_notifier.g.dart';
 
 class SaleState {
-  final double purchasePrice;
-  final double? salePrice;
+  final int? purchasePrice;
+  final int? salePrice;
   final bool isSharing;
 
-  SaleState({
-    required this.purchasePrice,
-    this.salePrice,
-    required this.isSharing,
-  });
+  SaleState({this.purchasePrice, this.salePrice, required this.isSharing});
 
-  SaleState copyWith({
-    double? purchasePrice,
-    double? salePrice,
-    bool? isSharing,
-  }) {
+  SaleState copyWith({int? purchasePrice, int? salePrice, bool? isSharing}) {
     return SaleState(
       purchasePrice: purchasePrice ?? this.purchasePrice,
       salePrice: salePrice ?? this.salePrice,
@@ -30,14 +22,14 @@ class SaleState {
 class SaleNotifier extends _$SaleNotifier {
   @override
   SaleState build() {
-    return SaleState(purchasePrice: 0, salePrice: 0, isSharing: false);
+    return SaleState(purchasePrice: null, salePrice: null, isSharing: false);
   }
 
-  void setPurchasePrice(double price) {
+  void setPurchasePrice(int price) {
     state = state.copyWith(purchasePrice: price);
   }
 
-  void setSalePrice(double price) {
+  void setSalePrice(int price) {
     state = state.copyWith(salePrice: price);
   }
 

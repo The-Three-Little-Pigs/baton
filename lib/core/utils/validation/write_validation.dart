@@ -31,7 +31,7 @@ class WriteValidation {
     return null;
   }
 
-  static String? validatePrice(double? value) {
+  static String? validatePrice(int? value) {
     if (value == null) {
       return '가격을 입력해 주세요. (0원 가능)';
     }
