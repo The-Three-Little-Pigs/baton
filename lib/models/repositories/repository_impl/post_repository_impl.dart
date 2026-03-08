@@ -42,7 +42,27 @@ class PostRepositoryImpl implements PostRepository {
     Set<Category>? categories,
   ) async {
     try {
-      final snapshot = await _firestore.collection('posts').get();
+      if (categories != null && categories.isNotEmpty) {
+        final snapshot = await _firestore
+            .collection('posts')
+            .where('category', arrayContainsAny: categories)
+            .orderBy('createdAt', descending: true)
+            .limit(20)
+            .get();
+
+        final posts = snapshot.docs
+            .map((doc) => Post.fromJson(doc.data()))
+            .toList();
+
+        return Success(posts);
+      }
+
+      final snapshot = await _firestore
+          .collection('posts')
+          .orderBy('createdAt', descending: true)
+          .limit(20)
+          .get();
+
       final posts = snapshot.docs
           .map((doc) => Post.fromJson(doc.data()))
           .toList();
