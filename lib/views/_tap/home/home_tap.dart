@@ -54,7 +54,18 @@ class HomeTap extends ConsumerWidget {
                           crossAxisSpacing: 20,
                         ),
                     itemBuilder: (context, index) {
-                      return ProductItem(post: posts[index]);
+                      return NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          if (notification.metrics.pixels >=
+                              notification.metrics.maxScrollExtent * 0.8) {
+                            ref
+                                .read(homeTapViewModelProvider.notifier)
+                                .fetchPosts();
+                          }
+                          return false;
+                        },
+                        child: ProductItem(post: posts[index]),
+                      );
                     },
                     itemCount: posts.length,
                   );

@@ -40,6 +40,8 @@ class PostRepositoryImpl implements PostRepository {
   @override
   Future<Result<List<Post>, Failure>> getPosts(
     Set<Category>? categories,
+    DateTime? lastTime,
+    String? lastPostId,
   ) async {
     try {
       if (categories != null && categories.isNotEmpty) {
