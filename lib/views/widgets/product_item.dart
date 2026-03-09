@@ -4,6 +4,7 @@ import 'package:baton/models/entities/post.dart' show Post;
 import 'package:baton/core/utils/format_currency.dart';
 import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/mapper/format_time_mapper.dart';
+import 'package:baton/notifier/like/like_notifier.dart';
 import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -37,10 +38,12 @@ class _ItemImage extends StatelessWidget {
   final Post post;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final appColors = theme.extension<AppColorExtension>();
+    final likedPosts = ref.watch(likeProvider).value ?? [];
+    final isLiked = likedPosts.any((p) => p.postId == post.postId);
 
     return GestureDetector(
       onTap: () {
@@ -56,7 +59,7 @@ class _ItemImage extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              post.imageUrls.firstOrNull != null
+              post.imageUrls.first != null
                   ? Image.network(post.imageUrls.first, fit: BoxFit.cover)
                   : Center(child: Icon(Icons.image)),
               Positioned(

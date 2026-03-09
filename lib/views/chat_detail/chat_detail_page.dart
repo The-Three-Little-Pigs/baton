@@ -15,10 +15,10 @@ class ChatDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: 약속하기 버튼 완성하면 지우기
-    Future.delayed(
-      Duration.zero,
-      () => AppointmentBottomSheet.showAppointmentDialog(context),
-    );
+    // Future.delayed(
+    //   Duration.zero,
+    //   () => AppointmentBottomSheet.showAppointmentDialog(context),
+    // );
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
