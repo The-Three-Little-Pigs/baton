@@ -8,8 +8,11 @@ import 'package:baton/views/product_detail/widgets/image_section.dart';
 import 'package:baton/views/product_detail/widgets/other_product.dart';
 import 'package:baton/views/product_detail/widgets/product_detail_info.dart';
 import 'package:baton/views/product_detail/widgets/profile_header.dart';
+import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductDetailPage extends ConsumerWidget {
   const ProductDetailPage({super.key, required this.postId});
@@ -75,7 +78,7 @@ class ProductDetailPage extends ConsumerWidget {
                       top: 10,
                     ),
                     child: OtherProduct(
-                      category: Category.fitness,
+                      category: post.category,
                       currentPostId: postId,
                     ),
                   ),
@@ -106,7 +109,18 @@ class MoreVerButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.more_vert),
       onPressed: () {
-        // showCupertinoModalPopup(context: context, builder: CupertinoModalPopUp(actions: [[a,a]]))
+        showCupertinoModalPopup(
+          context: context,
+          builder: (context) => CupertinoModalPopUp(
+            actions: [
+              {
+                '신고하기': () {
+                  context.pop();
+                },
+              },
+            ],
+          ),
+        );
       },
     );
   }
