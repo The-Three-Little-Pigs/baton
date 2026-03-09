@@ -79,15 +79,18 @@ class WritePageViewModel extends _$WritePageViewModel {
       }
     }
 
+    final String? thumbnailUrl = imageUrls.isNotEmpty ? imageUrls.first : null;
+
     final post = Post(
       imageUrls: imageUrls,
       title: contentState.title,
       content: contentState.content,
       category: selectedCategory,
       purchasePrice: saleState.purchasePrice,
-      salePrice: saleState.salePrice,
+      salePrice: saleState.salePrice ?? 0,
       likeCount: 0,
       chatCount: 0,
+      thumbnailUrl: thumbnailUrl,
       createdAt: DateTime.now().toIso8601String(),
       authorId: "",
       postId: "",

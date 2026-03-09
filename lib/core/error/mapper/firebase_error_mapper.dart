@@ -24,6 +24,18 @@ class FirebaseErrorMapper {
         return AuthFailure('비밀번호가 너무 취약합니다.');
       case 'too-many-requests':
         return AuthFailure('너무 많은 시도가 있었습니다. 잠시 후 다시 시도해 주세요.');
+      case 'object-not-found':
+        return ServerFailure('업로드할 대상을 찾을 수 없습니다.');
+      case 'bucket-not-found':
+        return ServerFailure('스토리지 설정(버킷)이 잘못되었습니다.');
+      case 'quota-exceeded':
+        return ServerFailure('저장 공간 용량이 초과되었습니다.');
+      case 'unauthenticated':
+        return AuthFailure('인증되지 않은 사용자입니다. 다시 로그인해주세요.');
+      case 'unauthorized':
+        return ServerFailure('파일 접근 권한이 없습니다.');
+      case 'retry-limit-exceeded':
+        return NetworkFailure('업로드 제한 시간을 초과했습니다. 다시 시도해주세요.');
 
       // 공통 및 DB 관련
       case 'network-request-failed':

@@ -28,6 +28,7 @@ class Post {
     required this.authorId,
     required this.createdAt,
     required this.status,
+    String? thumbnailUrl,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
