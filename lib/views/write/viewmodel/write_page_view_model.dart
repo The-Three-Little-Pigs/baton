@@ -84,7 +84,7 @@ class WritePageViewModel extends _$WritePageViewModel {
       likeCount: 0,
       chatCount: 0,
       thumbnailUrl: thumbnailUrl,
-      createdAt: DateTime.now().toIso8601String(),
+      createdAt: DateTime.now(),
       authorId: "",
       postId: "",
       status: ProductStatus.available,

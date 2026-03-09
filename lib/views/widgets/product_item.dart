@@ -32,7 +32,7 @@ class ProductItem extends ConsumerWidget {
   }
 }
 
-class _ItemImage extends StatelessWidget {
+class _ItemImage extends ConsumerWidget {
   const _ItemImage({required this.post});
 
   final Post post;
@@ -59,7 +59,7 @@ class _ItemImage extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              post.imageUrls.first != null
+              post.imageUrls.firstOrNull != null
                   ? Image.network(post.imageUrls.first, fit: BoxFit.cover)
                   : Center(child: Icon(Icons.image)),
               Positioned(
