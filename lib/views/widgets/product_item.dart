@@ -4,6 +4,8 @@ import 'package:baton/models/entities/post.dart' show Post;
 import 'package:baton/core/utils/format_currency.dart';
 import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/mapper/format_time_mapper.dart';
+import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -55,17 +57,14 @@ class _ItemImage extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               post.imageUrls.firstOrNull != null
-                  ? Image.network(
-                      post.imageUrls.firstOrNull!,
-                      fit: BoxFit.cover,
-                    )
+                  ? Image.network(post.imageUrls.first, fit: BoxFit.cover)
                   : Center(child: Icon(Icons.image)),
               Positioned(
                 top: 8,
                 right: 8,
                 child: GestureDetector(
                   onTap: () {
-                    print("like");
+                    // TODO : 좋아요 추가 로직
                   },
                   child: Icon(Icons.favorite_border, color: colors.primary),
                 ),
@@ -139,7 +138,23 @@ class _ItemInfo extends StatelessWidget {
                   ),
                 ),
               ),
-              const Icon(Icons.more_vert, size: 20),
+              GestureDetector(
+                onTap: () async {
+                  showCupertinoModalPopup(
+                    context: context,
+                    builder: (context) => CupertinoModalPopUp(
+                      actions: [
+                        {
+                          '신고하기': () {
+                            context.pop();
+                          },
+                        },
+                      ],
+                    ),
+                  );
+                },
+                child: const Icon(Icons.more_vert, size: 20),
+              ),
             ],
           ),
           const SizedBox(height: 4),

@@ -28,7 +28,7 @@ class SimilarProductNotifier extends _$SimilarProductNotifier {
             .toList();
         return filteredPosts;
       case Error(failure: final f):
-        throw f;
+        throw f.message;
     }
   }
 }

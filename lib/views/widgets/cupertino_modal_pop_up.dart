@@ -7,18 +7,27 @@ class CupertinoModalPopUp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoActionSheet(
-      actions: actions.map((action) {
-        return CupertinoActionSheetAction(
-          onPressed: action.values.first,
-          child: Text(action.keys.first),
-        );
-      }).toList(),
-      cancelButton: CupertinoActionSheetAction(
-        onPressed: () {
-          Navigator.pop(context);
-        },
-        child: const Text("닫기"),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: CupertinoActionSheet(
+        actions: actions.map((action) {
+          return CupertinoActionSheetAction(
+            onPressed: action.values.first,
+            child: Text(
+              action.keys.first,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+          );
+        }).toList(),
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text(
+            "닫기",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
       ),
     );
   }
