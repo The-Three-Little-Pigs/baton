@@ -12,4 +12,6 @@ class Success<S, F extends Failure> extends Result<S, F> {
 class Error<S, F extends Failure> extends Result<S, F> {
   final F failure;
   const Error(this.failure);
+
+  get error => null;
 }
