@@ -1,6 +1,7 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfileTap extends StatelessWidget {
   const ProfileTap({super.key});
@@ -35,7 +36,11 @@ class ProfileTap extends StatelessWidget {
             content: '최근 본 상품',
           ),
           SizedBox(height: 8),
-          MenuListItem(icon: Icons.favorite, content: '관심 상품'),
+          MenuListItem(
+            icon: Icons.favorite,
+            content: '관심 상품',
+            routePath: '/like',
+          ),
         ],
       ),
     );
@@ -127,11 +132,13 @@ class MenuListItem extends StatelessWidget {
   final IconData? icon;
   final String content;
   final String? svgPath;
+  final String? routePath;
   const MenuListItem({
     super.key,
     this.icon,
     required this.content,
     this.svgPath,
+    this.routePath,
   });
 
   @override
@@ -146,7 +153,11 @@ class MenuListItem extends StatelessWidget {
           ),
         ),
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            if (routePath != null) {
+              context.push(routePath!);
+            }
+          },
           borderRadius: BorderRadius.circular(16),
           child: SizedBox(
             height: 64,

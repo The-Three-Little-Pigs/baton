@@ -3,6 +3,7 @@ import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/models/entities/post.dart' show Post;
 import 'package:baton/core/utils/format_currency.dart';
 import 'package:baton/models/mapper/format_time_mapper.dart';
+import 'package:baton/notifier/like/like_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,7 +16,7 @@ class ProductItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
-        _ItemImage(thumbnailUrl: post.thumbnailUrl),
+        _ItemImage(thumbnailUrl: post.thumbnailUrl, post: post),
         const SizedBox(height: 9),
         _ItemInfo(
           title: post.title,
@@ -27,17 +28,20 @@ class ProductItem extends ConsumerWidget {
   }
 }
 
-class _ItemImage extends StatelessWidget {
-  const _ItemImage({this.thumbnailUrl});
+class _ItemImage extends ConsumerWidget {
+  const _ItemImage({this.thumbnailUrl, required this.post});
 
   final String? thumbnailUrl;
+  final Post post;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final appColors = theme.extension<AppColorExtension>();
     final hasThumbNail = thumbnailUrl != null;
+    final likedPosts = ref.watch(likeProvider).value ?? [];
+    final isLiked = likedPosts.any((p) => p.postId == post.postId);
 
     return AspectRatio(
       aspectRatio: 1,
@@ -53,8 +57,13 @@ class _ItemImage extends StatelessWidget {
               top: 8,
               right: 8,
               child: GestureDetector(
-                onTap: () {},
-                child: Icon(Icons.favorite_border, color: colors.primary),
+                onTap: () {
+                  ref.read(likeProvider.notifier).toggleLike(post);
+                },
+                child: Icon(
+                  isLiked ? Icons.favorite : Icons.favorite_border,
+                  color: colors.primary,
+                ),
               ),
             ),
             Center(
