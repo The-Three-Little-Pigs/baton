@@ -56,6 +56,7 @@ class LikeRepositoryImpl implements LikeRepository {
             .collection('posts')
             .where(FieldPath.documentId, whereIn: chunk)
             .get();
+        // TODO: fromJson 오류 확인하기
         likedPosts.addAll(
           postSnapshot.docs.map((doc) => Post.fromJson(doc.data())).toList(),
         );

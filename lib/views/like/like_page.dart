@@ -49,7 +49,6 @@ class LikePage extends ConsumerWidget {
             Expanded(
               child: likeAsyncValue.when(
                 data: (posts) {
-                  print(posts);
                   if (posts.isEmpty) {
                     return Center(child: NoLikeProduct());
                   }

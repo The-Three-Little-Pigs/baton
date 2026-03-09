@@ -6,14 +6,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'like_notifier.g.dart';
 
-@Riverpod(keepAlive: true)
+@riverpod
 LikeRepository likeRepository(Ref ref) {
   return LikeRepositoryImpl();
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class LikeNotifier extends _$LikeNotifier {
-  // TODO authNotifier 활용 권장, 지금은 임시 아이디 삽입
+  // TODO: 수정 필요
   final String currentUserId = "TEMP_USER_ID_123";
 
   @override
