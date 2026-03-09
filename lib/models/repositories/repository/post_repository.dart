@@ -7,5 +7,10 @@ abstract class PostRepository {
   Future<Result<void, Failure>> createPost(Post post);
   Future<Result<void, Failure>> updatePost(Post post);
   Future<Result<void, Failure>> deletePost(Post post);
-  Future<Result<List<Post>, Failure>> getPosts(Set<Category>? category);
+  Future<Result<List<Post>, Failure>> getPosts(
+    Set<Category>? categories,
+    DateTime? lastTime,
+    String? lastPostId,
+  );
+  Future<Result<Post, Failure>> getPostById(String postId);
 }

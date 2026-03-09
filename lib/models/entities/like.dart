@@ -5,7 +5,10 @@ class Like {
   Like({required this.liker, required this.postId});
 
   factory Like.fromJson(Map<String, dynamic> json) {
-    return Like(liker: json['liker'], postId: json['post_id']);
+    return Like(
+      liker: json['liker'] as String,
+      postId: json['post_id'] as String,
+    );
   }
 
   Map<String, dynamic> toJson() {

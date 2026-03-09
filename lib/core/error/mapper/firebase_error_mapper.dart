@@ -41,6 +41,8 @@ class FirebaseErrorMapper {
       case 'network-request-failed':
       case 'unavailable':
         return NetworkFailure("네트워크 연결이 원활하지 않습니다.");
+      case 'failed-precondition':
+        return ServerFailure('쿼리 조건이 올바르지 않습니다. (복합 인덱스 필요)');
       case 'permission-denied':
         return ServerFailure('접근 권한이 없습니다.');
       case 'not-found':

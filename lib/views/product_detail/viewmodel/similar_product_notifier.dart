@@ -18,7 +18,7 @@ class SimilarProductNotifier extends _$SimilarProductNotifier {
     String currentPostId,
   ) async {
     final postRepository = ref.read(postRepositoryProvider);
-    final result = await postRepository.getPosts({category});
+    final result = await postRepository.getPosts({category}, null, null);
 
     switch (result) {
       case Success(value: final posts):
@@ -28,7 +28,7 @@ class SimilarProductNotifier extends _$SimilarProductNotifier {
             .toList();
         return filteredPosts;
       case Error(failure: final f):
-        throw f;
+        throw f.message;
     }
   }
 }

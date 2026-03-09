@@ -1,8 +1,8 @@
 enum MessageType {
-  text('텍스트'),
-  image('이미지');
+  text("텍스트"),
+  image("이미지");
 
-  final String name;
+  final String label;
 
-  const MessageType(this.name);
+  const MessageType(this.label);
 }

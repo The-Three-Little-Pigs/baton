@@ -52,7 +52,7 @@ final class SimilarProductNotifierProvider
 }
 
 String _$similarProductNotifierHash() =>
-    r'b1a422fb82c73eb052660a9b1343a09b63a478be';
+    r'c6852fa62bc4ef6762b8302ffe6500b76a7b5d95';
 
 final class SimilarProductNotifierFamily extends $Family
     with

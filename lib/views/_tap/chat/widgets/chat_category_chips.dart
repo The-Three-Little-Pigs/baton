@@ -17,7 +17,7 @@ class ChatCategoryChips extends StatelessWidget {
         },
         itemBuilder: (context, index) {
           return ChoiceChip(
-            label: Text(ChatStatus.values[index].name),
+            label: Text(ChatStatus.values[index].label),
             selected: false,
             onSelected: (value) {},
             shape: const RoundedRectangleBorder(
