@@ -1,86 +1,92 @@
 import 'package:baton/core/theme/app_color_extension.dart';
+import 'package:baton/core/utils/format_currency.dart';
 import 'package:baton/models/enum/category.dart';
+import 'package:baton/models/mapper/format_time_mapper.dart';
+import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:baton/views/product_detail/widgets/bottom_chat_bar.dart';
 import 'package:baton/views/product_detail/widgets/image_section.dart';
 import 'package:baton/views/product_detail/widgets/other_product.dart';
 import 'package:baton/views/product_detail/widgets/product_detail_info.dart';
 import 'package:baton/views/product_detail/widgets/profile_header.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProductDetailPage extends StatelessWidget {
+class ProductDetailPage extends ConsumerWidget {
   const ProductDetailPage({super.key, required this.postId});
 
   final String postId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final appColors = theme.extension<AppColorExtension>();
 
+    final postAsync = ref.watch(productDetailPageViewModelProvider(postId));
+
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: colors.surface,
-            surfaceTintColor: Colors.transparent,
-            flexibleSpace: const FlexibleSpaceBar(
-              background: ImageSection(
-                imageUrls: [
-                  "https://picsum.photos/160/160",
-                  "https://picsum.photos/160/160",
-                  "https://picsum.photos/160/160",
-                  "https://picsum.photos/160/160",
-                  "https://picsum.photos/160/160",
+      body: postAsync.when(
+        data: (post) => CustomScrollView(
+          slivers: [
+            post.imageUrls.isEmpty
+                ? SliverAppBar(actions: [MoreVerButton()])
+                : SliverAppBar(
+                    expandedHeight: 300,
+                    pinned: true,
+                    elevation: 0,
+                    backgroundColor: colors.surface,
+                    surfaceTintColor: Colors.transparent,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: ImageSection(imageUrls: post.imageUrls),
+                    ),
+                    actions: [MoreVerButton()],
+                  ),
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: ProfileHeader(authorId: post.authorId),
+                  ),
+                  Divider(color: appColors?.divider),
+                  Padding(
+                    padding: EdgeInsets.all(20),
+                    child: ProductDetailInfo(
+                      title: post.title,
+                      purchasePrice: post.purchasePrice == null
+                          ? "0원"
+                          : "${formatCurrency(post.purchasePrice!)}원",
+                      salePrice: post.salePrice == null
+                          ? "나눔"
+                          : "${formatCurrency(post.salePrice!)}원",
+                      category: post.category.label,
+                      createdAt: formatTime(post.createdAt),
+                      content: post.content,
+                      likeCount: post.likeCount,
+                      chatCount: post.chatCount,
+                    ),
+                  ),
+                  Divider(color: appColors?.divider),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      bottom: 20,
+                      top: 10,
+                    ),
+                    child: OtherProduct(
+                      category: Category.fitness,
+                      currentPostId: postId,
+                    ),
+                  ),
                 ],
               ),
             ),
-            actions: [
-              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-            ],
-          ),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  child: ProfileHeader(authorId: '1'),
-                ),
-                Divider(color: appColors?.divider),
-                const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: ProductDetailInfo(
-                    title: 'title',
-                    purchasePrice: 'purchasePrice',
-                    salePrice: 'salePrice',
-                    category: 'category',
-                    createdAt: 'createdAt',
-                    content: 'content',
-                    likeCount: 'likeCount',
-                    chatCount: 'chatCount',
-                  ),
-                ),
-                Divider(color: appColors?.divider),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    bottom: 20,
-                    top: 10,
-                  ),
-                  child: OtherProduct(
-                    category:
-                        Category.fitness, // 임시 카테고리 (이후 상세 페이지 로직에 맞게 변경 필요)
-                    currentPostId: postId,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
+        error: (Object error, StackTrace stackTrace) =>
+            Center(child: Text(error.toString())),
+        loading: () => Center(child: CircularProgressIndicator()),
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
@@ -88,6 +94,20 @@ class ProductDetailPage extends StatelessWidget {
           child: BottomChatBar(),
         ),
       ),
+    );
+  }
+}
+
+class MoreVerButton extends StatelessWidget {
+  const MoreVerButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.more_vert),
+      onPressed: () {
+        // showCupertinoModalPopup(context: context, builder: CupertinoModalPopUp(actions: [[a,a]]))
+      },
     );
   }
 }

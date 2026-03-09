@@ -5,7 +5,7 @@ enum ChatStatus {
   reserved('예약'),
   completed('완료');
 
-  final String name;
+  final String label;
 
-  const ChatStatus(this.name);
+  const ChatStatus(this.label);
 }

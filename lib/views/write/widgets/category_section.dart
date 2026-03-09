@@ -28,8 +28,8 @@ class CategorySelectButton extends ConsumerWidget {
     final categoryState = ref.watch(categoryProvider);
 
     String label = "카테고리를 선택해주세요.";
-    if (categoryState is CategorySelected) {
-      label = categoryState.category.displayName;
+    if (categoryState != null) {
+      label = categoryState.label;
     }
 
     return GestureDetector(
@@ -79,63 +79,65 @@ class CategoryBottomSheet extends ConsumerWidget {
     final onSelected = ref.read(categoryProvider.notifier).setCategory;
 
     return Container(
+      width: MediaQuery.of(context).size.height / 2,
       padding: const EdgeInsets.fromLTRB(20.5, 20.5, 20.5, 0),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: 20),
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Row(
-            children: [
-              const Text(
-                "카테고리",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
               ),
-              const Spacer(),
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.close,
-                  size: 24,
-                  color: Color(0xFF191919),
+            ),
+            Row(
+              children: [
+                const Text(
+                  "카테고리",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.close,
+                    size: 24,
+                    color: Color(0xFF191919),
+                  ),
+                ),
+              ],
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(bottom: 20.5),
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: Category.values.map((cat) {
+                    final isSelected = categoryState == cat;
+
+                    return ChipButton(
+                      label: cat.label,
+                      isSelected: isSelected,
+                      onSelected: (value) {
+                        onSelected(cat);
+                        Navigator.pop(context);
+                      },
+                    );
+                  }).toList(),
                 ),
               ),
-            ],
-          ),
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 20.5),
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: Category.values.map((cat) {
-                  final isSelected =
-                      categoryState is CategorySelected &&
-                      categoryState.category == cat;
-                  return ChipButton(
-                    label: cat.displayName,
-                    isSelected: isSelected,
-                    onSelected: (value) {
-                      onSelected(cat);
-                      Navigator.pop(context);
-                    },
-                  );
-                }).toList(),
-              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

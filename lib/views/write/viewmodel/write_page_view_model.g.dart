@@ -34,7 +34,7 @@ final class WritePageViewModelProvider
 }
 
 String _$writePageViewModelHash() =>
-    r'a8d0e4300b119decd9f61ae1801d7c2b5b6d5a72';
+    r'3717a84b6cb3136d9fb523a017dc65a9452519a7';
 
 abstract class _$WritePageViewModel extends $AsyncNotifier<void> {
   FutureOr<void> build();

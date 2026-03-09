@@ -41,7 +41,7 @@ final class ContentNotifierProvider
   }
 }
 
-String _$contentNotifierHash() => r'f7598595ae467976221e5b2e1851b8861ec6f40c';
+String _$contentNotifierHash() => r'e9ca4971ed6631fad5966ccbc52340a0992ed42a';
 
 abstract class _$ContentNotifier extends $Notifier<ContentState> {
   ContentState build();

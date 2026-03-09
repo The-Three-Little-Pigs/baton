@@ -12,6 +12,14 @@ class ContentState {
     required this.content,
     required this.contentLength,
   });
+
+  ContentState copyWith({String? title, String? content, int? contentLength}) {
+    return ContentState(
+      title: title ?? this.title,
+      content: content ?? this.content,
+      contentLength: contentLength ?? this.contentLength,
+    );
+  }
 }
 
 @riverpod
@@ -22,18 +30,10 @@ class ContentNotifier extends _$ContentNotifier {
   }
 
   void setTitle(String title) {
-    state = ContentState(
-      title: title,
-      content: state.content,
-      contentLength: state.contentLength,
-    );
+    state = state.copyWith(title: title);
   }
 
   void setContent(String content) {
-    state = ContentState(
-      title: state.title,
-      content: content,
-      contentLength: content.length,
-    );
+    state = state.copyWith(content: content, contentLength: content.length);
   }
 }

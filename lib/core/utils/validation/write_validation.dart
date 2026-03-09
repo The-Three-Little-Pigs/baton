@@ -1,4 +1,4 @@
-import 'package:baton/views/write/viewmodel/category_notifier.dart';
+import 'package:baton/models/enum/category.dart';
 
 class WriteValidation {
   static String? validateTitle(String? value) {
@@ -24,8 +24,8 @@ class WriteValidation {
     return null;
   }
 
-  static String? validateCategory(CategoryState state) {
-    if (state is CategoryInitial) {
+  static String? validateCategory(Category? category) {
+    if (category == null) {
       return '카테고리를 선택해 주세요.';
     }
     return null;
@@ -36,7 +36,7 @@ class WriteValidation {
       return '가격을 입력해 주세요. (0원 가능)';
     }
 
-    final price = value.toInt();
+    final price = value;
     if (price < 0) {
       return '가격은 0원 이상이어야 합니다.';
     }
