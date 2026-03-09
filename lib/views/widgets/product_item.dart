@@ -2,10 +2,14 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/models/entities/post.dart' show Post;
 import 'package:baton/core/utils/format_currency.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/mapper/format_time_mapper.dart';
 import 'package:baton/notifier/like/like_notifier.dart';
+import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductItem extends ConsumerWidget {
   const ProductItem({super.key, required this.post});
@@ -16,7 +20,7 @@ class ProductItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
-        _ItemImage(thumbnailUrl: post.thumbnailUrl, post: post),
+        _ItemImage(post: post),
         const SizedBox(height: 9),
         _ItemInfo(
           title: post.title,
@@ -28,10 +32,9 @@ class ProductItem extends ConsumerWidget {
   }
 }
 
-class _ItemImage extends ConsumerWidget {
-  const _ItemImage({this.thumbnailUrl, required this.post});
+class _ItemImage extends StatelessWidget {
+  const _ItemImage({required this.post});
 
-  final String? thumbnailUrl;
   final Post post;
 
   @override
@@ -39,55 +42,60 @@ class _ItemImage extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final appColors = theme.extension<AppColorExtension>();
-    final hasThumbNail = thumbnailUrl != null;
     final likedPosts = ref.watch(likeProvider).value ?? [];
     final isLiked = likedPosts.any((p) => p.postId == post.postId);
 
-    return AspectRatio(
-      aspectRatio: 1,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            hasThumbNail
-                ? Image.network(thumbnailUrl!, fit: BoxFit.cover)
-                : Center(child: Icon(Icons.image)),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: GestureDetector(
-                onTap: () {
-                  ref.read(likeProvider.notifier).toggleLike(post);
-                },
-                child: Icon(
-                  isLiked ? Icons.favorite : Icons.favorite_border,
-                  color: colors.primary,
+    return GestureDetector(
+      onTap: () {
+        context.pushNamed(
+          'productDetail',
+          pathParameters: {'postId': post.postId},
+        );
+      },
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              post.imageUrls.first != null
+                  ? Image.network(post.imageUrls.first, fit: BoxFit.cover)
+                  : Center(child: Icon(Icons.image)),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: () {
+                    // TODO : 좋아요 추가 로직
+                  },
+                  child: Icon(Icons.favorite_border, color: colors.primary),
                 ),
               ),
-            ),
-            Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  // ignore: deprecated_member_use
-                  color: colors.surface.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "약속 중",
-                  style: TextStyle(
-                    color: appColors?.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              Center(
+                child: post.status == ProductStatus.available
+                    ? const SizedBox.shrink()
+                    : Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.surface.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          post.status.label,
+                          style: TextStyle(
+                            color: appColors?.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -103,7 +111,7 @@ class _ItemInfo extends StatelessWidget {
 
   final String title;
   final String date;
-  final double price;
+  final int? price;
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +141,23 @@ class _ItemInfo extends StatelessWidget {
                   ),
                 ),
               ),
-              const Icon(Icons.more_vert, size: 20),
+              GestureDetector(
+                onTap: () async {
+                  showCupertinoModalPopup(
+                    context: context,
+                    builder: (context) => CupertinoModalPopUp(
+                      actions: [
+                        {
+                          '신고하기': () {
+                            context.pop();
+                          },
+                        },
+                      ],
+                    ),
+                  );
+                },
+                child: const Icon(Icons.more_vert, size: 20),
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -141,7 +165,7 @@ class _ItemInfo extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${formatCurrency(price)}원',
+                price == null ? '나눔' : '${formatCurrency(price!)}원',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

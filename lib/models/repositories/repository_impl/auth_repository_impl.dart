@@ -3,6 +3,7 @@ import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/repositories/repository/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart' hide User;
 
@@ -57,4 +58,23 @@ class AuthRepositoryImpl implements AuthRepository {
       return Error(FirebaseErrorMapper.toFailure(e));
     }
   }
+
+  @override
+  Future<Result<void, Failure>> signOut() async {
+    try {
+      await _auth.signOut();
+      if (await _googleSignIn.isSignedIn()) {
+        await _googleSignIn.signOut();
+      }
+      return Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('처리 중 예기치 못한 오류가 발생했습니다.'));
+    }
+  }
 }
+
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepositoryImpl();
+});

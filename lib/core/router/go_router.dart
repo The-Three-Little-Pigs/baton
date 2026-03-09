@@ -6,9 +6,11 @@ import 'package:baton/views/like/like_page.dart';
 import 'package:baton/views/login/login_page.dart';
 import 'package:baton/views/product_detail/product_detail_page.dart';
 import 'package:baton/views/sign_up/sign_up_page.dart';
-import 'package:baton/views/sign_up_profile_page/sign_up_profile_page.dart';
+import 'package:baton/views/sign_up_profile_page/widgets/sign_up_profile_page.dart';
 import 'package:baton/views/widgets/main_scaffold.dart';
 import 'package:baton/views/write/write_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,8 +18,9 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/home',
-  // initialLocation: '/like',
+  initialLocation: FirebaseAuth.instance.currentUser != null ? '/home' : '/',
+
+  // initialLocation: '/chat/chatDetail',
   routes: [
     GoRoute(
       path: '/',
@@ -98,4 +101,19 @@ final router = GoRouter(
       builder: (context, state) => const WritePage(),
     ),
   ],
+  redirect: (context, state) {
+    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
+    final isLoggingIn = state.matchedLocation == '/';
+    final isSigningUp =
+        state.matchedLocation == '/signUp' ||
+        state.matchedLocation == '/signUpProfile';
+
+    // 로그인 안 됐는데 홈으로 가려 하면 로그인 페이지로 이동
+    if (!isLoggedIn && !isLoggingIn && !isSigningUp) return '/';
+
+    // 로그인 됐는데 로그인 페이지나 회원가입 페이지로 가려 하면 홈으로 이동
+    if (isLoggedIn && (isLoggingIn || isSigningUp)) return '/home';
+
+    return null;
+  },
 );

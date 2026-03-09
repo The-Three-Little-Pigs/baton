@@ -11,6 +11,7 @@ class User {
     required this.nickname,
     required this.score,
     this.fcmToken,
+    String? profileImageUrl,
   });
   factory User.fromJson(Map<String, dynamic> json) {
     return User(

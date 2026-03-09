@@ -1,9 +1,12 @@
+import 'package:baton/models/enum/chat_status.dart';
+
 class ChatRoom {
   final List<String> participants;
   final Map<String, int> unReadCount;
   final DateTime updatedAt;
   final String postId;
   final String lastMessage;
+  final ChatStatus status;
 
   ChatRoom({
     required this.participants,
@@ -11,15 +14,17 @@ class ChatRoom {
     required this.updatedAt,
     required this.postId,
     required this.lastMessage,
+    required this.status,
   });
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) {
     return ChatRoom(
-      participants: json['participants'],
-      unReadCount: json['unReadCount'],
-      updatedAt: json['updatedAt'],
-      postId: json['postId'],
-      lastMessage: json['lastMessage'],
+      participants: json['participants'] as List<String>,
+      unReadCount: json['unReadCount'] as Map<String, int>,
+      updatedAt: json['updatedAt'] as DateTime,
+      postId: json['postId'] as String,
+      lastMessage: json['lastMessage'] as String,
+      status: ChatStatus.values.firstWhere((e) => e.label == json['status']),
     );
   }
 
@@ -30,6 +35,7 @@ class ChatRoom {
       'updatedAt': updatedAt,
       'postId': postId,
       'lastMessage': lastMessage,
+      'status': status.label,
     };
   }
 
@@ -39,6 +45,7 @@ class ChatRoom {
     DateTime? updatedAt,
     String? postId,
     String? lastMessage,
+    ChatStatus? status,
   }) {
     return ChatRoom(
       participants: participants ?? this.participants,
@@ -46,6 +53,7 @@ class ChatRoom {
       updatedAt: updatedAt ?? this.updatedAt,
       postId: postId ?? this.postId,
       lastMessage: lastMessage ?? this.lastMessage,
+      status: status ?? this.status,
     );
   }
 }

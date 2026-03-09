@@ -15,10 +15,10 @@ class Message {
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      senderId: json['sender_id'],
-      content: json['content'],
-      type: json['type'],
-      createdAt: json['created_at'],
+      senderId: json['sender_id'] as String,
+      content: json['content'] as String,
+      type: MessageType.values.firstWhere((e) => e.label == json['type']),
+      createdAt: json['created_at'] as DateTime,
     );
   }
 
@@ -26,7 +26,7 @@ class Message {
     return {
       'sender_id': senderId,
       'content': content,
-      'type': type,
+      'type': type.label,
       'created_at': createdAt,
     };
   }

@@ -1,11 +1,8 @@
 /// 시간을 포맷팅하는 함수
-String formatTime(String time) {
-  if (time.isEmpty) return '';
-
+String formatTime(DateTime time) {
   try {
-    final date = DateTime.parse(time);
     final now = DateTime.now();
-    final diff = now.difference(date);
+    final diff = now.difference(time);
 
     if (diff.inSeconds < 60) {
       return '방금 전';
@@ -16,9 +13,9 @@ String formatTime(String time) {
     } else if (diff.inDays < 7) {
       return '${diff.inDays}일 전';
     } else {
-      return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
+      return '${time.year}.${time.month.toString().padLeft(2, '0')}.${time.day.toString().padLeft(2, '0')}';
     }
   } catch (e) {
-    return ''; // Parsing failed, return empty or default string
+    return '';
   }
 }
