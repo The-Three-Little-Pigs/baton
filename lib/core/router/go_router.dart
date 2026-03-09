@@ -2,6 +2,7 @@ import 'package:baton/views/_tap/chat/chat_tap.dart';
 import 'package:baton/views/_tap/home/home_tap.dart';
 import 'package:baton/views/_tap/profile/profile_tap.dart';
 import 'package:baton/views/chat_detail/chat_detail_page.dart';
+import 'package:baton/views/like/like_page.dart';
 import 'package:baton/views/login/login_page.dart';
 import 'package:baton/views/product_detail/product_detail_page.dart';
 import 'package:baton/views/sign_up/sign_up_page.dart';
@@ -16,7 +17,7 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   // initialLocation: '/',
-  initialLocation: '/chat/chatDetail',
+  initialLocation: '/like',
   routes: [
     GoRoute(
       path: '/',
@@ -32,6 +33,11 @@ final router = GoRouter(
       path: '/signUpProfile',
       name: 'signUpProfile',
       builder: (context, state) => const SignUpProfilePage(),
+    ),
+    GoRoute(
+      path: '/like',
+      name: 'like',
+      builder: (context, state) => const LikePage(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
