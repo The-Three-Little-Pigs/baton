@@ -92,7 +92,7 @@ class WritePageViewModel extends _$WritePageViewModel {
     switch (result) {
       case Success():
         state = const AsyncData(null);
-        return null;
+        return "success";
       case Error(failure: final f):
         state = AsyncError(f, StackTrace.current);
         return f.message;

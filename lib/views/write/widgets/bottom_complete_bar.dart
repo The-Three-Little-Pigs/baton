@@ -49,7 +49,7 @@ class BottomCompleteBar extends ConsumerWidget {
                   .read(writePageViewModelProvider.notifier)
                   .createPost();
 
-              if (result == null) {
+              if (result == "success") {
                 if (context.mounted) context.pop();
               }
             },
