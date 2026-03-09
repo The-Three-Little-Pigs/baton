@@ -13,7 +13,6 @@ class BottomCompleteBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLoading = ref.watch(writePageViewModelProvider).isLoading;
     final content = ref.watch(contentProvider);
     final category = ref.watch(categoryProvider);
     final sale = ref.watch(saleProvider);
@@ -29,7 +28,6 @@ class BottomCompleteBar extends ConsumerWidget {
         Expanded(
           child: CompleteButton(
             label: "작성 완료",
-            isLoading: isLoading,
             condition: condition,
             onPressed: () async {
               final errorMessage = ref
@@ -37,7 +35,6 @@ class BottomCompleteBar extends ConsumerWidget {
                   .validate();
 
               if (errorMessage != null) {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(errorMessage),
@@ -46,24 +43,15 @@ class BottomCompleteBar extends ConsumerWidget {
                 );
                 return;
               }
+              FocusScope.of(context).unfocus();
+
               final result = await ref
                   .read(writePageViewModelProvider.notifier)
                   .createPost();
 
-              if (result != null) {
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(result),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-                return;
+              if (result == null) {
+                if (context.mounted) context.pop();
               }
-
-              if (!context.mounted) return;
-              context.go('/home');
             },
           ),
         ),

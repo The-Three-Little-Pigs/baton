@@ -15,7 +15,7 @@ class AppColors {
   static const Color surface = Color(0xFFFCFDFF);
   static const Color surfaceVariant = Color(0xFFE7ECF4);
   static const Color outline = Color(0xFF1A1A1A);
-  static const Color divider = Color(0xFFF2F2F2);
+  static const Color divider = Color(0xFFCDD8E6);
 
   // Text Colors
   static const Color textPrimary = Color(0xFF1A1A1A);

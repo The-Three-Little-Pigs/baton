@@ -1,5 +1,6 @@
 import 'package:baton/models/enum/category.dart';
 import 'package:baton/models/enum/product_status.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Post {
   final String postId;
@@ -40,10 +41,10 @@ class Post {
       content: json['content'] as String,
       likeCount: json['like_count'] as int,
       chatCount: json['chat_count'] as int,
-      category: Category.values.firstWhere((e) => e.name == json['category']),
+      category: Category.values.firstWhere((e) => e.label == json['category']),
       authorId: json['author_id'] as String,
-      createdAt: json['created_at'] as DateTime,
-      status: ProductStatus.values.firstWhere((e) => e.name == json['status']),
+      createdAt: (json['created_at'] as Timestamp).toDate(),
+      status: ProductStatus.values.firstWhere((e) => e.label == json['status']),
     );
   }
 
@@ -57,10 +58,10 @@ class Post {
       'content': content,
       'like_count': likeCount,
       'chat_count': chatCount,
-      'category': category.name,
+      'category': category.label,
       'author_id': authorId,
       'created_at': createdAt,
-      'status': status.name,
+      'status': status.label,
     };
   }
 

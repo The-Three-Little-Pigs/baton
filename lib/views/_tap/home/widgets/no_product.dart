@@ -1,4 +1,6 @@
+import 'package:baton/core/theme/app_tokens/app_spacing.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class NoProduct extends StatelessWidget {
   const NoProduct({super.key});
@@ -8,13 +10,8 @@ class NoProduct extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          child: Icon(Icons.priority_high, size: 30),
-        ),
+        SvgPicture.asset('assets/icons/exclamation.svg', width: 30, height: 30),
+        AppSpacing.h8,
         Text("등록된 상품이 없어요."),
         Text("다른 카테고리를 확인해보세요."),
       ],

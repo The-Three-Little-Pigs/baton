@@ -3,7 +3,7 @@ enum ProductStatus {
   sold("판매완료"),
   reserved("예약중");
 
-  final String name;
+  final String label;
 
-  const ProductStatus(this.name);
+  const ProductStatus(this.label);
 }

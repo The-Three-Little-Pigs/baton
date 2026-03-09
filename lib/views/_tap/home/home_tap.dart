@@ -19,81 +19,85 @@ class HomeTap extends ConsumerWidget {
         title: const Text("Home"),
         actions: [const Icon(Icons.notifications)],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          spacing: 10,
-          children: [
-            Row(
-              children: [
-                CategorySelectButton(),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 8,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(homeTapViewModelProvider.notifier).refresh();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            spacing: 10,
+            children: [
+              Row(
+                children: [
+                  CategorySelectButton(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 8,
+                      ),
+                      child: CategoryChips(),
                     ),
-                    child: CategoryChips(),
                   ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: postAsyncValue.when(
-                data: (posts) {
-                  if (posts.isEmpty) {
-                    return Center(child: const NoProduct());
-                  }
-
-                  return GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          childAspectRatio: 0.7,
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 20,
-                          crossAxisSpacing: 20,
-                        ),
-                    itemBuilder: (context, index) {
-                      return NotificationListener<ScrollNotification>(
-                        onNotification: (notification) {
-                          if (notification.metrics.pixels >=
-                              notification.metrics.maxScrollExtent * 0.8) {
-                            ref
-                                .read(homeTapViewModelProvider.notifier)
-                                .fetchPosts();
-                          }
-                          return false;
-                        },
-                        child: ProductItem(post: posts[index]),
-                      );
-                    },
-                    itemCount: posts.length,
-                  );
-                },
-                error: (error, stackTrace) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(error.toString()),
-                        ElevatedButton(
-                          onPressed: () {
-                            ref
-                                .read(homeTapViewModelProvider.notifier)
-                                .refresh();
-                          },
-                          child: Text("재시도"),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                loading: () {
-                  return const Center(child: CircularProgressIndicator());
-                },
+                ],
               ),
-            ),
-          ],
+              Expanded(
+                child: postAsyncValue.when(
+                  data: (posts) {
+                    if (posts.isEmpty) {
+                      return Center(child: const NoProduct());
+                    }
+                    return GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            childAspectRatio: 0.7,
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 20,
+                            crossAxisSpacing: 20,
+                          ),
+                      itemBuilder: (context, index) {
+                        return NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            if (notification.metrics.pixels >=
+                                notification.metrics.maxScrollExtent * 0.8) {
+                              ref
+                                  .read(homeTapViewModelProvider.notifier)
+                                  .fetchPosts();
+                            }
+                            return false;
+                          },
+                          child: ProductItem(post: posts[index]),
+                        );
+                      },
+                      itemCount: posts.length,
+                    );
+                  },
+                  error: (error, stackTrace) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(error.toString()),
+                          ElevatedButton(
+                            onPressed: () {
+                              ref
+                                  .read(homeTapViewModelProvider.notifier)
+                                  .refresh();
+                            },
+                            child: Text("재시도"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  loading: () {
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: Padding(
@@ -103,8 +107,11 @@ class HomeTap extends ConsumerWidget {
           height: 40,
           child: FloatingActionButton.extended(
             icon: const Icon(Icons.add, size: 16),
-            onPressed: () {
-              context.pushNamed('write');
+            onPressed: () async {
+              final result = await context.pushNamed('write');
+              if (result == null) {
+                ref.read(homeTapViewModelProvider.notifier).refresh();
+              }
             },
             label: const Text("상품 등록"),
           ),

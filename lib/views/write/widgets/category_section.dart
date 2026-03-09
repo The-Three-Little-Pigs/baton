@@ -29,7 +29,7 @@ class CategorySelectButton extends ConsumerWidget {
 
     String label = "카테고리를 선택해주세요.";
     if (categoryState != null) {
-      label = categoryState.name;
+      label = categoryState.label;
     }
 
     return GestureDetector(
@@ -125,7 +125,7 @@ class CategoryBottomSheet extends ConsumerWidget {
                     final isSelected = categoryState == cat;
 
                     return ChipButton(
-                      label: cat.name,
+                      label: cat.label,
                       isSelected: isSelected,
                       onSelected: (value) {
                         onSelected(cat);

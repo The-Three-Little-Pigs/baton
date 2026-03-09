@@ -17,7 +17,7 @@ class Message {
     return Message(
       senderId: json['sender_id'] as String,
       content: json['content'] as String,
-      type: MessageType.values.firstWhere((e) => e.name == json['type']),
+      type: MessageType.values.firstWhere((e) => e.label == json['type']),
       createdAt: json['created_at'] as DateTime,
     );
   }
@@ -26,7 +26,7 @@ class Message {
     return {
       'sender_id': senderId,
       'content': content,
-      'type': type.name,
+      'type': type.label,
       'created_at': createdAt,
     };
   }

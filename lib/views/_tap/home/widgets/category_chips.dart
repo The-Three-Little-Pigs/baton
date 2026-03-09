@@ -19,7 +19,7 @@ class CategoryChips extends ConsumerWidget {
           final category = Category.values[index];
           final isSelected = categories.contains(category);
           return CategoryChip(
-            label: category.name,
+            label: category.label,
             isSelected: isSelected,
             category: category,
             onSelected: (selectedCategory) {

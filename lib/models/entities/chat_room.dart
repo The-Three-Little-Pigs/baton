@@ -24,7 +24,7 @@ class ChatRoom {
       updatedAt: json['updatedAt'] as DateTime,
       postId: json['postId'] as String,
       lastMessage: json['lastMessage'] as String,
-      status: ChatStatus.values.firstWhere((e) => e.name == json['status']),
+      status: ChatStatus.values.firstWhere((e) => e.label == json['status']),
     );
   }
 
@@ -35,7 +35,7 @@ class ChatRoom {
       'updatedAt': updatedAt,
       'postId': postId,
       'lastMessage': lastMessage,
-      'status': status.name,
+      'status': status.label,
     };
   }
 

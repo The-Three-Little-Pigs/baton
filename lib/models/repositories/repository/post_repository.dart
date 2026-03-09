@@ -8,8 +8,9 @@ abstract class PostRepository {
   Future<Result<void, Failure>> updatePost(Post post);
   Future<Result<void, Failure>> deletePost(Post post);
   Future<Result<List<Post>, Failure>> getPosts(
-    Set<Category>? category,
+    Set<Category>? categories,
     DateTime? lastTime,
     String? lastPostId,
   );
+  Future<Result<Post, Failure>> getPostById(String postId);
 }

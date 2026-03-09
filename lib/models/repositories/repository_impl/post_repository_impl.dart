@@ -45,10 +45,12 @@ class PostRepositoryImpl implements PostRepository {
   ) async {
     try {
       if (categories != null && categories.isNotEmpty) {
+        final categoryNames = categories.map((c) => c.label).toList();
+
         final snapshot = await _firestore
             .collection('posts')
-            .where('category', arrayContainsAny: categories)
-            .orderBy('createdAt', descending: true)
+            .where('category', whereIn: categoryNames)
+            .orderBy('created_at', descending: true)
             .limit(20)
             .get();
 
@@ -61,7 +63,7 @@ class PostRepositoryImpl implements PostRepository {
 
       final snapshot = await _firestore
           .collection('posts')
-          .orderBy('createdAt', descending: true)
+          .orderBy('created_at', descending: true)
           .limit(20)
           .get();
 
@@ -72,6 +74,8 @@ class PostRepositoryImpl implements PostRepository {
       return Success(posts);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('데이터를 불러오는 중 오류가 발생했습니다: $e'));
     }
   }
 
@@ -82,6 +86,23 @@ class PostRepositoryImpl implements PostRepository {
       await docRef.update(post.toJson());
 
       return Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    }
+  }
+
+  @override
+  Future<Result<Post, Failure>> getPostById(String postId) async {
+    try {
+      final docRef = _firestore.collection('posts').doc(postId);
+      final doc = await docRef.get();
+
+      if (!doc.exists) {
+        return Error(ServerFailure('Post not found'));
+      }
+
+      final post = Post.fromJson(doc.data()!);
+      return Success(post);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
     }
