@@ -1,9 +1,25 @@
 import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:flutter/material.dart';
 
-class AppointmentBottomSheet extends StatelessWidget {
+class AppointmentBottomSheet extends StatefulWidget {
   const AppointmentBottomSheet({super.key});
 
+  @override
+  State<AppointmentBottomSheet> createState() => _AppointmentBottomSheetState();
+
+  static void showAppointmentDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return AppointmentBottomSheet();
+      },
+    );
+  }
+}
+
+class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -23,10 +39,31 @@ class AppointmentBottomSheet extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(left: 28, right: 32),
-            child: SectionWrapper(
-              title: '날짜',
-              onReset: () {},
-              child: Container(),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Text(
+                    '날짜',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  '초기화',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppColorExtension>()?.textTertiary,
+                  ),
+                ),
+              ],
             ),
           ),
           SizedBox(height: 4),
@@ -243,19 +280,9 @@ class AppointmentBottomSheet extends StatelessWidget {
       ),
     );
   }
-
-  static void showAppointmentDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return AppointmentBottomSheet();
-      },
-    );
-  }
 }
 
+// 사용 안하고 있음
 class SectionWrapper extends StatelessWidget {
   final String title;
   final VoidCallback? onReset;
