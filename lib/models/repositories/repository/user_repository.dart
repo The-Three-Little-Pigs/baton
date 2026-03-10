@@ -14,4 +14,8 @@ abstract class UserRepository {
     String uid,
     File imageFile,
   );
+  Future<Result<void, Failure>> deleteUserData(String uid);
+  Future<Result<void, Failure>> withdrawAccount();
+  
+  
 }

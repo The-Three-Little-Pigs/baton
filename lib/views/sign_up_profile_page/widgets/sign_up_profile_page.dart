@@ -1,9 +1,9 @@
 import 'package:baton/core/theme/app_color_extension.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:baton/views/sign_up_profile_page/viewmodel/sign_up_profile_notifier.dart';
-import 'package:baton/notifier/user/providers/user_provider.dart';
 import 'package:go_router/go_router.dart';
 
 // 닉네임을 저장하고 있는 프로바이더를 임포트해야 합니다.
@@ -18,7 +18,7 @@ class SignUpProfilePage extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final appColors = theme.extension<AppColorExtension>();
-    final nickname = (ref.watch(userProvider) ?? '').toString();
+    final nickname = ref.watch(userProvider).value?.nickname ?? '';
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     final signUpState = ref.watch(signUpProfileProvider);
@@ -169,7 +169,6 @@ class SignUpProfilePage extends ConsumerWidget {
                           nickname: nickname,
                         );
                         if (success && context.mounted) {
-                          // '/'가 아니라 실제 메인 화면인 '/home'으로 가야 합니다.
                           context.go('/home');
                         }
                       },
