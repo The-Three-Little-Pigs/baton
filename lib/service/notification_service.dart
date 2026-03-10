@@ -105,6 +105,7 @@ class NotificationService {
           'Baton 주요 알림',
           importance: Importance.max,
           priority: Priority.high,
+          showWhen: true,
         ),
       ),
     );
