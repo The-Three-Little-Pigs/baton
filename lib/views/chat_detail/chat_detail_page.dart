@@ -63,20 +63,8 @@ class ChatDetailPage extends ConsumerWidget {
       body: Column(
         children: [
           ChatProductBanner(),
+
           // TODO: 리스트뷰 안에 넣어서 특정날짜 되면 띄우기
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Center(
-              child: Text(
-                '2026년 3월 3일',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textTertiary,
-                ),
-              ),
-            ),
-          ),
           ChatMessageList(roomId: roomId),
           AppointmentButton(),
           Padding(

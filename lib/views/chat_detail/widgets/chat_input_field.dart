@@ -17,6 +17,7 @@ class ChatInputField extends ConsumerStatefulWidget {
 class _ChatInputFieldState extends ConsumerState<ChatInputField> {
   // 텍스트를 감지하고 조작하기 위한 컨트롤러
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   bool _hasText = false; // 👈 1. 텍스트가 있는지 여부를 저장하는 상태 변수
 
   @override
@@ -33,6 +34,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
   @override
   void dispose() {
     _controller.dispose(); // 메모리 누수 방지
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -52,6 +54,8 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
 
     // 3. 현재 텍스트 입력창 비우기
     _controller.clear();
+
+    _focusNode.requestFocus();
 
     // 4. 이 채팅방이 파이어스토어에 이미(hasRoom) 존재하는지 확인
     final chatroomState = ref.read(chatRoomStreamProvider(widget.roomId));
@@ -94,7 +98,11 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
           Expanded(
             child: TextField(
               controller: _controller, // 컨트롤러 연결
-              onSubmitted: (_) => _sendMessage(), // 엔터키를 눌렀을 때 전송
+              focusNode: _focusNode,
+              textInputAction:
+                  TextInputAction.newline, // 👈 1. 키보드의 엔터키를 '줄바꿈' 용도로 변경
+              keyboardType: TextInputType.multiline, // 👈 2. 여러 줄 입력 모드 활성화
+              maxLines: null, // 👈 3. 텍스트가 길어지면 입력창이 위아래로 자동으로 늘어남
               decoration: const InputDecoration(
                 hintText: '메시지를 입력하세요', // 힌트 텍스트 추가
                 border: InputBorder.none,

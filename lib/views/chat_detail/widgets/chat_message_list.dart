@@ -31,12 +31,76 @@ class ChatMessageList extends ConsumerWidget {
               final msg = model.message;
               final isReadByTarget = model.isReadByTarget;
               final isMyMessage = msg.senderId == myUserId;
-              return _ChatBubble(
-                content: msg.content,
-                isMyMessage: isMyMessage,
-                isReadByTarget: isReadByTarget,
-                createdAt: msg.createdAt,
-                isPending: msg.isPending,
+              final nextVisualMsg = index > 0
+                  ? uiMessages[index - 1].message
+                  : null;
+              double bottomMargin = 8.0;
+              bool showTime = true; // 기본값: 시간표시
+              bool showReadStatus = true; // 기본값: 읽음표시
+              // 메세제 주체별 간격조정
+              if (nextVisualMsg != null) {
+                if (msg.senderId != nextVisualMsg.senderId) {
+                  bottomMargin = 18.0;
+                } else {
+                  bool isSameMinute =
+                      msg.createdAt.year == nextVisualMsg.createdAt.year &&
+                      msg.createdAt.month == nextVisualMsg.createdAt.month &&
+                      msg.createdAt.day == nextVisualMsg.createdAt.day &&
+                      msg.createdAt.hour == nextVisualMsg.createdAt.hour &&
+                      msg.createdAt.minute == nextVisualMsg.createdAt.minute;
+
+                  if (isSameMinute) {
+                    showTime = false;
+                    if (isReadByTarget &&
+                        uiMessages[index - 1].isReadByTarget) {
+                      showReadStatus = false;
+                    }
+                  }
+                }
+              }
+              // 날짜구분
+              bool showDateDivider = false;
+              if (index == uiMessages.length - 1) {
+                showDateDivider = true;
+              } else {
+                final previousMsg = uiMessages[index + 1].message;
+                if (msg.createdAt.year != previousMsg.createdAt.year ||
+                    msg.createdAt.month != previousMsg.createdAt.month ||
+                    msg.createdAt.day != previousMsg.createdAt.day) {
+                  showDateDivider = true;
+                }
+              }
+
+              return Column(
+                children: [
+                  if (showDateDivider)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: Text(
+                          DateFormat(
+                            'yyyy년 MM월 dd일',
+                            'ko_KR',
+                          ).format(msg.createdAt),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  _ChatBubble(
+                    content: msg.content,
+                    isMyMessage: isMyMessage,
+                    isReadByTarget: isReadByTarget,
+                    createdAt: msg.createdAt,
+                    isPending: msg.isPending,
+                    bottomMargin: bottomMargin,
+                    showTime: showTime,
+                    showReadStatus: showReadStatus,
+                  ),
+                ],
               );
             },
           );
@@ -58,79 +122,111 @@ class _ChatBubble extends StatelessWidget {
   final bool isMyMessage;
   final bool isReadByTarget;
   final bool isPending;
+  final double bottomMargin; // 👈 추가된 부분
+  final bool showTime;
+  final bool showReadStatus;
+
   const _ChatBubble({
     required this.content,
     required this.createdAt,
     required this.isMyMessage,
     required this.isReadByTarget,
     required this.isPending,
+    required this.bottomMargin, // 👈 추가된 부분
+    this.showTime = true,
+    this.showReadStatus = true,
   });
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      // 내가 보낸 건 오른쪽, 남이 보낸 건 왼쪽 정렬
-      mainAxisAlignment: isMyMessage
-          ? MainAxisAlignment.end
-          : MainAxisAlignment.start,
-      children: [
-        // 내가 보낸 메시지일 때만 왼쪽에 시간/읽음표시 출력
-        if (isMyMessage)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                isReadByTarget ? '읽음' : '안읽음',
+    return Padding(
+      // Row 전체의 하단 여백을 동적으로 조절 (연속=8, 교차=18)
+      padding: EdgeInsets.only(bottom: bottomMargin),
+      child: Row(
+        mainAxisAlignment: isMyMessage
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        // 시간을 버블 아래쪽에 맞추기 위해 crossAxisAlignment 조정
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // 상대방 메시지일 때: 왼쪽 가장자리 여백 20
+          if (!isMyMessage) const SizedBox(width: 20),
+
+          // 내 메시지일 때: 시간 / 읽음표시 영역 (왼쪽)
+          if (isMyMessage)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (showReadStatus)
+                  Text(
+                    isReadByTarget ? '' : '1',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: isReadByTarget
+                          ? Colors.grey.shade500
+                          : Colors.black,
+                    ),
+                  ),
+                if (showTime)
+                  Text(
+                    _timeFormat.format(createdAt),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: isPending
+                          ? Colors.grey.shade300
+                          : Colors.grey.shade500,
+                    ),
+                  ),
+              ],
+            ),
+
+          // 내 메시지일 때 버블과 시간 사이 간격 8
+          if (isMyMessage) const SizedBox(width: 8),
+
+          // 실제 메시지 버블 (가변 길이 대응을 위해 Flexible 처리 및 최대 너비 제한)
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth:
+                    MediaQuery.of(context).size.width *
+                    0.65, // 👈 화면 너비의 70%까지만 커지도록 제한
+              ),
+              decoration: BoxDecoration(
+                color: isMyMessage ? AppColors.primary : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                content,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: isReadByTarget ? Colors.grey.shade500 : Colors.black,
+                  color: isMyMessage ? Colors.white : Colors.black,
                 ),
               ),
-              Text(
-                _timeFormat.format(createdAt),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: isPending
-                      ? Colors.grey.shade300
-                      : Colors.grey.shade500,
-                ),
-              ),
-            ],
+            ),
           ),
 
-        const SizedBox(width: 8),
+          // 상대방 메시지일 때: 버블과 시간 사이 간격 8
+          if (!isMyMessage) const SizedBox(width: 8),
 
-        // 실제 메시지 박스
-        Container(
-          margin: const EdgeInsets.only(bottom: 8, right: 20, left: 20),
-          decoration: BoxDecoration(
-            color: isMyMessage ? AppColors.primary : Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              content,
+          // 상대방 메시지일 때: 오른쪽 시간 표시
+          if (!isMyMessage && showTime)
+            Text(
+              _timeFormat.format(createdAt),
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: isMyMessage ? Colors.white : Colors.black,
+                color: Colors.grey.shade500,
               ),
             ),
-          ),
-        ),
-        // 상대방이 보낸 메시지일 때는 오른쪽에 시간 출력
-        if (!isMyMessage)
-          Text(
-            _timeFormat.format(createdAt),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey.shade500,
-            ),
-          ),
-      ],
+
+          // 내 메시지일 때: 오른쪽 가장자리 여백 20
+          if (isMyMessage) const SizedBox(width: 20),
+        ],
+      ),
     );
   }
 }
