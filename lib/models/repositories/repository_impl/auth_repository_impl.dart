@@ -82,6 +82,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final hashNonce = sha256Hash(rawNonce);
 
       AuthorizationCredentialAppleID appleCredential;
+
       if (Platform.isIOS) {
         appleCredential = await SignInWithApple.getAppleIDCredential(
           scopes: [
@@ -106,18 +107,24 @@ class AuthRepositoryImpl implements AuthRepository {
         );
       }
 
-      final userCredential = await _auth.signInWithCredential(
-        OAuthProvider('apple.com').credential(
-          idToken: appleCredential.identityToken,
-          accessToken: appleCredential.authorizationCode,
-        ),
+      final AuthCredential credential = OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+        rawNonce: rawNonce,
       );
+
+      final userCredential = await _auth.signInWithCredential(credential);
 
       if (userCredential.user == null) {
         return Error(AuthFailure('Firebase 사용자 정보를 가져오지 못했습니다.'));
       }
 
       return Success(userCredential);
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        return Error(AuthFailure('로그인이 취소되었습니다.'));
+      }
+      return Error(ServerFailure('애플 인증 오류'));
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
