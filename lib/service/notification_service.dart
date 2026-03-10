@@ -1,87 +1,112 @@
-// lib/service/notification_service.dart
-
+import 'dart:io';
+import 'package:baton/models/entities/fcm_token.dart';
+import 'package:baton/notifier/user/providers/user_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
+  // 싱글톤 패턴 (어디서든 하나의 인스턴스만 사용)
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  // Android 알림 채널 설정
-  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
-    'high_importance_channel', // id
-    'High Importance Notifications', // title
-    description: 'This channel is used for important notifications.',
-    importance: Importance.max,
-  );
-
   Future<void> initialize() async {
-    print('FCM 초기화 시작...');
-    // 1. 알림 권한 요청
-    NotificationSettings settings = await _messaging.requestPermission(
+    NotificationSettings settings = await _fcm.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
-    print('FCM 권한 요청 완료: ${settings.authorizationStatus}');
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
-
-      // 테스트를 위해 FCM 토큰 출력
-      String? token = await getToken();
-      print('FCM Token: $token');
+      await _setupPlatformConfigs(); // 플랫폼별 전용 설정
+      await _manageToken(); // 토큰 관리 (발행 및 서버 전송)
+      _configureListeners(); // 메시지 수신 감시
     } else {
-      print('User declined or has not accepted permission');
+      return;
+    }
+  }
+
+  Future<void> _setupPlatformConfigs() async {
+    if (Platform.isAndroid) {
+      const channel = AndroidNotificationChannel(
+        'baton_main_channel',
+        'Baton 주요 알림',
+        description: '채팅 및 서비스 주요 알림을 수신합니다.',
+        importance: Importance.max,
+      );
+
+      await _localNotifications.initialize(
+        settings: const InitializationSettings(
+          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        ),
+      );
+
+      await _localNotifications
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.createNotificationChannel(channel);
+    } else if (Platform.isIOS) {
+      await _fcm.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    }
+  }
+
+  // 3. 토큰 관리 (발행 및 갱신 감시)
+  Future<void> _manageToken() async {
+    String? token = await _fcm.getToken();
+    if (token != null) {
+      final fcmToken = FCMToken(
+        token: token,
+        uid: FirebaseAuth.instance.currentUser!.uid,
+        deviceType: Platform.isAndroid ? 'android' : 'ios',
+      );
     }
 
-    // 2. Local Notifications 초기화 (포그라운드 알림용)
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
-
-    // v20.x API: settings 명명된 매개변수 사용 필수
-    await _localNotifications.initialize(settings: initializationSettings);
-
-    // 3. Android용 알림 채널 생성
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.createNotificationChannel(_channel);
-
-    // 4. 포그라운드 메시지 핸들링
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-
-      if (notification != null && android != null) {
-        await _localNotifications.show(
-          id: notification.hashCode,
-          title: notification.title,
-          body: notification.body,
-          notificationDetails: NotificationDetails(
-            android: AndroidNotificationDetails(
-              _channel.id,
-              _channel.name,
-              channelDescription: _channel.description,
-              icon: android.smallIcon,
-            ),
-          ),
-        );
-      }
+    // 앱 실행 중 토큰이 바뀌는 경우 대응
+    _fcm.onTokenRefresh.listen((newToken) {
+      // TODO: 서버의 기존 토큰 정보 업데이트
     });
   }
 
-  // FCM 토큰 가져오기
-  Future<String?> getToken() async {
-    return await _messaging.getToken();
+  // 4. 메시지 수신 리스너 (상태별 대응)
+  void _configureListeners() {
+    // [포그라운드] 앱 사용 중 메시지 수신
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // Android는 포그라운드에서 배너가 안 뜨므로 로컬 알림으로 직접 띄움
+      if (Platform.isAndroid) {
+        _displayLocalNotification(message);
+      }
+    });
+
+    // [백그라운드/종료] 알림을 클릭해서 앱을 열었을 때
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      // TODO: 클릭 시 특정 페이지(예: 채팅방)로 이동하는 로직
+    });
+  }
+
+  // Android 포그라운드 전용: 배너 강제 노출 함수
+  void _displayLocalNotification(RemoteMessage message) {
+    _localNotifications.show(
+      id: message.hashCode,
+      title: message.notification?.title,
+      body: message.notification?.body,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'baton_main_channel',
+          'Baton 주요 알림',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+    );
   }
 }
