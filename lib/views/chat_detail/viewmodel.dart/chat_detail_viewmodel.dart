@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:baton/models/entities/chat_room.dart';
 import 'package:baton/models/entities/message.dart';
 import 'package:baton/notifier/test/test_auth_notifier.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final chatMessagesStreamProvider = StreamProvider.family<List<Message>, String>(
@@ -60,6 +63,8 @@ class ChatAction {
     final chatroomDocRef = _firestore.collection('chatrooms').doc(roomId);
     final messageDocRef = chatroomDocRef.collection('messages').doc();
     final messageData = {
+      'id': messageDocRef.id,
+      'roomId': roomId,
       'senderId': myUserId,
       'content': content.trim(),
       'type': 'text',
@@ -83,6 +88,62 @@ class ChatAction {
     } else {
       batch.update(chatroomDocRef, {
         'lastMessage': content.trim(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'unreadCounts.$targetUserId': FieldValue.increment(1),
+        'unreadCounts.$myUserId': 0,
+        'lastReadAt.$myUserId': FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
+  }
+
+  Future<void> sendImageMessage(
+    String roomId,
+    String myUserId,
+    String targetUserId,
+    File imageFile,
+    bool hasRoom,
+  ) async {
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child('chat_images')
+        .child(roomId)
+        .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+    final UploadTask = await storageRef.putFile(imageFile);
+    final imageUrl = await UploadTask.ref.getDownloadURL();
+
+    final chatroomDocRef = _firestore.collection('chatrooms').doc(roomId);
+    final messageDocRef = chatroomDocRef.collection('messages').doc();
+
+    final messageData = {
+      'id': messageDocRef.id,
+      'roomId': roomId,
+      'senderId': myUserId,
+      'content': imageUrl,
+      'type': 'image',
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    final batch = _firestore.batch();
+    batch.set(messageDocRef, messageData);
+
+    if (!hasRoom) {
+      batch.set(chatroomDocRef, {
+        'roomId': roomId,
+        'lastMessage': '사진',
+        'updatedAt': FieldValue.serverTimestamp(),
+        'unreadCounts': {targetUserId: FieldValue.increment(1), myUserId: 0},
+        'participants': FieldValue.arrayUnion([myUserId, targetUserId]),
+        'lastReadAt': {
+          myUserId: FieldValue.serverTimestamp(),
+          targetUserId: Timestamp(0, 0),
+        },
+        'prdImageUrl': '',
+      });
+    } else {
+      batch.update(chatroomDocRef, {
+        'lastMessage': '사진',
         'updatedAt': FieldValue.serverTimestamp(),
         'unreadCounts.$targetUserId': FieldValue.increment(1),
         'unreadCounts.$myUserId': 0,

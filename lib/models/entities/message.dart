@@ -9,6 +9,7 @@ DateTime _parseDate(dynamic date) {
 }
 
 class Message {
+  final String id;
   final String roomId;
   final String senderId;
   final String content;
@@ -17,6 +18,7 @@ class Message {
   final bool isPending;
 
   Message({
+    required this.id,
     required this.roomId,
     required this.senderId,
     required this.content,
@@ -27,6 +29,7 @@ class Message {
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
+      id: json['id'] ?? '',
       roomId: json['roomId'] ?? '',
       senderId: json['senderId'] ?? '',
       content: json['content'] ?? '',
@@ -41,6 +44,7 @@ class Message {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'roomId': roomId,
       'senderId': senderId,
       'content': content,
@@ -51,6 +55,7 @@ class Message {
   }
 
   Message copyWith({
+    String? id,
     String? roomId,
     String? senderId,
     String? content,
@@ -59,6 +64,7 @@ class Message {
     bool? isPending,
   }) {
     return Message(
+      id: id ?? this.id,
       roomId: roomId ?? this.roomId,
       senderId: senderId ?? this.senderId,
       content: content ?? this.content,
@@ -72,6 +78,7 @@ class Message {
     final data = doc.data() as Map<String, dynamic>;
     final bool isPending = doc.metadata.hasPendingWrites;
     return Message(
+      id: data['id'] ?? '',
       roomId: data['roomId'] ?? '',
       senderId: data['senderId'] ?? '',
       content: data['content'] ?? '',

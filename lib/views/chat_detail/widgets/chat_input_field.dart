@@ -1,9 +1,12 @@
 // lib/views/chat_detail/widgets/chat_input_field.dart
+import 'dart:io';
+
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/notifier/test/test_auth_notifier.dart';
 import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ChatInputField extends ConsumerStatefulWidget {
   final String roomId; // 부모로부터 방 ID를 받습니다.
@@ -19,6 +22,9 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   bool _hasText = false; // 👈 1. 텍스트가 있는지 여부를 저장하는 상태 변수
+  // 📸 이미지 피커 인스턴스
+  final ImagePicker _picker = ImagePicker();
+  bool _isUploading = false; // 업로드 중 로딩 표시용
 
   @override
   void initState() {
@@ -75,6 +81,50 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
     }
   }
 
+  Future<void> _pickAndSendImage() async {
+    try {
+      // 1. 갤러리 띄우기 (XFile 반환)
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70, // 용량 최적화 (70% 수준으로 압축)
+      );
+      if (pickedFile == null) return; // 유저가 선택 취소함
+      // 유저 식별 코드 (임시)
+      final myUserId = ref.read(testAuthNotifierProvider);
+      if (myUserId == null) return;
+      final targetUserId = myUserId == 'BUYER_999' ? 'SELLER_123' : 'BUYER_999';
+      final chatroomState = ref.read(chatRoomStreamProvider(widget.roomId));
+      final hasRoom = chatroomState.value != null;
+      // 2. 업로드 UI 시작 (버튼 등을 비활성화 시킴)
+      setState(() {
+        _isUploading = true;
+      });
+      // 3. 뷰모델 호출하여 Storage 업로드 & Firestore 저장 동시 진행
+      await ref
+          .read(chatActionProvider)
+          .sendImageMessage(
+            widget.roomId,
+            myUserId,
+            targetUserId,
+            File(pickedFile.path),
+            hasRoom,
+          );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('이미지 전송에 실패했습니다.')));
+      }
+    } finally {
+      // 4. 업로드 완료 후 로딩 해제
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -87,10 +137,15 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
           Padding(
             padding: const EdgeInsets.only(left: 4.0),
             child: IconButton(
-              onPressed: () {
-                // TODO: 사진 촬영/선택 액션
-              },
-              icon: Icon(Icons.image, size: 24, color: Colors.grey.shade500),
+              onPressed: _isUploading ? null : _pickAndSendImage,
+
+              icon: _isUploading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(Icons.image, size: 24, color: Colors.grey.shade500),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),

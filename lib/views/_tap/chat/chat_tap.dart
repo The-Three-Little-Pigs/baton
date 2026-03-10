@@ -1,6 +1,6 @@
+import 'package:baton/core/di/time_tick_provider.dart';
 import 'package:baton/notifier/test/test_auth_notifier.dart';
-import 'package:baton/providers/time_tick_provider.dart';
-import 'package:baton/views/_tap/chat/viewmodel/chat_lview_model.dart';
+import 'package:baton/views/_tap/chat/viewmodel/chat_view_model.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_category_chips.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_room_list_tile.dart';
 import 'package:flutter/material.dart';
