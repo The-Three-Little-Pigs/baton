@@ -9,25 +9,25 @@ part of 'user_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(userRepositoryProvider)
-final userRepositoryProviderProvider = UserRepositoryProviderProvider._();
+@ProviderFor(userRepository)
+final userRepositoryProvider = UserRepositoryProvider._();
 
-final class UserRepositoryProviderProvider
+final class UserRepositoryProvider
     extends $FunctionalProvider<UserRepository, UserRepository, UserRepository>
     with $Provider<UserRepository> {
-  UserRepositoryProviderProvider._()
+  UserRepositoryProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'userRepositoryProviderProvider',
+        name: r'userRepositoryProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$userRepositoryProviderHash();
+  String debugGetCreateSourceHash() => _$userRepositoryHash();
 
   @$internal
   @override
@@ -36,7 +36,7 @@ final class UserRepositoryProviderProvider
 
   @override
   UserRepository create(Ref ref) {
-    return userRepositoryProvider(ref);
+    return userRepository(ref);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -48,5 +48,4 @@ final class UserRepositoryProviderProvider
   }
 }
 
-String _$userRepositoryProviderHash() =>
-    r'dd7b626eb0d767ab543515145fae5a6ad0a6e290';
+String _$userRepositoryHash() => r'7590ba170054990920bcb45f8a3d409d878972f4';

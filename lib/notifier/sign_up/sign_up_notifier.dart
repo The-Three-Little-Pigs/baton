@@ -80,7 +80,7 @@ class SignUpNotifier extends _$SignUpNotifier {
     // 로딩 상태 시작
     state = state.copyWith(isLoading: true, clearError: true);
 
-    final repository = ref.read(userRepositoryProviderProvider);
+    final repository = ref.read(userRepositoryProvider);
     final result = await repository.checkNicknameDuplicate(state.nickname);
 
     switch (result) {

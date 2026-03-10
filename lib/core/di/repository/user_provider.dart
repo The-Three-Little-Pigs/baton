@@ -6,6 +6,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'user_provider.g.dart';
 
 @riverpod
-UserRepository userRepositoryProvider(Ref ref) {
+UserRepository userRepository(Ref ref) {
   return UserRepositoryImpl();
 }
