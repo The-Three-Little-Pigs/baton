@@ -110,47 +110,53 @@ class ChatAction {
         .child(roomId)
         .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
 
-    final UploadTask = await storageRef.putFile(imageFile);
-    final imageUrl = await UploadTask.ref.getDownloadURL();
+    final uploadTask = await storageRef.putFile(imageFile);
+    final imageUrl = await uploadTask.ref.getDownloadURL();
 
-    final chatroomDocRef = _firestore.collection('chatrooms').doc(roomId);
-    final messageDocRef = chatroomDocRef.collection('messages').doc();
+    try {
+      final chatroomDocRef = _firestore.collection('chatrooms').doc(roomId);
+      final messageDocRef = chatroomDocRef.collection('messages').doc();
 
-    final messageData = {
-      'id': messageDocRef.id,
-      'roomId': roomId,
-      'senderId': myUserId,
-      'content': imageUrl,
-      'type': 'image',
-      'createdAt': FieldValue.serverTimestamp(),
-    };
-
-    final batch = _firestore.batch();
-    batch.set(messageDocRef, messageData);
-
-    if (!hasRoom) {
-      batch.set(chatroomDocRef, {
+      final messageData = {
+        'id': messageDocRef.id,
         'roomId': roomId,
-        'lastMessage': '사진',
-        'updatedAt': FieldValue.serverTimestamp(),
-        'unreadCounts': {targetUserId: FieldValue.increment(1), myUserId: 0},
-        'participants': FieldValue.arrayUnion([myUserId, targetUserId]),
-        'lastReadAt': {
-          myUserId: FieldValue.serverTimestamp(),
-          targetUserId: Timestamp(0, 0),
-        },
-        'prdImageUrl': '',
-      });
-    } else {
-      batch.update(chatroomDocRef, {
-        'lastMessage': '사진',
-        'updatedAt': FieldValue.serverTimestamp(),
-        'unreadCounts.$targetUserId': FieldValue.increment(1),
-        'unreadCounts.$myUserId': 0,
-        'lastReadAt.$myUserId': FieldValue.serverTimestamp(),
-      });
+        'senderId': myUserId,
+        'content': imageUrl,
+        'type': 'image',
+        'createdAt': FieldValue.serverTimestamp(),
+      };
+
+      final batch = _firestore.batch();
+      batch.set(messageDocRef, messageData);
+
+      if (!hasRoom) {
+        batch.set(chatroomDocRef, {
+          'roomId': roomId,
+          'lastMessage': '사진',
+          'updatedAt': FieldValue.serverTimestamp(),
+          'unreadCounts': {targetUserId: FieldValue.increment(1), myUserId: 0},
+          'participants': FieldValue.arrayUnion([myUserId, targetUserId]),
+          'lastReadAt': {
+            myUserId: FieldValue.serverTimestamp(),
+            targetUserId: Timestamp(0, 0),
+          },
+          'prdImageUrl': '',
+        });
+      } else {
+        batch.update(chatroomDocRef, {
+          'lastMessage': '사진',
+          'updatedAt': FieldValue.serverTimestamp(),
+          'unreadCounts.$targetUserId': FieldValue.increment(1),
+          'unreadCounts.$myUserId': 0,
+          'lastReadAt.$myUserId': FieldValue.serverTimestamp(),
+        });
+      }
+      await batch.commit();
+    } catch (e) {
+      // 💥 Firestore DB 저장이 에러가 나면, 방금 Storage에 올린 사진을 즉시 삭제(롤백)하여 고아 데이터 방지!
+      await storageRef.delete();
+      rethrow; // UI로 에러를 던져서 실패를 알림
     }
-    await batch.commit();
   }
 }
 
