@@ -3,7 +3,8 @@ import 'package:baton/core/result/result.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class AuthRepository {
-  Future<Result<User, Failure>> signInWithGoogle();
-  Future<Result<OAuthCredential, Failure>> signInWithKakao();
+  Future<Result<UserCredential, Failure>> signInWithGoogle();
+  Future<Result<UserCredential, Failure>> signInWithKakao();
+  Future<Result<UserCredential, Failure>> signInWithApple();
   Future<Result<void, Failure>> signOut();
 }
