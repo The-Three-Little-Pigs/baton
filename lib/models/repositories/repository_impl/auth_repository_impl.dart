@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/core/utils/auth_helper.dart';
 import 'package:baton/models/repositories/repository/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -77,6 +78,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<UserCredential, Failure>> signInWithApple() async {
     try {
+      final rawNonce = generateNonce();
+      final hashNonce = sha256Hash(rawNonce);
+
       AuthorizationCredentialAppleID appleCredential;
       if (Platform.isIOS) {
         appleCredential = await SignInWithApple.getAppleIDCredential(
@@ -84,6 +88,7 @@ class AuthRepositoryImpl implements AuthRepository {
             AppleIDAuthorizationScopes.email,
             AppleIDAuthorizationScopes.fullName,
           ],
+          nonce: hashNonce,
         );
       } else {
         appleCredential = await SignInWithApple.getAppleIDCredential(
@@ -97,6 +102,7 @@ class AuthRepositoryImpl implements AuthRepository {
               'https://baton-18034.firebaseapp.com/__/auth/handler',
             ),
           ),
+          nonce: hashNonce,
         );
       }
 
