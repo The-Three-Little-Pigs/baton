@@ -7,6 +7,7 @@ sealed class Result<S, F extends Failure> {
 class Success<S, F extends Failure> extends Result<S, F> {
   final S value;
   const Success(this.value);
+  
 }
 
 class Error<S, F extends Failure> extends Result<S, F> {

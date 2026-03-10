@@ -73,6 +73,21 @@ class AuthRepositoryImpl implements AuthRepository {
       return Error(ServerFailure('처리 중 예기치 못한 오류가 발생했습니다.'));
     }
   }
+
+
+// AuthRepositoryImpl 구현체
+@override
+Future<Result<void, Failure>> deleteAccount() async {
+  try {
+    final user = _auth.currentUser;
+    if (user == null) return Error(AuthFailure('인증 정보가 없습니다.'));
+    
+    await user.delete(); // 파이어베이스 계정 삭제
+    return const Success(null);
+  } on FirebaseException catch (e) {
+    return Error(FirebaseErrorMapper.toFailure(e));
+  }
+}
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {

@@ -1,6 +1,6 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
-import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
+
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
 import 'package:baton/views/chat_detail/widgets/chat_message_list.dart';
 import 'package:baton/views/chat_detail/widgets/chat_product_banner.dart';

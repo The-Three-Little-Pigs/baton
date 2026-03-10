@@ -6,4 +6,5 @@ abstract class AuthRepository {
   Future<Result<User, Failure>> signInWithGoogle();
   Future<Result<OAuthCredential, Failure>> signInWithKakao();
   Future<Result<void, Failure>> signOut();
+  Future<Result<void, Failure>> deleteAccount();
 }
