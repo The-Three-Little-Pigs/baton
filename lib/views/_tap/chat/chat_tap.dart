@@ -1,4 +1,6 @@
 import 'package:baton/notifier/test/test_auth_notifier.dart';
+import 'package:baton/providers/time_tick_provider.dart';
+import 'package:baton/views/_tap/chat/viewmodel/chat_lview_model.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_category_chips.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_room_list_tile.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +12,10 @@ class ChatTap extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final chatroomStream = ref.watch(chatListStreamProvider);
     // TODO: authNotifier 수정
     final currentUserId = ref.watch(testAuthNotifierProvider);
+    final _ = ref.watch(timeTickProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -37,6 +41,28 @@ class ChatTap extends ConsumerWidget {
               ref.read(testAuthNotifierProvider.notifier).login(newId);
             },
           ),
+          // TODO 채팅테스트 후 제거
+          IconButton(
+            onPressed: () {
+              if (currentUserId == null) return;
+              final productId = 'prd1';
+              final targetUserId = currentUserId == 'BUYER_999'
+                  ? 'SELLER_123'
+                  : 'BUYER_999';
+              final tempRoomId = _createRoomId(
+                currentUserId,
+                targetUserId,
+                productId,
+              );
+              context.pushNamed(
+                'chatDetail',
+                pathParameters: {
+                  'roomId': tempRoomId,
+                }, // 라우터에 정의한 :roomId 경로 파라미터 매칭
+              );
+            },
+            icon: Icon(Icons.add),
+          ),
 
           const Icon(Icons.more_vert),
         ],
@@ -45,30 +71,49 @@ class ChatTap extends ConsumerWidget {
         children: [
           ChatCategoryChips(),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.only(left: 27.89, right: 20),
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return InkWell(
-                  onTap: () {
-                    context.pushNamed(
-                      'chatDetail',
-                      pathParameters: {'roomId': '$index'},
+            child: chatroomStream.when(
+              data: (chatrooms) {
+                if (chatrooms.isEmpty) {
+                  return const Center(child: Text('참여중인 채팅방이 없습니다.'));
+                }
+                return ListView.builder(
+                  itemCount: chatrooms.length,
+                  itemBuilder: (context, index) {
+                    final room = chatrooms[index];
+                    return InkWell(
+                      onTap: () {
+                        context.pushNamed(
+                          'chatDetail',
+                          pathParameters: {'roomId': room.roomId},
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 27.89, right: 20),
+                        child: ChatRoomListTile(
+                          room: room,
+                          currentUserId: currentUserId!,
+                        ),
+                      ),
                     );
                   },
-                  child: ChatRoomListTile(),
                 );
+              },
+              error: (error, stackTrace) {
+                return const Center(child: Text('에러 발생'));
+              },
+              loading: () {
+                return const Center(child: CircularProgressIndicator());
               },
             ),
           ),
         ],
       ),
-
-      // TODO: 테스트끝나면 제거
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
-      ),
     );
+  }
+
+  String _createRoomId(String userId1, String userId2, String productId) {
+    List<String> userIds = [userId1, userId2];
+    userIds.sort();
+    return '${userIds[0]}_${userIds[1]}_$productId';
   }
 }

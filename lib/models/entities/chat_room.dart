@@ -1,59 +1,106 @@
 import 'package:baton/models/enum/chat_status.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ChatRoom {
+DateTime _parseDate(dynamic date) {
+  if (date == null) return DateTime.now();
+  if (date is Timestamp) return date.toDate();
+  if (date is String) return DateTime.tryParse(date) ?? DateTime.now();
+  return DateTime.now();
+}
+
+class Chatroom {
+  final String roomId;
   final List<String> participants;
-  final Map<String, int> unReadCount;
+  final Map<String, int> unreadCounts;
   final DateTime updatedAt;
-  final String postId;
+  final String prdImageUrl;
   final String lastMessage;
+  final Map<String, dynamic> lastReadAt;
   final ChatStatus status;
 
-  ChatRoom({
+  Chatroom({
+    required this.roomId,
     required this.participants,
-    required this.unReadCount,
+    required this.unreadCounts,
     required this.updatedAt,
-    required this.postId,
+    required this.prdImageUrl,
     required this.lastMessage,
+    required this.lastReadAt,
     required this.status,
   });
 
-  factory ChatRoom.fromJson(Map<String, dynamic> json) {
-    return ChatRoom(
-      participants: json['participants'] as List<String>,
-      unReadCount: json['unReadCount'] as Map<String, int>,
-      updatedAt: json['updatedAt'] as DateTime,
-      postId: json['postId'] as String,
-      lastMessage: json['lastMessage'] as String,
-      status: ChatStatus.values.firstWhere((e) => e.label == json['status']),
+  factory Chatroom.fromJson(Map<String, dynamic> json) {
+    return Chatroom(
+      roomId: json['roomId'] ?? '',
+      participants: List<String>.from(json['participants'] ?? []),
+      unreadCounts: Map<String, int>.from(json['unreadCounts'] ?? {}),
+      updatedAt: _parseDate(json['updatedAt']),
+      prdImageUrl: json['prdImageUrl'] ?? '',
+      lastMessage: json['lastMessage'] ?? '',
+      lastReadAt: Map<String, dynamic>.from(json['lastReadAt'] ?? {}),
+      status: ChatStatus.values.firstWhere(
+        (e) => e.name == json['status'],
+        orElse: () => ChatStatus.all,
+      ),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'roomId': roomId,
       'participants': participants,
-      'unReadCount': unReadCount,
+      'unreadCounts': unreadCounts,
       'updatedAt': updatedAt,
-      'postId': postId,
+      'prdImageUrl': prdImageUrl,
       'lastMessage': lastMessage,
-      'status': status.label,
+      'lastReadAt': lastReadAt,
+      'status': status,
     };
   }
 
-  ChatRoom copyWith({
+  Chatroom copyWith({
+    String? roomId,
     List<String>? participants,
-    Map<String, int>? unReadCount,
+    Map<String, int>? unreadCounts,
     DateTime? updatedAt,
-    String? postId,
+    String? prdImageUrl,
     String? lastMessage,
+    Map<String, dynamic>? lastReadAt,
     ChatStatus? status,
   }) {
-    return ChatRoom(
+    return Chatroom(
+      roomId: roomId ?? this.roomId,
       participants: participants ?? this.participants,
-      unReadCount: unReadCount ?? this.unReadCount,
+      unreadCounts: unreadCounts ?? this.unreadCounts,
       updatedAt: updatedAt ?? this.updatedAt,
-      postId: postId ?? this.postId,
+      prdImageUrl: prdImageUrl ?? this.prdImageUrl,
       lastMessage: lastMessage ?? this.lastMessage,
+      lastReadAt: lastReadAt ?? this.lastReadAt,
       status: status ?? this.status,
+    );
+  }
+
+  factory Chatroom.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    final rawLastReadAt = data['lastReadAt'] as Map<String, dynamic>? ?? {};
+    final parsedLastReadAt = <String, DateTime>{};
+    rawLastReadAt.forEach((key, value) {
+      if (value is Timestamp) {
+        parsedLastReadAt[key] = value.toDate();
+      }
+    });
+    return Chatroom(
+      roomId: data['roomId'] ?? '',
+      participants: List<String>.from(data['participants'] ?? []),
+      unreadCounts: Map<String, int>.from(data['unreadCounts'] ?? {}),
+      updatedAt: _parseDate(data['updatedAt']),
+      prdImageUrl: data['prdImageUrl'] ?? '',
+      lastMessage: data['lastMessage'] ?? '',
+      lastReadAt: parsedLastReadAt,
+      status: ChatStatus.values.firstWhere(
+        (e) => e.name == data['status'],
+        orElse: () => ChatStatus.all,
+      ),
     );
   }
 }
