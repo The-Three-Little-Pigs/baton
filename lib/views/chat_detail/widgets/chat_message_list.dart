@@ -1,6 +1,6 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/models/enum/message_type.dart';
-import 'package:baton/notifier/test/test_auth_notifier.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +16,7 @@ class ChatMessageList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final uiMessagesAsync = ref.watch(chatMessageUiModelProvider(roomId));
-    final myUserId = ref.watch(testAuthNotifierProvider);
+    final myUserId = ref.watch(userProvider).value?.uid;
     return Expanded(
       child: uiMessagesAsync.when(
         data: (uiMessages) {

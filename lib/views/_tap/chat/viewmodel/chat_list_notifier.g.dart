@@ -33,7 +33,7 @@ final class ChatListNotifierProvider
   ChatListNotifier create() => ChatListNotifier();
 }
 
-String _$chatListNotifierHash() => r'c21adce4ec193bf27c2dbe74a85908480f0e77da';
+String _$chatListNotifierHash() => r'9b6c075b16d66368646a44720cf4d8656ba1caa3';
 
 abstract class _$ChatListNotifier extends $StreamNotifier<List<Chatroom>> {
   Stream<List<Chatroom>> build();

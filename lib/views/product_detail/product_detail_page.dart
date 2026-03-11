@@ -91,11 +91,20 @@ class ProductDetailPage extends ConsumerWidget {
             Center(child: Text(error.toString())),
         loading: () => Center(child: CircularProgressIndicator()),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: BottomChatBar(),
+      bottomNavigationBar: postAsync.when(
+        // 1. 성공 시: 데이터(post)가 완벽히 보장되므로 강제 추출(!) 없이 안전하게 호출
+        data: (post) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: BottomChatBar(
+              productId: postId,
+              authorId: post.authorId, // ⭐️ post 객체에서 바로 꺼냄 (null 걱정 제로!)
+            ),
+          ),
         ),
+        // 2. 로딩 중이거나 에러 날 때는 바텀 바를 그리지 않음 (SizedBox.shrink)
+        loading: () => const SizedBox.shrink(),
+        error: (error, stackTrace) => const SizedBox.shrink(),
       ),
     );
   }
