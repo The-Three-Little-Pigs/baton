@@ -245,7 +245,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.secondary),
-            borderRadius: BorderRadius.circular(999), // 둥근 입력창
+            borderRadius: BorderRadius.circular(22), // 둥근 입력창
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end, // 여러 줄일 때 하단 맞춤
@@ -272,7 +272,9 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
                   focusNode: _focusNode,
                   textInputAction: TextInputAction.newline,
                   keyboardType: TextInputType.multiline,
-                  maxLines: null, // 무제한 줄바꿈 가능
+                  maxLines: 7,
+                  minLines: 1,
+                  // 무제한 줄바꿈 가능
                   decoration: const InputDecoration(
                     hintText: '메시지를 입력하세요',
                     contentPadding: EdgeInsets.symmetric(vertical: 12), // 패딩 조절

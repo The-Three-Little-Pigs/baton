@@ -7,20 +7,27 @@ class AppointmentButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(999),
-      child: InkWell(
-        onTap: () => AppointmentBottomSheet.showAppointmentDialog(context),
-        borderRadius: BorderRadius.circular(999),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          child: Text(
-            '약속하기',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textTertiary,
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 6),
+      child: Material(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+        child: InkWell(
+          onTap: () => AppointmentBottomSheet.showAppointmentDialog(context),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: double.infinity,
+            height: 36,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Center(
+              child: Text(
+                '약속하기',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textTertiary,
+                ),
+              ),
             ),
           ),
         ),

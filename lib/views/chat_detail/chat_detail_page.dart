@@ -63,10 +63,10 @@ class ChatDetailPage extends ConsumerWidget {
       body: Column(
         children: [
           ChatProductBanner(),
-
+          AppointmentButton(),
+          Divider(color: AppColors.secondary, thickness: 1),
           // TODO: 리스트뷰 안에 넣어서 특정날짜 되면 띄우기
           ChatMessageList(roomId: roomId),
-          AppointmentButton(),
           Padding(
             padding: const EdgeInsets.only(
               left: 10,

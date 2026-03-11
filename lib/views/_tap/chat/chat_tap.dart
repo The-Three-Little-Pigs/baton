@@ -24,6 +24,15 @@ class ChatTap extends ConsumerWidget {
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.chat),
+            onPressed: () {
+              context.pushNamed(
+                'chatDetail',
+                pathParameters: {'roomId': 'test_room_id'},
+              );
+            },
+          ),
           // TODO: 지워야함
           Center(
             child: Text(
