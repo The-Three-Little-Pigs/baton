@@ -2,7 +2,6 @@ import 'package:baton/core/router/go_router.dart';
 import 'package:baton/service/notification_service.dart';
 import 'package:baton/core/theme/app_theme.dart';
 import 'package:baton/firebase_options.dart';
-import 'package:baton/service/notification_service.dart' as messaging;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -17,25 +16,25 @@ void main() async {
 
   await initializeDateFormatting('ko_KR', null);
 
-  // FCM 초기화가 앱의 시작(runApp)을 방해하지 않도록 await 제거
-  NotificationService().initialize().catchError((e) {
-    print('FCM 초기화 에러: $e');
-  });
+  NotificationService().initialize().catchError((e) {});
 
-  // .env 파일에 안전하게 보관
   KakaoSdk.init(nativeAppKey: '7f7a429c53f5e3bf1973da1c75a934df');
 
   runApp(const ProviderScope(child: BatonApp()));
 }
 
-class BatonApp extends StatelessWidget {
+class BatonApp extends ConsumerWidget {
   const BatonApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // routerProvider를 읽어옵니다.
+    final goRouter = ref.watch(routerProvider);
+
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       title: 'Baton',
-      routerConfig: router,
+      routerConfig: goRouter, // 생성된 라우터 연결
       theme: AppTheme.light,
     );
   }

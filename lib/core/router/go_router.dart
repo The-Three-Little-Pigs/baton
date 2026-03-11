@@ -1,7 +1,10 @@
+import 'dart:async';
+
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/chat_tap.dart';
 import 'package:baton/views/_tap/home/home_tap.dart';
 import 'package:baton/views/_tap/profile/profile_tap.dart';
-import 'package:baton/views/chat_detail/chat_detail_page.dart';
+
 import 'package:baton/views/like/like_page.dart';
 import 'package:baton/views/login/login_page.dart';
 import 'package:baton/views/product_detail/product_detail_page.dart';
@@ -10,110 +13,155 @@ import 'package:baton/views/sign_up_profile_page/widgets/sign_up_profile_page.da
 import 'package:baton/views/widgets/main_scaffold.dart';
 import 'package:baton/views/write/write_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-final router = GoRouter(
-  navigatorKey: _rootNavigatorKey,
-  // initialLocation: FirebaseAuth.instance.currentUser != null ? '/home' : '/',
-  initialLocation: '/',
-  // initialLocation: '/chat/chatDetail',
-  routes: [
-    GoRoute(
-      path: '/',
-      name: 'login',
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: '/signUp',
-      name: 'signUp',
-      builder: (context, state) => const SignUpPage(),
-    ),
-    GoRoute(
-      path: '/signUpProfile',
-      name: 'signUpProfile',
-      builder: (context, state) => const SignUpProfilePage(),
-    ),
-    GoRoute(
-      path: '/like',
-      name: 'like',
-      builder: (context, state) => const LikePage(),
-    ),
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) {
-        return MainScaffold(navigationShell: navigationShell);
-      },
-      branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/home',
-              name: 'home',
-              builder: (context, state) => const HomeTap(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/chat',
-              name: 'chat',
-              builder: (context, state) => const ChatTap(),
-              routes: [
-                GoRoute(
-                  parentNavigatorKey: _rootNavigatorKey,
-                  path: ':roomId',
-                  name: 'chatDetail',
-                  builder: (context, state) {
-                    final roomId = state.pathParameters['roomId']!;
-                    return ChatDetailPage(roomId: roomId);
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/profile',
-              name: 'profile',
-              builder: (context, state) => const ProfileTap(),
-            ),
-          ],
-        ),
-      ],
-    ),
-    GoRoute(
-      path: '/product/:postId',
-      name: 'productDetail',
-      builder: (context, state) {
-        final postId = state.pathParameters['postId']!;
-        return ProductDetailPage(postId: postId);
-      },
-    ),
-    GoRoute(
-      path: '/write',
-      name: 'write',
-      builder: (context, state) => const WritePage(),
-    ),
-  ],
-  redirect: (context, state) {
-    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
-    final isLoggingIn = state.matchedLocation == '/';
-    final isSigningUp =
-        state.matchedLocation == '/signUp' ||
-        state.matchedLocation == '/signUpProfile';
+final routerProvider = Provider<GoRouter>((ref) {
+  final userAsync = ref.watch(userProvider);
 
-    // 로그인 안 됐는데 홈으로 가려 하면 로그인 페이지로 이동
-    if (!isLoggedIn && !isLoggingIn && !isSigningUp) return '/';
+  return GoRouter(
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: '/',
+    refreshListenable: GoRouterRefreshStream(
+      FirebaseAuth.instance.authStateChanges(),
+    ),
+    routes: [
+      GoRoute(
+        path: '/',
+        name: 'login',
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/signUp',
+        name: 'signUp',
+        builder: (context, state) => const SignUpPage(),
+      ),
+      GoRoute(
+        path: '/signUpProfile',
+        name: 'signUpProfile',
+        builder: (context, state) {
+          final nickname = state.extra as String? ?? '';
+          return SignUpProfilePage(nickname: nickname);
+        },
+      ),
+      GoRoute(
+        path: '/like',
+        name: 'like',
+        builder: (context, state) => const LikePage(),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            MainScaffold(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                name: 'home',
+                builder: (context, state) => const HomeTap(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/chat',
+                name: 'chat',
+                builder: (context, state) => const ChatTap(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                name: 'profile',
+                builder: (context, state) => const ProfileTap(),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/product/:postId',
+        name: 'productDetail',
+        builder: (context, state) =>
+            ProductDetailPage(postId: state.pathParameters['postId'] ?? ''),
+      ),
+      GoRoute(
+        path: '/write',
+        name: 'write',
+        builder: (context, state) => const WritePage(),
+      ),
+    ],
 
-    // 로그인 됐는데 로그인 페이지나 회원가입 페이지로 가려 하면 홈으로 이동
-    if (isLoggedIn && (isLoggingIn || isSigningUp)) return '/home';
+    redirect: (context, state) {
+      final authUser = FirebaseAuth.instance.currentUser;
+      final isLoggedIn = authUser != null;
+      final location = state.matchedLocation;
 
-    return null;
-  },
-);
+      // 1. 비로그인 상태
+      if (!isLoggedIn) {
+        if (location == '/' ||
+            location == '/signUp' ||
+            location == '/signUpProfile') {
+          return null;
+        }
+        return '/';
+      }
+
+      // 2. 로그인 상태 + 유저 정보 로딩 중
+      // 가주입된 데이터가 있거나 로딩 중이 아닐 때만 아래 로직 진행
+      if (userAsync.isLoading || userAsync.isRefreshing) {
+        // 가입 완료 직후라면 /home으로 가려고 할 텐데, 이때 로딩 때문에 가로막히면 안 됨
+        return null;
+      }
+
+      final user = userAsync.value;
+
+      // 3. DB에 유저 정보(닉네임)가 없는 경우 (미가입자)
+      if (user == null || user.nickname.isEmpty) {
+        // 이미 가입 관련 페이지로 가고 있다면 허용
+        if (location == '/signUp' || location == '/signUpProfile') {
+          if (location == '/signUpProfile') {
+            if (state.extra == null || (state.extra as String).isEmpty) {
+              return '/signUp';
+            }
+          }
+          return null;
+        }
+
+        // 로그인 페이지('/')에 있는 것도 허용 (사용자 요청: 시작을 로그인 페이지에서)
+        if (location == '/') return null;
+
+        // 그 외 보호된 페이지(예: /home) 접근 시 로그인 페이지('/')로 유도
+        return '/';
+      }
+
+      // 4. 가입 완료된 유저
+      // 로그인/가입 페이지에 있다면 홈으로 리다이렉트
+      if (location == '/' ||
+          location == '/signUp' ||
+          location == '/signUpProfile') {
+        return '/home';
+      }
+
+      return null;
+    },
+  );
+});
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
+  }
+  late final StreamSubscription<dynamic> _subscription;
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}

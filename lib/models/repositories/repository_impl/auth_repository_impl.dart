@@ -147,20 +147,26 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<Result<void, Failure>> deleteAccount() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return Error(AuthFailure('인증 정보가 없습니다.'));
 
-// AuthRepositoryImpl 구현체
-@override
-Future<Result<void, Failure>> deleteAccount() async {
-  try {
-    final user = _auth.currentUser;
-    if (user == null) return Error(AuthFailure('인증 정보가 없습니다.'));
-    
-    await user.delete(); // 파이어베이스 계정 삭제
-    return const Success(null);
-  } on FirebaseException catch (e) {
-    return Error(FirebaseErrorMapper.toFailure(e));
+      await user.delete(); // 파이어베이스 계정 삭제
+
+      // 소셜 로그인 세션 정리
+      if (await _googleSignIn.isSignedIn()) {
+        await _googleSignIn.signOut();
+      }
+      // 카카오로그인 등 다른 소셜 세션도 로그아웃 보장
+      // Kakao SDK (UserApi.instance.logout() 등) 추가 가능
+
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    }
   }
-}
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {

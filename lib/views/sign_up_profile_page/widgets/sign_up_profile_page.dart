@@ -1,35 +1,27 @@
-import 'package:baton/core/theme/app_color_extension.dart';
-import 'package:baton/notifier/user/user_notifier.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:baton/notifier/sign_up_profile/sign_up_profile_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:baton/views/sign_up_profile_page/viewmodel/sign_up_profile_notifier.dart';
-import 'package:go_router/go_router.dart';
 
-// 닉네임을 저장하고 있는 프로바이더를 임포트해야 합니다.
-// 예: import 'package:baton/presentation/sign_up/provider/nickname_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUpProfilePage extends ConsumerWidget {
-  // GoRouter 에러 방지를 위해 생성자에서 인자를 제거했습니다.
-  const SignUpProfilePage({super.key});
+  final String nickname; // 1페이지에서 넘어온 닉네임
+
+  const SignUpProfilePage({super.key, required this.nickname});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final appColors = theme.extension<AppColorExtension>();
-    final nickname = ref.watch(userProvider).value?.nickname ?? '';
+    final signUpState = ref.watch(signUpProfileProvider);
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-    final signUpState = ref.watch(signUpProfileProvider);
-    final signUpNotifier = ref.read(signUpProfileProvider.notifier);
-
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 72),
-          // --- 상단 헤더 영역 ---
+          // --- 상단 헤더 ---
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
@@ -41,35 +33,41 @@ class SignUpProfilePage extends ConsumerWidget {
                       color: colors.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      height: 1.4,
                     ),
                   ),
                 ),
+                // 파란색 점 디자인
                 Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.circle, size: 8, color: colors.secondary),
+                    Icon(
+                      Icons.circle,
+                      size: 8,
+                      color: colors.secondary.withOpacity(0.3),
+                    ),
                     const SizedBox(width: 4),
                     Icon(Icons.circle, size: 8, color: colors.primary),
                   ],
                 ),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () async {
-                      final success = await signUpNotifier.completeSignUp(
-                        uid: uid,
-                        nickname: nickname,
-                      );
-
-                      if (success && context.mounted) {
-                        context.go('/home');
-                      }
-                    },
+                    onTap:
+                        (signUpState.isLoading ||
+                            signUpState.selectedImage != null)
+                        ? null
+                        : () async {
+                            await ref
+                                .read(signUpProfileProvider.notifier)
+                                .completeSignUp(uid: uid, nickname: nickname);
+                          },
                     child: Text(
                       "건너뛰기",
                       textAlign: TextAlign.right,
                       style: TextStyle(
-                        color: appColors?.textTertiary,
+                        color:
+                            (signUpState.isLoading ||
+                                signUpState.selectedImage != null)
+                            ? Colors.grey[300]
+                            : Colors.grey,
                         fontSize: 14,
                       ),
                     ),
@@ -79,13 +77,14 @@ class SignUpProfilePage extends ConsumerWidget {
             ),
           ),
 
-          // --- 안내 문구 영역 ---
+          const SizedBox(height: 77),
+
+          // --- 안내 문구 ---
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 29.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 77),
                 Row(
                   children: [
                     Container(width: 2, height: 20, color: colors.onSurface),
@@ -96,57 +95,51 @@ class SignUpProfilePage extends ConsumerWidget {
                         color: colors.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        height: 1.4,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  "이미지는 가입 후에도 언제든 변경할 수 있어요",
-                  style: TextStyle(
-                    color: appColors?.textTertiary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    height: 1.45,
-                  ),
+                const SizedBox(height: 8),
+                const Text(
+                  "사진은 나중에 마이페이지에서도 바꿀 수 있어요.",
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 34),
+          const SizedBox(height: 60),
 
-          // --- 프로필 이미지 설정 영역 (Image Picker 연결됨) ---
+          // --- 🔥 [핵심] 프로필 이미지 선택 영역 (원상복구) ---
           Center(
             child: GestureDetector(
-              onTap: () => signUpNotifier.pickImage(), // 클릭 시 사진 선택 기능 실행
+              onTap: () => ref.read(signUpProfileProvider.notifier).pickImage(),
               child: Stack(
                 alignment: Alignment.bottomRight,
                 children: [
                   CircleAvatar(
-                    radius: 60,
-                    backgroundColor: colors.surfaceContainerHighest,
-                    // 선택된 사진이 있으면 보여주고, 없으면 기본 아이콘 표시
+                    radius: 70,
+                    backgroundColor: Colors.grey.shade100,
+                    // 선택한 이미지가 있으면 보여주고, 없으면 기본 아이콘
                     backgroundImage: signUpState.selectedImage != null
                         ? FileImage(signUpState.selectedImage!)
                         : null,
                     child: signUpState.selectedImage == null
                         ? Icon(
                             Icons.person,
-                            size: 50,
-                            color: appColors?.textTertiary,
+                            size: 60,
+                            color: Colors.grey.shade400,
                           )
                         : null,
                   ),
-                  // 카메라 아이콘 오버레이
+                  // 카메라 아이콘 버튼
                   CircleAvatar(
-                    radius: 18,
+                    radius: 20,
                     backgroundColor: colors.primary,
-                    child: Icon(
+                    child: const Icon(
                       Icons.camera_alt,
                       size: 20,
-                      color: colors.onPrimary,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -154,42 +147,40 @@ class SignUpProfilePage extends ConsumerWidget {
             ),
           ),
 
-          const Expanded(child: SizedBox()),
+          const Spacer(),
 
-          // --- 하단 가입 완료 버튼 ---
+          // --- 가입 완료 버튼 ---
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 21.0),
-            child: Center(
-              child: GestureDetector(
-                onTap: signUpState.isLoading
-                    ? null
-                    : () async {
-                        final success = await signUpNotifier.completeSignUp(
-                          uid: uid,
-                          nickname: nickname,
-                        );
-                        if (success && context.mounted) {
-                          context.go('/home');
-                        }
-                      },
-                child: Container(
-                  width: 350,
-                  height: 54,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: colors.primary,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: signUpState.isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          "가입 완료",
-                          style: TextStyle(
-                            color: colors.onPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 21),
+            child: GestureDetector(
+              onTap:
+                  (signUpState.isLoading || signUpState.selectedImage == null)
+                  ? null
+                  : () async {
+                      await ref
+                          .read(signUpProfileProvider.notifier)
+                          .completeSignUp(uid: uid, nickname: nickname);
+                    },
+              child: Container(
+                width: double.infinity,
+                height: 54,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: (signUpState.selectedImage != null)
+                      ? colors.primary
+                      : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: signUpState.isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        "가입 완료",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ),

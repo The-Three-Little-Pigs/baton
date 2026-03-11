@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:baton/models/entities/fcm_token.dart';
-import 'package:baton/notifier/user/providers/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -72,9 +71,7 @@ class NotificationService {
     }
 
     // 앱 실행 중 토큰이 바뀌는 경우 대응
-    _fcm.onTokenRefresh.listen((newToken) {
-      // TODO: 서버의 기존 토큰 정보 업데이트
-    });
+    _fcm.onTokenRefresh.listen((newToken) {});
   }
 
   // 4. 메시지 수신 리스너 (상태별 대응)
