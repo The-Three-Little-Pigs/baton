@@ -67,9 +67,12 @@ class _ItemImage extends ConsumerWidget {
                 right: 8,
                 child: GestureDetector(
                   onTap: () {
-                    // TODO : 좋아요 추가 로직
+                    ref.read(likeProvider.notifier).toggleLike(post);
                   },
-                  child: Icon(Icons.favorite_border, color: colors.primary),
+                  child: Icon(
+                    isLiked ? Icons.favorite : Icons.favorite_border,
+                    color: colors.primary,
+                  ),
                 ),
               ),
               Center(

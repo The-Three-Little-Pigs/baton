@@ -1,8 +1,16 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:baton/models/entities/chat_room.dart';
 import 'package:flutter/material.dart';
 
 class ChatRoomListTile extends StatelessWidget {
-  const ChatRoomListTile({super.key});
+  const ChatRoomListTile({
+    required this.room,
+    required this.currentUserId,
+    super.key,
+  });
+
+  final Chatroom room;
+  final String currentUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +41,8 @@ class ChatRoomListTile extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      '닉네임',
+                      //TODO: nickName
+                      '상대방닉네임',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -51,6 +60,7 @@ class ChatRoomListTile extends StatelessWidget {
                           ),
                         ),
                         child: Text(
+                          // TODO: 판매인지 구매인지
                           '구매',
                           style: TextStyle(
                             fontSize: 12,
@@ -64,8 +74,7 @@ class ChatRoomListTile extends StatelessWidget {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  '마지막 메세지마지막 메세지마지막 메세지마지막 메세지',
-
+                  room.lastMessage,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
@@ -78,7 +87,7 @@ class ChatRoomListTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '5분 전',
+                formatChatTime(room.updatedAt),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -86,28 +95,49 @@ class ChatRoomListTile extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 8),
-              Container(
-                height: 18.22,
-                width: 18.22,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(999),
-                  color: AppColors.primary,
-                ),
-                child: Center(
+              if ((room.unreadCounts[currentUserId] ?? 0) > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(999),
+                    color: AppColors.primary,
+                  ),
                   child: Text(
-                    '1',
-                    style: TextStyle(
+                    (room.unreadCounts[currentUserId] ?? 0).toString(),
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: Colors.white,
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  String formatChatTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+    if (difference.inMinutes < 1) {
+      return '방금 전';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}분 전';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}시간 전';
+    } else if (difference.inDays < 2) {
+      return '어제';
+    } else if (difference.inDays < 30) {
+      return '${difference.inDays}일 전';
+    } else if (difference.inDays < 365) {
+      return '${difference.inDays ~/ 30}달 전';
+    } else {
+      return '${difference.inDays ~/ 365}년 전';
+    }
   }
 }

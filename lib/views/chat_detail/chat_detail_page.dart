@@ -1,24 +1,43 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
-import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
 
+import 'package:baton/notifier/test/test_auth_notifier.dart';
+import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_notifier.dart';
+import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
 import 'package:baton/views/chat_detail/widgets/chat_message_list.dart';
 import 'package:baton/views/chat_detail/widgets/chat_product_banner.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class ChatDetailPage extends StatelessWidget {
+class ChatDetailPage extends ConsumerWidget {
   const ChatDetailPage({super.key, required this.roomId});
 
   final String roomId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // TODO: 약속하기 버튼 완성하면 지우기
     // Future.delayed(
     //   Duration.zero,
     //   () => AppointmentBottomSheet.showAppointmentDialog(context),
     // );
+    final myUserId = ref.watch(testAuthNotifierProvider);
+    final chatroomState = ref.watch(chatRoomStreamProvider(roomId));
+    // 1. 초기 진입 시 또는 상태 변경 시 모두 체크하기 위해
+    // ref.listen 대신 ref.watch로 값을 일단 가져오고 조용히 업데이트를 쏩니다.
+    if (myUserId != null && chatroomState.value != null) {
+      final unread = chatroomState.value!.unreadCounts[myUserId] ?? 0;
+
+      if (unread > 0) {
+        // 2. build 도중에 상태를 변경하면 프레임워크 에러가 나므로,
+        // UI가 다 그려진 직후(PostFrame)에 비동기로 실행되게끔 안전하게 감싸줍니다.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(chatDetailProvider(roomId).notifier).markAsRead(roomId);
+        });
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -44,21 +63,9 @@ class ChatDetailPage extends StatelessWidget {
       body: Column(
         children: [
           ChatProductBanner(),
+
           // TODO: 리스트뷰 안에 넣어서 특정날짜 되면 띄우기
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Center(
-              child: Text(
-                '2026년 3월 3일',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textTertiary,
-                ),
-              ),
-            ),
-          ),
-          ChatMessageList(),
+          ChatMessageList(roomId: roomId),
           AppointmentButton(),
           Padding(
             padding: const EdgeInsets.only(
@@ -67,7 +74,7 @@ class ChatDetailPage extends StatelessWidget {
               bottom: 30,
               top: 10,
             ),
-            child: ChatInputField(),
+            child: ChatInputField(roomId: roomId),
           ),
         ],
       ),
