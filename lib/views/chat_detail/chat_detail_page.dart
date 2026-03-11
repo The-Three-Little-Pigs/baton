@@ -1,7 +1,7 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
-import 'package:baton/models/entities/chat_room.dart';
+
 import 'package:baton/notifier/test/test_auth_notifier.dart';
-import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_viewmodel.dart';
+import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_notifier.dart';
 import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
 import 'package:baton/views/chat_detail/widgets/chat_message_list.dart';
@@ -33,7 +33,7 @@ class ChatDetailPage extends ConsumerWidget {
         // 2. build 도중에 상태를 변경하면 프레임워크 에러가 나므로,
         // UI가 다 그려진 직후(PostFrame)에 비동기로 실행되게끔 안전하게 감싸줍니다.
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          ref.read(chatActionProvider).markAsRead(roomId, myUserId);
+          ref.read(chatDetailProvider(roomId).notifier).markAsRead(roomId);
         });
       }
     }

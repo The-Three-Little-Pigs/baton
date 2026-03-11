@@ -1,7 +1,7 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/models/enum/message_type.dart';
 import 'package:baton/notifier/test/test_auth_notifier.dart';
-import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_viewmodel.dart';
+import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -108,7 +108,12 @@ class ChatMessageList extends ConsumerWidget {
           );
         },
         error: (error, stackTrace) {
-          return const Center(child: Text('에러 발생'));
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('에러 발생: \n$error', textAlign: TextAlign.center),
+            ),
+          );
         },
         loading: () {
           return const Center(child: CircularProgressIndicator());

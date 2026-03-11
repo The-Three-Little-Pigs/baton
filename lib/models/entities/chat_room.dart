@@ -82,6 +82,8 @@ class Chatroom {
 
   factory Chatroom.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
+
+    // 안전한 lastReadAt 파싱
     final rawLastReadAt = data['lastReadAt'] as Map<String, dynamic>? ?? {};
     final parsedLastReadAt = <String, DateTime>{};
     rawLastReadAt.forEach((key, value) {
@@ -89,13 +91,29 @@ class Chatroom {
         parsedLastReadAt[key] = value.toDate();
       }
     });
+
+    // 안전한 unreadCounts 파싱 (double 등이 섞여 들어오는 에러 방지)
+    final rawUnreadCounts = data['unreadCounts'] as Map<String, dynamic>? ?? {};
+    final parsedUnreadCounts = <String, int>{};
+    rawUnreadCounts.forEach((key, value) {
+      if (value is num) {
+        parsedUnreadCounts[key] = value.toInt();
+      }
+    });
+
+    // 안전한 participants 파싱
+    final rawParticipants = data['participants'] as List<dynamic>? ?? [];
+    final parsedParticipants = rawParticipants
+        .map((e) => e.toString())
+        .toList();
+
     return Chatroom(
-      roomId: data['roomId'] ?? '',
-      participants: List<String>.from(data['participants'] ?? []),
-      unreadCounts: Map<String, int>.from(data['unreadCounts'] ?? {}),
+      roomId: data['roomId']?.toString() ?? '',
+      participants: parsedParticipants,
+      unreadCounts: parsedUnreadCounts,
       updatedAt: _parseDate(data['updatedAt']),
-      prdImageUrl: data['prdImageUrl'] ?? '',
-      lastMessage: data['lastMessage'] ?? '',
+      prdImageUrl: data['prdImageUrl']?.toString() ?? '',
+      lastMessage: data['lastMessage']?.toString() ?? '',
       lastReadAt: parsedLastReadAt,
       status: ChatStatus.values.firstWhere(
         (e) => e.name == data['status'],

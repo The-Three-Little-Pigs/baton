@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/notifier/test/test_auth_notifier.dart';
-import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_viewmodel.dart';
+import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -86,15 +86,18 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
       });
 
       try {
-        await ref
-            .read(chatActionProvider)
+        final errorMsg = await ref
+            .read(chatDetailProvider(widget.roomId).notifier)
             .sendImageMessage(
               widget.roomId,
-              myUserId,
               targetUserId,
               File(_selectedImage!.path),
               hasRoom,
             );
+
+        if (errorMsg != null) {
+          throw Exception(errorMsg);
+        }
 
         // 이미지 전송 성공 시 화면의 미리보기 박스 지우기
         setState(() {
@@ -123,9 +126,13 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
       _focusNode.requestFocus(); // 타자 치던 키보드가 내려가지 않게 계속 유지
 
       try {
-        await ref
-            .read(chatActionProvider)
-            .sendMessage(widget.roomId, myUserId, targetUserId, text, hasRoom);
+        final errorMsg = await ref
+            .read(chatDetailProvider(widget.roomId).notifier)
+            .sendTextMessage(widget.roomId, targetUserId, text, hasRoom);
+
+        if (errorMsg != null) {
+          throw Exception(errorMsg);
+        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(
