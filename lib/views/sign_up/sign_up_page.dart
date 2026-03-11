@@ -101,7 +101,10 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               child: GestureDetector(
                 onTap: () {
                   if (canProceed) {
-                    context.go('/signUpProfile');
+                    context.go(
+                      '/signUpProfile',
+                      extra: _nicknameController.text,
+                    );
                   }
                 },
                 child: Container(

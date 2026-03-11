@@ -1,13 +1,16 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
-class ProfileTap extends StatelessWidget {
+class ProfileTap extends ConsumerWidget {
   const ProfileTap({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -16,7 +19,8 @@ class ProfileTap extends StatelessWidget {
         ),
         actions: [Icon(Icons.more_vert, size: 24)],
       ),
-      body: Column(
+      //추가하면서 일단 컬럼 리스트뷰로 바뀌났어용
+      body: ListView(
         children: [
           UserProfileCard(),
           SizedBox(height: 8),
@@ -41,6 +45,71 @@ class ProfileTap extends StatelessWidget {
             content: '관심 상품',
             routePath: '/like',
           ),
+
+          ///임의로 로그아웃 탈퇴버튼 추가했어용
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (context.mounted) {
+                        context.go('/login');
+                      }
+                    },
+                    child: Container(
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text('로그아웃', style: TextStyle(fontSize: 13)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      print('탈퇴 프로세스 시작');
+                      ref
+                          .read(userProvider.notifier)
+                          .withdraw(
+                            onSuccess: () {
+                              if (context.mounted) {
+                                context.go('/');
+                              }
+                            },
+                            onError: (message) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('탈퇴 실패: $message')),
+                                );
+                              }
+                            },
+                          );
+                    },
+                    child: Container(
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        '회원탈퇴',
+                        style: TextStyle(color: Colors.red, fontSize: 13),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 40), // 마지막 여백
         ],
       ),
     );

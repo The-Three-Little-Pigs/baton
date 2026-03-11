@@ -20,6 +20,8 @@ class FirebaseErrorMapper {
         return AuthFailure('등록되지 않은 사용자입니다.');
       case 'wrong-password':
         return AuthFailure('비밀번호가 틀렸습니다.');
+      case 'requires-recent-login':
+        return AuthFailure('보안을 위해 다시 로그인한 후 회원 탈퇴를 진행해주세요.');
       case 'weak-password':
         return AuthFailure('비밀번호가 너무 취약합니다.');
       case 'too-many-requests':

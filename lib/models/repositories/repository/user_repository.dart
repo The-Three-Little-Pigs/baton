@@ -16,6 +16,4 @@ abstract class UserRepository {
   );
   Future<Result<void, Failure>> deleteUserData(String uid);
   Future<Result<void, Failure>> withdrawAccount();
-  
-  
 }
