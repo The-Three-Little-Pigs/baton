@@ -7,13 +7,9 @@ class ChatProductBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.secondary, width: 1),
-        ),
-      ),
+      decoration: BoxDecoration(),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 14, bottom: 9),
         child: Row(
           children: [
             ClipRRect(

@@ -2,7 +2,7 @@
 import 'dart:io';
 
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
-import 'package:baton/notifier/test/test_auth_notifier.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -68,14 +68,35 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
     // 텍스트도 없고 이미지도 안 골랐으면 무시
     if (text.trim().isEmpty && _selectedImage == null) return;
 
-    final myUserId = ref.read(testAuthNotifierProvider);
+    final myUserId = ref.read(userProvider).value?.uid;
     if (myUserId == null) return;
-
-    // (임시) 타겟 유저 결정
-    final targetUserId = myUserId == 'BUYER_999' ? 'SELLER_123' : 'BUYER_999';
 
     final chatroomState = ref.read(chatRoomStreamProvider(widget.roomId));
     final hasRoom = chatroomState.value != null;
+
+    // 타겟 유저 결정 (Firestore 방이 있으면 참가자 목록에서, 없으면 roomId 파싱)
+    String targetUserId = '';
+    if (hasRoom) {
+      targetUserId = chatroomState.value!.participants.firstWhere(
+        (id) => id != myUserId,
+        orElse: () => '',
+      );
+    } else {
+      final parts = widget.roomId.split('_');
+      if (parts.length >= 2) {
+        targetUserId = parts[0] == myUserId ? parts[1] : parts[0];
+      }
+    }
+
+    if (targetUserId.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('에러: 대화 상대를 찾을 수 없습니다.')));
+      print(
+        '디버그: widget.roomId=${widget.roomId}, myUserId=$myUserId, targetUserId가 빈칸입니다. 파싱 실패.',
+      );
+      return;
+    }
 
     // ==========================================
     // [A] 이미지가 선택되어 있다면 이미지부터 앱 서버에 업로드 후 전송
@@ -133,11 +154,13 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
         if (errorMsg != null) {
           throw Exception(errorMsg);
         }
-      } catch (e) {
+      } catch (e, st) {
+        print('메시지 전송 에러: $e');
+        print(st);
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('메시지 전송 실패')));
+          ).showSnackBar(SnackBar(content: Text('메시지 전송 실패: $e')));
         }
       }
     }
@@ -222,14 +245,14 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.secondary),
-            borderRadius: BorderRadius.circular(999), // 둥근 입력창
+            borderRadius: BorderRadius.circular(22), // 둥근 입력창
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end, // 여러 줄일 때 하단 맞춤
             children: [
               // 갤러리 띄우기 버튼
               Padding(
-                padding: const EdgeInsets.only(left: 4.0, bottom: 4.0),
+                padding: const EdgeInsets.only(left: 4.0),
                 child: IconButton(
                   // 업로드 중이 아닐 때만 갤러리 열기 허용!
                   onPressed: _isUploading ? null : _pickImageOnly,
@@ -249,7 +272,9 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
                   focusNode: _focusNode,
                   textInputAction: TextInputAction.newline,
                   keyboardType: TextInputType.multiline,
-                  maxLines: null, // 무제한 줄바꿈 가능
+                  maxLines: 7,
+                  minLines: 1,
+                  // 무제한 줄바꿈 가능
                   decoration: const InputDecoration(
                     hintText: '메시지를 입력하세요',
                     contentPadding: EdgeInsets.symmetric(vertical: 12), // 패딩 조절
