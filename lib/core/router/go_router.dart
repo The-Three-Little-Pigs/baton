@@ -1,6 +1,7 @@
 import 'package:baton/views/_tap/chat/chat_tap.dart';
 import 'package:baton/views/_tap/home/home_tap.dart';
 import 'package:baton/views/_tap/profile/profile_tap.dart';
+import 'package:baton/views/alarm/alarm_page.dart';
 import 'package:baton/views/chat_detail/chat_detail_page.dart';
 import 'package:baton/views/like/like_page.dart';
 import 'package:baton/views/login/login_page.dart';
@@ -19,7 +20,7 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   // initialLocation: FirebaseAuth.instance.currentUser != null ? '/home' : '/',
-  initialLocation: '/',
+  initialLocation: '/alarm',
   // initialLocation: '/chat/chatDetail',
   routes: [
     GoRoute(
@@ -100,20 +101,25 @@ final router = GoRouter(
       name: 'write',
       builder: (context, state) => const WritePage(),
     ),
+    GoRoute(
+      path: '/alarm',
+      name: 'alarm',
+      builder: (context, state) => const AlarmPage(),
+    ),
   ],
-  redirect: (context, state) {
-    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
-    final isLoggingIn = state.matchedLocation == '/';
-    final isSigningUp =
-        state.matchedLocation == '/signUp' ||
-        state.matchedLocation == '/signUpProfile';
+  // redirect: (context, state) {
+  //   final isLoggedIn = FirebaseAuth.instance.currentUser != null;
+  //   final isLoggingIn = state.matchedLocation == '/';
+  //   final isSigningUp =
+  //       state.matchedLocation == '/signUp' ||
+  //       state.matchedLocation == '/signUpProfile';
 
-    // 로그인 안 됐는데 홈으로 가려 하면 로그인 페이지로 이동
-    if (!isLoggedIn && !isLoggingIn && !isSigningUp) return '/';
+  //   // 로그인 안 됐는데 홈으로 가려 하면 로그인 페이지로 이동
+  //   if (!isLoggedIn && !isLoggingIn && !isSigningUp) return '/';
 
-    // 로그인 됐는데 로그인 페이지나 회원가입 페이지로 가려 하면 홈으로 이동
-    if (isLoggedIn && (isLoggingIn || isSigningUp)) return '/home';
+  //   // 로그인 됐는데 로그인 페이지나 회원가입 페이지로 가려 하면 홈으로 이동
+  //   if (isLoggedIn && (isLoggingIn || isSigningUp)) return '/home';
 
-    return null;
-  },
+  //   return null;
+  // },
 );

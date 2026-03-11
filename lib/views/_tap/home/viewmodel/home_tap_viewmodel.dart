@@ -30,7 +30,7 @@ class HomeTapViewModel extends _$HomeTapViewModel {
     };
   }
 
-  /// 새로운 포스트 리스트를 받았을 때 상태를 갱신하는 공통 로직
+  /// 새로운 포스트 리스트를 받았을 때 상태를 갱신하는 로직
   List<Post> _processNewPosts(List<Post> posts) {
     if (posts.isEmpty) {
       _isLastDoc = true;
