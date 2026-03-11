@@ -1,117 +1,62 @@
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/models/entities/login_status.dart';
 import 'package:baton/models/entities/user.dart';
 import 'package:baton/models/repositories/repository/auth_repository.dart';
 import 'package:baton/models/repositories/repository/user_repository.dart';
-import 'package:baton/models/repositories/repository_impl/auth_repository_impl.dart';
-import 'package:baton/models/repositories/repository_impl/user_repository_impl.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'package:flutter_riverpod/legacy.dart';
 
-class UserNotifier extends StateNotifier<User?> {
+class LoginService {
   final AuthRepository _authRepo;
   final UserRepository _userRepo;
 
-  UserNotifier(this._authRepo, this._userRepo) : super(null);
+  LoginService(this._authRepo, this._userRepo);
 
-  Future<bool> googleLogin() async {
+  // 1. 공통 로그인 로직 (핵심)
+  Future<Result<LoginStatus, Failure>> _handleSocialLogin(
+    Future<Result<auth.UserCredential, Failure>> Function() socialAuthCall,
+  ) async {
     try {
-      // 1. 구글/파이어베이스 인증 시도
-      final authResult = await _authRepo.signInWithGoogle();
+      final authResult = await socialAuthCall();
 
-      if (authResult is! Success<auth.User, Failure>) {
-        state = null;
-        return false;
+      if (authResult is Error<auth.UserCredential, Failure>) {
+        return Error(authResult.failure);
       }
 
-      final firebaseUser = authResult.value;
+      final firebaseUser = (authResult as Success).value.user;
+      if (firebaseUser == null) {
+        return Error(ServerFailure('사용자 정보를 가져올 수 없습니다.'));
+      }
 
-      // 2. DB에 기존 유저 정보가 있는지 먼저 확인
       final userResult = await _userRepo.fetchUserData(firebaseUser.uid);
 
       if (userResult is Success<User?, Failure>) {
         final existingUser = userResult.value;
+
         if (existingUser != null) {
-          state = existingUser;
-          return true;
+          return Success(ExistingUser(existingUser));
+        } else {
+          final tempUser = User(
+            uid: firebaseUser.uid,
+            profileUrl: firebaseUser.photoURL ?? '',
+            nickname: firebaseUser.displayName ?? '새 사용자',
+            score: 0.0,
+          );
+          return Success(NewUser(tempUser));
         }
       }
 
-      // [CASE B] 신규 유저라면 새로 포장해서 DB에 저장
-      final newUser = User(
-        uid: firebaseUser.uid,
-        profileUrl: firebaseUser.photoURL ?? '',
-        nickname: firebaseUser.displayName ?? '새 사용자',
-        score: 0.0,
-      );
-
-      final createResult = await _userRepo.updateUserData(newUser);
-      if (createResult is Success) {
-        state = newUser;
-        return true;
-      } else {
-        state = null;
-        return false;
-      }
+      return Error(ServerFailure('데이터베이스 조회 중 오류가 발생했습니다.'));
     } catch (e) {
-      state = null;
-      return false;
+      print("e: $e");
+      return Error(ServerFailure('로그인 처리 중 예기치 못한 오류가 발생했습니다.'));
     }
   }
 
-  Future<bool> kakaoLogin() async {
-    try {
-      // 1. 카카오 인증 시도
-      final authResult = await _authRepo.signInWithKakao();
-      if (authResult is! Success<auth.OAuthCredential, Failure>) {
-        state = null;
-        return false;
-      }
-
-      final credential = authResult.value;
-
-      final userCredential = await auth.FirebaseAuth.instance
-          .signInWithCredential(credential);
-      final firebaseUser = userCredential.user;
-      if (firebaseUser == null) return false;
-
-      // 2. DB에 기존 유저 정보가 있는지 확인
-      final userResult = await _userRepo.fetchUserData(firebaseUser.uid);
-
-      if (userResult is Success<User?, Failure>) {
-        final existingUser = userResult.value;
-        if (existingUser != null) {
-          state = existingUser;
-          return true;
-        }
-      }
-
-      // [CASE B] 신규 유저
-      final newUser = User(
-        uid: firebaseUser.uid,
-        profileUrl: firebaseUser.photoURL ?? '',
-        nickname: firebaseUser.displayName ?? '새 사용자',
-        score: 0.0,
-      );
-
-      final createResult = await _userRepo.updateUserData(newUser);
-      if (createResult is Success) {
-        state = newUser;
-        return true;
-      } else {
-        state = null;
-        return false;
-      }
-    } catch (e) {
-      state = null;
-      return false;
-    }
-  }
+  Future<Result<LoginStatus, Failure>> signInWithGoogle() =>
+      _handleSocialLogin(_authRepo.signInWithGoogle);
+  Future<Result<LoginStatus, Failure>> signInWithKakao() =>
+      _handleSocialLogin(_authRepo.signInWithKakao);
+  Future<Result<LoginStatus, Failure>> signInWithApple() =>
+      _handleSocialLogin(_authRepo.signInWithApple);
 }
-
-// 2. 의존성 주입 (Provider 정의)
-final loginViewModelProvider = StateNotifierProvider<UserNotifier, User?>((
-  ref,
-) {
-  return UserNotifier(AuthRepositoryImpl(), UserRepositoryImpl());
-});

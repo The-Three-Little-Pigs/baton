@@ -1,6 +1,6 @@
 import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/core/utils/format_currency.dart';
-import 'package:baton/models/enum/category.dart';
+
 import 'package:baton/models/mapper/format_time_mapper.dart';
 import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:baton/views/product_detail/widgets/bottom_chat_bar.dart';

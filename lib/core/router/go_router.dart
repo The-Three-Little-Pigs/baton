@@ -18,9 +18,9 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-
   // initialLocation: FirebaseAuth.instance.currentUser != null ? '/home' : '/',
-  initialLocation: '/chat',
+  initialLocation: '/',
+  // initialLocation: '/chat/chatDetail',
   routes: [
     GoRoute(
       path: '/',
