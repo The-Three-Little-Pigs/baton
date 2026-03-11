@@ -5,7 +5,7 @@ import 'package:baton/core/di/repository/chat_provider.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/chat_room.dart';
 import 'package:baton/models/entities/message.dart';
-import 'package:baton/notifier/test/test_auth_notifier.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -17,7 +17,7 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
 
   @override
   Stream<List<Message>> build(String roomId) {
-    _myUserId = ref.watch(testAuthNotifierProvider) ?? '';
+    _myUserId = ref.watch(userProvider).value?.uid ?? '';
     final repository = ref.watch(chatRepositoryProvider);
 
     return repository.watchMessages(roomId);
@@ -101,7 +101,7 @@ AsyncValue<List<ChatMessageUiModel>> chatMessageUiModel(
 ) {
   final messagesAsync = ref.watch(chatDetailProvider(roomId));
   final chatRoomAsync = ref.watch(chatRoomStreamProvider(roomId));
-  final myUserId = ref.watch(testAuthNotifierProvider) ?? '';
+  final myUserId = ref.watch(userProvider).value?.uid ?? '';
 
   // Debugging logs to track exactly why it might be stuck in loading
   print(

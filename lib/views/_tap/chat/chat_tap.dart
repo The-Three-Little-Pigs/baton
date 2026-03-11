@@ -1,5 +1,6 @@
 import 'package:baton/core/di/time_tick_provider.dart';
-import 'package:baton/notifier/test/test_auth_notifier.dart';
+import 'package:baton/models/repositories/repository_impl/auth_repository_impl.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_list_notifier.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_category_chips.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_list_tile.dart';
@@ -13,8 +14,8 @@ class ChatTap extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chatroomStream = ref.watch(chatListProvider);
-    // TODO: authNotifier 수정
-    final currentUserId = ref.watch(testAuthNotifierProvider);
+    // 실제 UserNotifier 적용 (AsyncValue<User?> 에서 uid 추출)
+    final currentUserId = ref.watch(userProvider).value?.uid;
     final _ = ref.watch(timeTickProvider);
     return Scaffold(
       appBar: AppBar(
@@ -23,45 +24,12 @@ class ChatTap extends ConsumerWidget {
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
         actions: [
-          // TODO: 지워야할 유저 변경 아이콘
+          // TODO: 지워야함
           Center(
             child: Text(
               "내 접속: $currentUserId",
               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
-          ),
-
-          IconButton(
-            icon: const Icon(Icons.change_circle, color: Colors.blue),
-            onPressed: () {
-              // 현재 구매자면 -> 판매자로 변경, 판매자면 -> 구매자로 변경
-              final newId = currentUserId == 'BUYER_999'
-                  ? 'SELLER_123'
-                  : 'BUYER_999';
-              ref.read(testAuthNotifierProvider.notifier).login(newId);
-            },
-          ),
-          // TODO 채팅테스트 후 제거
-          IconButton(
-            onPressed: () {
-              if (currentUserId == null) return;
-              final productId = 'prd1';
-              final targetUserId = currentUserId == 'BUYER_999'
-                  ? 'SELLER_123'
-                  : 'BUYER_999';
-              final tempRoomId = _createRoomId(
-                currentUserId,
-                targetUserId,
-                productId,
-              );
-              context.pushNamed(
-                'chatDetail',
-                pathParameters: {
-                  'roomId': tempRoomId,
-                }, // 라우터에 정의한 :roomId 경로 파라미터 매칭
-              );
-            },
-            icon: Icon(Icons.add),
           ),
 
           const Icon(Icons.more_vert),

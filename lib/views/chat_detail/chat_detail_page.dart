@@ -1,6 +1,6 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 
-import 'package:baton/notifier/test/test_auth_notifier.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_notifier.dart';
 import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
@@ -22,7 +22,7 @@ class ChatDetailPage extends ConsumerWidget {
     //   Duration.zero,
     //   () => AppointmentBottomSheet.showAppointmentDialog(context),
     // );
-    final myUserId = ref.watch(testAuthNotifierProvider);
+    final myUserId = ref.watch(userProvider).value?.uid;
     final chatroomState = ref.watch(chatRoomStreamProvider(roomId));
     // 1. 초기 진입 시 또는 상태 변경 시 모두 체크하기 위해
     // ref.listen 대신 ref.watch로 값을 일단 가져오고 조용히 업데이트를 쏩니다.
