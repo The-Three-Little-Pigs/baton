@@ -17,7 +17,16 @@ part 'write_page_view_model.g.dart';
 @riverpod
 class WritePageViewModel extends _$WritePageViewModel {
   @override
-  Future<void> build() async {}
+  FutureOr<void> build({String? postId}) {}
+
+  void initWithPost(Post post) {
+    ref.read(contentProvider.notifier).initWithPost(post.title, post.content);
+    ref.read(categoryProvider.notifier).setCategory(post.category);
+    ref
+        .read(saleProvider.notifier)
+        .initWithPost(post.purchasePrice, post.salePrice);
+    ref.read(imageProvider.notifier).initImages(post.imageUrls);
+  }
 
   String? validate() {
     final contentState = ref.read(contentProvider);
@@ -31,26 +40,15 @@ class WritePageViewModel extends _$WritePageViewModel {
     );
     final saleValidate = WriteValidation.validatePrice(saleState.purchasePrice);
 
-    if (titleValidate != null) {
-      return titleValidate;
-    }
-
-    if (categoryValidate != null) {
-      return categoryValidate;
-    }
-
-    if (contentValidate != null) {
-      return contentValidate;
-    }
-
-    if (saleValidate != null) {
-      return saleValidate;
-    }
+    if (titleValidate != null) return titleValidate;
+    if (categoryValidate != null) return categoryValidate;
+    if (contentValidate != null) return contentValidate;
+    if (saleValidate != null) return saleValidate;
 
     return null;
   }
 
-  Future<String?> createPost() async {
+  Future<String?> submitPost() async {
     if (state.isLoading) return null;
 
     final contentState = ref.read(contentProvider);
@@ -62,26 +60,39 @@ class WritePageViewModel extends _$WritePageViewModel {
 
     List<String> imageUrls = [];
 
-    if (images.isNotEmpty) {
-      final uploadResult = await ImagePickerService().getDownloadUrls(images);
+    // 이미지 처리 (새 파일 업로드 및 기존 URL 유지)
+    final List<String> newFiles = images
+        .where((path) => !path.startsWith('http'))
+        .toList();
+    final List<String> existingUrls = images
+        .where((path) => path.startsWith('http'))
+        .toList();
 
+    if (newFiles.isNotEmpty) {
+      final uploadResult = await ImagePickerService().getDownloadUrls(newFiles);
       switch (uploadResult) {
         case Success(value: final urls):
-          imageUrls = urls;
+          imageUrls = [...existingUrls, ...urls];
         case Error(failure: final f):
           state = AsyncError(f, StackTrace.current);
           return f.message;
       }
+    } else {
+      imageUrls = existingUrls;
     }
 
     final String? thumbnailUrl = imageUrls.isNotEmpty ? imageUrls.first : null;
-    final author = ref.read(userProvider);
-    if (author is Error) {
-      throw Failure;
+    final authorResult = ref.read(userProvider);
+    if (authorResult is Error || authorResult.value == null) {
+      state = AsyncError(
+        UnknownFailure("유저 정보를 불러올 수 없습니다."),
+        StackTrace.current,
+      );
+      return "author_error";
     }
 
     final post = Post(
-      imageUrls: imageUrls,
+      postId: postId ?? "",
       title: contentState.title,
       content: contentState.content,
       category: category!,
@@ -91,12 +102,14 @@ class WritePageViewModel extends _$WritePageViewModel {
       chatCount: 0,
       thumbnailUrl: thumbnailUrl,
       createdAt: DateTime.now(),
-      authorId: author.value!.uid,
-      postId: "",
+      authorId: authorResult.value!.uid,
       status: ProductStatus.available,
+      imageUrls: imageUrls,
     );
 
-    final result = await ref.read(postRepositoryProvider).createPost(post);
+    final result = (postId != null)
+        ? await ref.read(postRepositoryProvider).updatePost(post)
+        : await ref.read(postRepositoryProvider).createPost(post);
 
     switch (result) {
       case Success():

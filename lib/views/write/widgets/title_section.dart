@@ -4,16 +4,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:baton/views/write/viewmodel/content_notifier.dart';
 
-class TitleSection extends ConsumerWidget {
+class TitleSection extends ConsumerStatefulWidget {
   const TitleSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TitleSection> createState() => _TitleSectionState();
+}
+
+class _TitleSectionState extends ConsumerState<TitleSection> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: ref.read(contentProvider).title);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 텍스트 필드 포커스가 없을 때(초기화 시 등) 상태값이 변경되면 컨트롤러 텍스트 동기화
+    ref.listen(contentProvider.select((s) => s.title), (previous, next) {
+      if (_controller.text != next) {
+        _controller.text = next;
+      }
+    });
+
     return Column(
       spacing: 4,
       children: [
         const SubTitle(title: "제목", required: true),
         InputField(
+          controller: _controller,
           maxLines: 1,
           hintText: "제목을 입력해주세요.",
           onChanged: (value) {

@@ -1,4 +1,3 @@
-import 'package:baton/models/enum/category.dart';
 import 'package:baton/views/_tap/home/viewmodel/filter_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/home_tap_viewmodel.dart';
 import 'package:baton/views/_tap/home/widgets/category_chips.dart';
@@ -135,9 +134,7 @@ class HomeTap extends ConsumerWidget {
                         top: filterState.isOpen ? 0 : -500, // 더 높게 숨김
                         left: 0,
                         right: 0,
-                        child: const TopModalSheet(
-                          title: '전체 카테고리',
-                        ),
+                        child: const TopModalSheet(title: '전체 카테고리'),
                       );
                     },
                   ),

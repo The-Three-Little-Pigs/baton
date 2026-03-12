@@ -70,7 +70,6 @@ class AuthRepositoryImpl implements AuthRepository {
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
-      print("e:$e");
       return Error(ServerFailure('처리 중 예기치 못한 오류가 발생했습니다.'));
     }
   }

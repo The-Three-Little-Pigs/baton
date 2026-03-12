@@ -158,7 +158,10 @@ class _ItemInfo extends ConsumerWidget {
                             context.pop();
                             switch (action) {
                               case PostActionType.edit:
-                                // TODO: 게시글 수정 페이지 이동 로직
+                                context.pushNamed(
+                                  'write',
+                                  pathParameters: {'postId': post.postId},
+                                );
                                 break;
                               case PostActionType.report:
                                 // TODO: 신고하기 로직 실행
