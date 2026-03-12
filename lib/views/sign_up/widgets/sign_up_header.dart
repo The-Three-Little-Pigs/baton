@@ -3,7 +3,8 @@ import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:flutter/material.dart';
 
 class SignUpHeader extends StatelessWidget {
-  const SignUpHeader({super.key});
+  final int step;
+  const SignUpHeader({super.key, this.step = 1});
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +30,20 @@ class SignUpHeader extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.circle, size: 8, color: colors.primary),
+              Icon(
+                Icons.circle,
+                size: 8,
+                color: step == 1
+                    ? colors.primary
+                    : (appColors?.textTertiary ?? Colors.grey),
+              ),
               const SizedBox(width: 4),
               Icon(
                 Icons.circle,
                 size: 8,
-                color: appColors?.textTertiary ?? Colors.grey,
+                color: step == 2
+                    ? colors.primary
+                    : (appColors?.textTertiary ?? Colors.grey),
               ),
             ],
           ),

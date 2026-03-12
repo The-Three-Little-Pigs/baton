@@ -1,5 +1,4 @@
 import 'package:baton/core/di/time_tick_provider.dart';
-import 'package:baton/models/repositories/repository_impl/auth_repository_impl.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_list_notifier.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_category_chips.dart';

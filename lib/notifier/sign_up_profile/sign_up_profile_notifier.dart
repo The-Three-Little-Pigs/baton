@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'package:baton/core/error/failure.dart';
+import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/user.dart';
 import 'package:baton/models/repositories/repository_impl/user_repository_impl.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
-import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:baton/service/notification_service.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -38,22 +41,50 @@ class SignUpProfile extends _$SignUpProfile {
   }) async {
     state = state.copyWith(isLoading: true);
     try {
-      // 1. 이미 로그인된 상태이므로 계정 생성 로직은 지우고
-      //    넘겨받은 UID와 닉네임으로 'user' 엔티티만 만듭니다.
+      String profileUrl = '';
+
+      final userRepo = ref.read(userRepositoryProvider);
+
+      // 1. 이미지가 선택되었다면 업로드 수행
+      if (state.selectedImage != null) {
+        final uploadResult = await userRepo.uploadProfileImage(
+          uid,
+          state.selectedImage!,
+        );
+        if (uploadResult is Success<String, Failure>) {
+          profileUrl = uploadResult.value;
+        }
+      }
+
+      // 2. 가입 시점에 기기 토큰 가져오기 (비어있지 않도록)
+      String fcmToken = '';
+      try {
+        fcmToken = await NotificationService().getToken() ?? '';
+        print(
+          "🔍 [SIGN UP] Fetched FCM Token: ${fcmToken.isEmpty ? 'EMPTY' : 'SUCCESS'}",
+        );
+      } catch (e) {
+        print("❌ [SIGN UP] FCM Token fetch error: $e");
+      }
+
+      // 3. 넘겨받은 UID와 닉네임, 업로드된 이미지 URL로 'user' 엔티티 생성
       final newUser = User(
         uid: uid,
         nickname: nickname,
-        profileUrl: '', // 이미지 업로드 로직은 나중에!
+        profileUrl: profileUrl,
         score: 36.5,
-        fcmToken: '',
+        fcmToken: fcmToken,
         favorites: [],
         blockedUsers: [],
       );
 
-      // 2. Firestore 'user' 컬렉션에 저장 (repository에서 'user'로 되어있는지 확인!)
-      await ref.read(userRepositoryProvider).userCreate(newUser);
+      // 4. Firestore 'user' 컬렉션에 저장
+      await userRepo.userCreate(newUser);
 
-      // 3. 유저 정보 상태 즉시 업데이트 (라우터 리다이렉션 트리거)
+      // 5. [추가] 토큰 갱신 리스너 등록 (백그라운드 등에서 바뀔 경우 대비)
+      NotificationService().updateFCMToken(uid, userRepository: userRepo);
+
+      // 5. 유저 정보 상태 즉시 업데이트 (라우터 리다이렉션 트리거)
       ref.read(userProvider.notifier).updateState(newUser);
 
       return true;

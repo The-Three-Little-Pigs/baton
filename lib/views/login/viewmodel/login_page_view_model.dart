@@ -1,5 +1,6 @@
 import 'package:baton/core/di/service/login_service.dart';
-import 'package:baton/core/error/failure.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
+
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/login_status.dart';
 import 'package:baton/models/enum/social_type.dart';
@@ -29,6 +30,8 @@ class LoginPageViewModel extends _$LoginPageViewModel {
 
     switch (result) {
       case Success(value: final status):
+        // [추가] 로그인 성공 시 전역 유저 정보를 초기화하여 최신 정보를 가져오도록 유도
+        ref.invalidate(userProvider);
         state = AsyncData(status);
       case Error(failure: final failure):
         print(failure.message);

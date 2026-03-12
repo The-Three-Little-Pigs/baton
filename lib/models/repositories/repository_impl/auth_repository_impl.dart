@@ -139,6 +139,10 @@ class AuthRepositoryImpl implements AuthRepository {
       if (await _googleSignIn.isSignedIn()) {
         await _googleSignIn.signOut();
       }
+      try {
+        await UserApi.instance.logout();
+      } catch (_) {}
+
       return Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
@@ -159,8 +163,9 @@ class AuthRepositoryImpl implements AuthRepository {
       if (await _googleSignIn.isSignedIn()) {
         await _googleSignIn.signOut();
       }
-      // 카카오로그인 등 다른 소셜 세션도 로그아웃 보장
-      // Kakao SDK (UserApi.instance.logout() 등) 추가 가능
+      try {
+        await UserApi.instance.logout();
+      } catch (_) {}
 
       return const Success(null);
     } on FirebaseException catch (e) {
