@@ -29,15 +29,14 @@ class ChatTap extends ConsumerWidget {
         ),
         actions: [
           // TODO: 지워야함
-          Center(
-            child: Text(
-              "내 접속: $currentUserId",
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-          ),
-
+          // Center(
+          //   child: Text(
+          //     "내 접속: $currentUserId",
+          //     style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          //     overflow: TextOverflow.ellipsis,
+          //     maxLines: 1,
+          //   ),
+          // ),
           GestureDetector(
             onTap: () async {
               showCupertinoModalPopup(
