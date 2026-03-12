@@ -10,6 +10,7 @@ class LabeledInputField extends StatelessWidget {
     required this.isPriceSection,
     this.onChanged,
     this.border,
+    this.controller,
   });
 
   final String label;
@@ -17,6 +18,7 @@ class LabeledInputField extends StatelessWidget {
   final bool isPriceSection;
   final void Function(String)? onChanged;
   final BoxBorder? border;
+  final TextEditingController? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +48,7 @@ class LabeledInputField extends StatelessWidget {
             VerticalDivider(color: appColors?.divider, thickness: 1, width: 1),
             Expanded(
               child: InputField(
+                controller: controller,
                 maxLines: 1,
                 isPriceSection: isPriceSection,
                 hintText: hintText,

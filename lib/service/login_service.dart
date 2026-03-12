@@ -20,9 +20,7 @@ class LoginService {
       final authResult = await socialAuthCall();
 
       if (authResult is Error<auth.UserCredential, Failure>) {
-        return Error(
-          (authResult as Error<auth.UserCredential, Failure>).failure,
-        );
+        return Error((authResult).failure);
       }
 
       final firebaseUser =
@@ -57,7 +55,6 @@ class LoginService {
 
       return Error(ServerFailure('데이터베이스 조회 중 오류가 발생했습니다.'));
     } catch (e) {
-      print("LoginService Error: $e");
       return Error(ServerFailure('로그인 처리 중 예기치 못한 오류가 발생했습니다.'));
     }
   }

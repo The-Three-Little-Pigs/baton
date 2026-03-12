@@ -192,7 +192,7 @@ class UserProfileCard extends ConsumerWidget {
                     ),
                     loading: () =>
                         const Text('...', style: TextStyle(fontSize: 16)),
-                    error: (_, __) =>
+                    error: (_, _) =>
                         const Text('에러 발생', style: TextStyle(fontSize: 16)),
                   ),
 

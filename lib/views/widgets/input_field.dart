@@ -13,6 +13,7 @@ class InputField extends StatelessWidget {
     this.contentPadding,
     this.border,
     this.isPriceSection,
+    this.controller,
   });
 
   final String hintText;
@@ -23,12 +24,14 @@ class InputField extends StatelessWidget {
   final EdgeInsetsGeometry? contentPadding;
   final InputBorder? border;
   final bool? isPriceSection;
+  final TextEditingController? controller;
 
   @override
   Widget build(BuildContext context) {
     final appColors = Theme.of(context).extension<AppColorExtension>();
 
     return TextField(
+      controller: controller,
       onChanged: onChanged,
       maxLength: maxLength,
       maxLines: maxLines,

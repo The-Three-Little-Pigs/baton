@@ -41,7 +41,7 @@ final class SaleNotifierProvider
   }
 }
 
-String _$saleNotifierHash() => r'81c61881412900f79a162777dc8e11336bfe72c0';
+String _$saleNotifierHash() => r'e367c08b72495b6b6992fe0a67dcd33544f3e143';
 
 abstract class _$SaleNotifier extends $Notifier<SaleState> {
   SaleState build();

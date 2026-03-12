@@ -60,12 +60,7 @@ class SignUpProfile extends _$SignUpProfile {
       String fcmToken = '';
       try {
         fcmToken = await NotificationService().getToken() ?? '';
-        print(
-          "🔍 [SIGN UP] Fetched FCM Token: ${fcmToken.isEmpty ? 'EMPTY' : 'SUCCESS'}",
-        );
-      } catch (e) {
-        print("❌ [SIGN UP] FCM Token fetch error: $e");
-      }
+      } catch (e) {}
 
       // 3. 넘겨받은 UID와 닉네임, 업로드된 이미지 URL로 'user' 엔티티 생성
       final newUser = User(
