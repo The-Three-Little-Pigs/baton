@@ -9,6 +9,7 @@ import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 class ProductItem extends ConsumerWidget {
@@ -59,9 +60,12 @@ class _ItemImage extends ConsumerWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              post.imageUrls.firstOrNull != null
+              post.imageUrls.isNotEmpty
                   ? Image.network(post.imageUrls.first, fit: BoxFit.cover)
-                  : Center(child: Icon(Icons.image)),
+                  : SvgPicture.asset(
+                      'assets/images/empty_image.svg',
+                      fit: BoxFit.cover,
+                    ),
               Positioned(
                 top: 8,
                 right: 8,

@@ -1,7 +1,7 @@
 class User {
   final String uid;
   final String nickname;
-  final String profileUrl;
+  final String? profileUrl;
   final double score;
   final String fcmToken;
   final List<String> favorites;

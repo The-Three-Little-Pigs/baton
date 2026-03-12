@@ -41,7 +41,6 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<Result<void, Failure>> updateUserData(User user) async {
     try {
-      // 💡 toJson()에 favorites, blockedUsers가 포함되어 있어 리스트도 함께 업데이트됩니다.
       await _firestore
           .collection(_collectionPath)
           .doc(user.uid)
