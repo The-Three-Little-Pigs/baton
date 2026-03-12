@@ -105,7 +105,6 @@ class ChatDetailPage extends ConsumerWidget {
             ChatProductBanner(roomId: roomId),
             AppointmentButton(),
             Divider(color: AppColors.secondary, thickness: 1),
-            // TODO: 리스트뷰 안에 넣어서 특정날짜 되면 띄우기
             ChatMessageList(roomId: roomId),
             Padding(
               padding: const EdgeInsets.only(
