@@ -1,8 +1,10 @@
 import 'package:baton/core/di/repository/post_provider.dart';
+import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/core/utils/validation/write_validation.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/product_status.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/service/image_picker_service.dart';
 import 'package:baton/views/write/viewmodel/category_notifier.dart';
 import 'package:baton/views/write/viewmodel/content_notifier.dart';
@@ -73,6 +75,10 @@ class WritePageViewModel extends _$WritePageViewModel {
     }
 
     final String? thumbnailUrl = imageUrls.isNotEmpty ? imageUrls.first : null;
+    final author = ref.read(userProvider);
+    if (author is Error) {
+      throw Failure;
+    }
 
     final post = Post(
       imageUrls: imageUrls,
@@ -85,7 +91,7 @@ class WritePageViewModel extends _$WritePageViewModel {
       chatCount: 0,
       thumbnailUrl: thumbnailUrl,
       createdAt: DateTime.now(),
-      authorId: "",
+      authorId: author.value!.uid,
       postId: "",
       status: ProductStatus.available,
     );
