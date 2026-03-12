@@ -2,6 +2,7 @@ import 'package:baton/core/theme/app_tokens/app_spacing.dart';
 import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ProfileHeader extends ConsumerWidget {
   const ProfileHeader({super.key, required this.authorId});
@@ -20,9 +21,19 @@ class ProfileHeader extends ConsumerWidget {
           children: [
             CircleAvatar(
               radius: 20,
-              backgroundImage: hasImage
-                  ? NetworkImage(author.profileUrl!)
-                  : const AssetImage('assets/images/empty_profile.svg'),
+              child: hasImage
+                  ? ClipOval(
+                      child: Image.network(
+                        author.profileUrl!,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : ClipOval(
+                      child: SvgPicture.asset(
+                        'assets/images/empty_profile_60.svg',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
             ),
             AppSpacing.w8,
             Column(
