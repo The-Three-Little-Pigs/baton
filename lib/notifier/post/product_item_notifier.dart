@@ -1,15 +1,8 @@
+import 'package:baton/models/enum/post_action_type.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'product_item_notifier.g.dart';
-
-enum PostActionType {
-  edit('게시글 수정'),
-  report('신고하기');
-
-  final String label;
-  const PostActionType(this.label);
-}
 
 @riverpod
 class ProductItemNotifier extends _$ProductItemNotifier {
@@ -25,7 +18,7 @@ class ProductItemNotifier extends _$ProductItemNotifier {
     final isMyPost = currentUser.uid == authorId;
 
     if (isMyPost) {
-      return [PostActionType.edit];
+      return [PostActionType.edit, PostActionType.delete];
     } else {
       return [PostActionType.report];
     }

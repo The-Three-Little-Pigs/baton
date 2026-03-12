@@ -2,11 +2,11 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/models/entities/post.dart' show Post;
 import 'package:baton/core/utils/format_currency.dart';
+import 'package:baton/models/enum/post_action_type.dart';
 import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/mapper/format_time_mapper.dart';
 import 'package:baton/notifier/like/like_notifier.dart';
 import 'package:baton/notifier/post/product_item_notifier.dart';
-import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -162,6 +162,9 @@ class _ItemInfo extends ConsumerWidget {
                                 break;
                               case PostActionType.report:
                                 // TODO: 신고하기 로직 실행
+                                break;
+                              case PostActionType.delete:
+                                // TODO: 게시글 삭제 로직 실행
                                 break;
                             }
                           },

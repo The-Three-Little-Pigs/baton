@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'product_item_notifier.dart';
+part of 'filter_notifier.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,52 +9,51 @@ part of 'product_item_notifier.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(ProductItemNotifier)
-final productItemProvider = ProductItemNotifierProvider._();
+@ProviderFor(FilterNotifier)
+final filterProvider = FilterNotifierProvider._();
 
-final class ProductItemNotifierProvider
-    extends $NotifierProvider<ProductItemNotifier, void> {
-  ProductItemNotifierProvider._()
+final class FilterNotifierProvider
+    extends $NotifierProvider<FilterNotifier, FilterState> {
+  FilterNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'productItemProvider',
+        name: r'filterProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$productItemNotifierHash();
+  String debugGetCreateSourceHash() => _$filterNotifierHash();
 
   @$internal
   @override
-  ProductItemNotifier create() => ProductItemNotifier();
+  FilterNotifier create() => FilterNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(void value) {
+  Override overrideWithValue(FilterState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<void>(value),
+      providerOverride: $SyncValueProvider<FilterState>(value),
     );
   }
 }
 
-String _$productItemNotifierHash() =>
-    r'af77f92fc453054f5ab5f78766536a14577294a8';
+String _$filterNotifierHash() => r'b50a6f00d40e47d63d6ec0c80de20935c63875af';
 
-abstract class _$ProductItemNotifier extends $Notifier<void> {
-  void build();
+abstract class _$FilterNotifier extends $Notifier<FilterState> {
+  FilterState build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<void, void>;
+    final ref = this.ref as $Ref<FilterState, FilterState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<void, void>,
-              void,
+              AnyNotifier<FilterState, FilterState>,
+              FilterState,
               Object?,
               Object?
             >;
