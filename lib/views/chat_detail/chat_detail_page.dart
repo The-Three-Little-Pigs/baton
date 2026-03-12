@@ -1,6 +1,8 @@
+import 'package:baton/core/result/result.dart';
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/_tap/chat/viewmodel/chat_room_action_notifier.dart';
 import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_notifier.dart';
 import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
@@ -87,9 +89,24 @@ class ChatDetailPage extends ConsumerWidget {
                         },
                       },
                       {
-                        '채팅방 나가기': () {
-                          // TODO: 채팅방 나가기 기능 구현
+                        '채팅방 나가기': () async {
                           context.pop();
+                          final result = await ref
+                              .read(chatRoomActionProvider.notifier)
+                              .leaveChatRoom(roomId);
+                          // 3. 결과에 따라 처리
+                          switch (result) {
+                            case Success():
+                              // 성공 시: 채팅 목록으로 이동
+                              if (context.mounted) context.pop();
+                            case Error(:final failure):
+                              // 실패 시: 오류 메시지 스낵바
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(failure.message)),
+                                );
+                              }
+                          }
                         },
                       },
                     ],

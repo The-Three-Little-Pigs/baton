@@ -21,6 +21,7 @@ class ChatRepositoryImpl implements ChatRepository {
     return _firestore
         .collection('chatrooms')
         .where('participants', arrayContains: myUserId)
+        // .where('deletedByUids', arrayContains: myUserId)
         .orderBy('updatedAt', descending: true)
         .snapshots()
         .map(
@@ -216,5 +217,64 @@ class ChatRepositoryImpl implements ChatRepository {
         'lastReadAt.$myUserId': FieldValue.serverTimestamp(),
       });
     }
+  }
+
+  @override
+  Future<Result<bool, Failure>> leaveRoom(String roomId, String myUid) async {
+    try {
+      final roomRef = _firestore.collection('chatrooms').doc(roomId);
+      // 1. deletedByUids에 내 UID 추가 (중복 없이)
+      await roomRef.update({
+        'deletedByUids': FieldValue.arrayUnion([myUid]),
+      });
+      // 2. 방 정보를 다시 가져와서 참여자 전원 퇴장 여부 확인
+      final snapshot = await roomRef.get();
+      final participants = List<String>.from(
+        snapshot.data()?['participants'] ?? [],
+      );
+      final deletedByUids = List<String>.from(
+        snapshot.data()?['deletedByUids'] ?? [],
+      );
+      // 3. 만약 참여자 전원이 나갔다면? 실제 데이터 완전 삭제
+      if (deletedByUids.length >= participants.length) {
+        // (1) 스토리지 폴더 삭제 (listAll 방식)
+        await _deleteStorageFolder(roomId);
+
+        // (2) 메시지 컬렉션 삭제
+        await _deleteAllMessages(roomId);
+
+        // (3) 채팅방 문서 삭제
+        await roomRef.delete();
+
+        print('Chat: 채팅방($roomId) 데이터가 완전히 삭제되었습니다.');
+      }
+      return const Success(true);
+    } catch (e) {
+      return Error(UnknownFailure('방 나가기 처리 중 오류 발생: $e'));
+    }
+  }
+
+  Future<void> _deleteStorageFolder(String roomId) async {
+    final folderRef = FirebaseStorage.instance.ref('chats/$roomId');
+    final ListResult result = await folderRef.listAll();
+
+    final deleteTasks = result.items.map((fileRef) => fileRef.delete());
+    await Future.wait(deleteTasks);
+  }
+
+  // 💡 메시지 컬렉션의 모든 문서 삭제 (Batch 처리)
+  Future<void> _deleteAllMessages(String roomId) async {
+    final messagesRef = _firestore
+        .collection('chatrooms')
+        .doc(roomId)
+        .collection('messages');
+    final snapshots = await messagesRef.get();
+
+    if (snapshots.docs.isEmpty) return;
+    final batch = _firestore.batch();
+    for (var doc in snapshots.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
   }
 }
