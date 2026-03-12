@@ -17,14 +17,21 @@ class WritePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLoading = ref.watch(writePageViewModelProvider).isLoading;
+    final viewModelProvider = writePageViewModelProvider(postId: post?.postId);
+    final isLoading = ref.watch(viewModelProvider).isLoading;
+
+    if (post != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(viewModelProvider.notifier).initWithPost(post!);
+      });
+    }
 
     return Stack(
       children: [
         Scaffold(
           appBar: AppBar(
             title: Text(
-              "물건 팔기",
+              post != null ? "게시글 수정" : "물건 팔기",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             centerTitle: true,
@@ -52,7 +59,7 @@ class WritePage extends ConsumerWidget {
               horizontal: 20,
               vertical: MediaQuery.of(context).padding.bottom + 20,
             ),
-            child: BottomCompleteBar(),
+            child: BottomCompleteBar(postId: post?.postId),
           ),
         ),
         if (isLoading)

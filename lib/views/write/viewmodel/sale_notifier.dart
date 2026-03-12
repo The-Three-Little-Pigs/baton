@@ -36,4 +36,12 @@ class SaleNotifier extends _$SaleNotifier {
   void setSharing(bool isSharing) {
     state = state.copyWith(isSharing: isSharing);
   }
+
+  void initWithPost(int? purchasePrice, int? salePrice) {
+    state = SaleState(
+      purchasePrice: purchasePrice,
+      salePrice: salePrice,
+      isSharing: salePrice == 0 || salePrice == null,
+    );
+  }
 }

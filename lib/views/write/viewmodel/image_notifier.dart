@@ -16,4 +16,8 @@ class ImageNotifier extends _$ImageNotifier {
   void removeAt(int index) {
     state = [...state]..removeAt(index);
   }
+
+  void initImages(List<String> imageUrls) {
+    state = imageUrls;
+  }
 }

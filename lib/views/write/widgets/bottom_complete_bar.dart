@@ -9,13 +9,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class BottomCompleteBar extends ConsumerWidget {
-  const BottomCompleteBar({super.key});
+  const BottomCompleteBar({super.key, this.postId});
+
+  final String? postId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final content = ref.watch(contentProvider);
     final category = ref.watch(categoryProvider);
     final sale = ref.watch(saleProvider);
+    
+    final viewModelProvider = writePageViewModelProvider(postId: postId);
+    final isEditMode = postId != null;
 
     final condition =
         WriteValidation.validateTitle(content.title) == null &&
@@ -27,12 +32,11 @@ class BottomCompleteBar extends ConsumerWidget {
       children: [
         Expanded(
           child: CompleteButton(
-            label: "작성 완료",
+            label: isEditMode ? "수정 완료" : "작성 완료",
             condition: condition,
             onPressed: () async {
-              final errorMessage = ref
-                  .read(writePageViewModelProvider.notifier)
-                  .validate();
+              final viewModel = ref.read(viewModelProvider.notifier);
+              final errorMessage = viewModel.validate();
 
               if (errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -45,9 +49,7 @@ class BottomCompleteBar extends ConsumerWidget {
               }
               FocusScope.of(context).unfocus();
 
-              final result = await ref
-                  .read(writePageViewModelProvider.notifier)
-                  .createPost();
+              final result = await viewModel.submitPost();
 
               if (result == "success") {
                 if (context.mounted) context.pop();

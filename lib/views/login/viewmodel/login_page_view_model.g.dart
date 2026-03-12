@@ -34,7 +34,7 @@ final class LoginPageViewModelProvider
 }
 
 String _$loginPageViewModelHash() =>
-    r'54627287fbb456332e21482a4739bc310153f1d4';
+    r'4aac62f8f6378a260c538a794c72193549073d3e';
 
 abstract class _$LoginPageViewModel extends $AsyncNotifier<LoginStatus?> {
   FutureOr<LoginStatus?> build();

@@ -36,4 +36,12 @@ class ContentNotifier extends _$ContentNotifier {
   void setContent(String content) {
     state = state.copyWith(content: content, contentLength: content.length);
   }
+
+  void initWithPost(String title, String content) {
+    state = ContentState(
+      title: title,
+      content: content,
+      contentLength: content.length,
+    );
+  }
 }
