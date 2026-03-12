@@ -42,7 +42,7 @@ final class ChatRoomActionNotifierProvider
 }
 
 String _$chatRoomActionNotifierHash() =>
-    r'9096c42242ab82df22336e02ad81e74dc279e8e0';
+    r'623529b2b50f062415ac5eae3abd4d420a34db02';
 
 abstract class _$ChatRoomActionNotifier extends $Notifier<void> {
   void build();

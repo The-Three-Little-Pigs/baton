@@ -17,6 +17,7 @@ class Chatroom {
   final String lastMessage;
   final Map<String, dynamic> lastReadAt;
   final ChatStatus status;
+  final List<String> deletedByUids;
 
   Chatroom({
     required this.roomId,
@@ -27,6 +28,7 @@ class Chatroom {
     required this.lastMessage,
     required this.lastReadAt,
     required this.status,
+    required this.deletedByUids,
   });
 
   factory Chatroom.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,7 @@ class Chatroom {
         (e) => e.name == json['status'],
         orElse: () => ChatStatus.all,
       ),
+      deletedByUids: List<String>.from(json['deletedByUids'] ?? []),
     );
   }
 
@@ -55,6 +58,7 @@ class Chatroom {
       'lastMessage': lastMessage,
       'lastReadAt': lastReadAt,
       'status': status,
+      'deletedByUids': deletedByUids,
     };
   }
 
@@ -67,6 +71,7 @@ class Chatroom {
     String? lastMessage,
     Map<String, dynamic>? lastReadAt,
     ChatStatus? status,
+    List<String>? deletedByUids,
   }) {
     return Chatroom(
       roomId: roomId ?? this.roomId,
@@ -77,6 +82,7 @@ class Chatroom {
       lastMessage: lastMessage ?? this.lastMessage,
       lastReadAt: lastReadAt ?? this.lastReadAt,
       status: status ?? this.status,
+      deletedByUids: deletedByUids ?? this.deletedByUids,
     );
   }
 
@@ -119,6 +125,7 @@ class Chatroom {
         (e) => e.name == data['status'],
         orElse: () => ChatStatus.all,
       ),
+      deletedByUids: List<String>.from(data['deletedByUids'] ?? []),
     );
   }
 }

@@ -1,4 +1,5 @@
 // lib/views/_tap/chat/viewmodel/chat_room_action_notifier.dart
+import 'package:baton/core/di/repository/chat_provider.dart';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
@@ -46,5 +47,16 @@ class ChatRoomActionNotifier extends _$ChatRoomActionNotifier {
     List<String> userIds = [userId1, userId2];
     userIds.sort();
     return '${userIds[0]}_${userIds[1]}_$productId';
+  }
+
+  Future<Result<bool, Failure>> leaveChatRoom(String roomId) async {
+    final myUid = ref.read(userProvider).value?.uid;
+    if (myUid == null) return Error(UnknownFailure('로그인이 필요합니다.'));
+    // 리포지토리의 leaveRoom 호출
+    final result = await ref
+        .read(chatRepositoryProvider)
+        .leaveRoom(roomId, myUid);
+
+    return result;
   }
 }

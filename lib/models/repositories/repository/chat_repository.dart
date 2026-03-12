@@ -34,4 +34,7 @@ abstract class ChatRepository {
     File imageFile,
     bool hasRoom,
   );
+
+  /// 채팅방 나가기 (삭제)
+  Future<Result<bool, Failure>> leaveRoom(String roomId, String myUserId);
 }
