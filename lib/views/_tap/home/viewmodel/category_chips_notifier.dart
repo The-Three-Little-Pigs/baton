@@ -11,14 +11,12 @@ class CategoryChipsNotifier extends _$CategoryChipsNotifier {
   }
 
   void toggleCategory(Category category) {
-    if (state.contains(category)) {
-      state = {...state}..remove(category);
-    } else {
-      state = {...state, category};
-    }
+    state = state.contains(category)
+        ? state.where((c) => c != category).toSet()
+        : {...state, category};
   }
 
-  void reset() {
+  void clear() {
     state = {};
   }
 }

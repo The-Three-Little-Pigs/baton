@@ -42,7 +42,7 @@ final class CategoryChipsNotifierProvider
 }
 
 String _$categoryChipsNotifierHash() =>
-    r'50a31f1277071f1d60833045bd94d76f0b83b1d4';
+    r'9c5c6221413bd77ea9905b77748b79c234771b80';
 
 abstract class _$CategoryChipsNotifier extends $Notifier<Set<Category>> {
   Set<Category> build();
