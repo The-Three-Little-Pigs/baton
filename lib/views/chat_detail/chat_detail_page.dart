@@ -49,45 +49,48 @@ class ChatDetailPage extends ConsumerWidget {
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () {
-            context.pop();
-          },
-        ),
-        title: Container(
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: AppColors.black, width: 1.6),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+            onPressed: () {
+              context.pop();
+            },
+          ),
+          title: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: AppColors.black, width: 1.6),
+              ),
+            ),
+            child: Text(
+              opponentNickname,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ),
-          child: Text(
-            opponentNickname,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
+          centerTitle: true,
+          actions: [Icon(Icons.more_vert, size: 24)],
         ),
-        centerTitle: true,
-        actions: [Icon(Icons.more_vert, size: 24)],
-      ),
-      body: Column(
-        children: [
-          ChatProductBanner(roomId: roomId),
-          AppointmentButton(),
-          Divider(color: AppColors.secondary, thickness: 1),
-          // TODO: 리스트뷰 안에 넣어서 특정날짜 되면 띄우기
-          ChatMessageList(roomId: roomId),
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 10,
-              right: 10,
-              bottom: 30,
-              top: 10,
+        body: Column(
+          children: [
+            ChatProductBanner(roomId: roomId),
+            AppointmentButton(),
+            Divider(color: AppColors.secondary, thickness: 1),
+            // TODO: 리스트뷰 안에 넣어서 특정날짜 되면 띄우기
+            ChatMessageList(roomId: roomId),
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 10,
+                right: 10,
+                bottom: 30,
+                top: 10,
+              ),
+              child: ChatInputField(roomId: roomId),
             ),
-            child: ChatInputField(roomId: roomId),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

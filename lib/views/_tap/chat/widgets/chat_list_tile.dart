@@ -4,6 +4,7 @@ import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ChatRoomListTile extends ConsumerWidget {
   const ChatRoomListTile({
@@ -38,13 +39,7 @@ class ChatRoomListTile extends ConsumerWidget {
               child: postAsync.when(
                 data: (post) => post.imageUrls.isNotEmpty
                     ? Image.network(post.imageUrls[0], fit: BoxFit.cover)
-                    : const Center(
-                        child: Icon(
-                          Icons.image,
-                          size: 14,
-                          color: AppColors.textTertiary,
-                        ),
-                      ),
+                    : SvgPicture.asset('assets/images/empty_image_60.svg'),
                 loading: () => const Center(
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
