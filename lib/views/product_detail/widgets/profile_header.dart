@@ -14,7 +14,8 @@ class ProfileHeader extends ConsumerWidget {
 
     return authorAsync.when(
       data: (author) {
-        final hasImage = author.profileUrl != null;
+        final hasImage =
+            author.profileUrl != null && author.profileUrl!.isNotEmpty;
         return Row(
           children: [
             CircleAvatar(

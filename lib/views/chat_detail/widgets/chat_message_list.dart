@@ -214,43 +214,51 @@ class _ChatBubble extends StatelessWidget {
               child: type == MessageType.image
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        content,
-                        width: MediaQuery.of(context).size.width * 0.6,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            width: MediaQuery.of(context).size.width * 0.6,
-                            height: 200,
-                            color: Colors.grey.shade200,
-                            child: const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: MediaQuery.of(context).size.width * 0.6,
-                            height: 200,
-                            color: Colors.grey.shade200,
-                            child: const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.broken_image, color: Colors.grey),
-                                SizedBox(height: 8),
-                                Text(
-                                  '이미지 오류',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
+                      child: content.isNotEmpty
+                          ? Image.network(
+                              content,
+                              width: MediaQuery.of(context).size.width * 0.6,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  width: MediaQuery.of(context).size.width * 0.6,
+                                  height: 200,
+                                  color: Colors.grey.shade200,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(),
                                   ),
-                                ),
-                              ],
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: MediaQuery.of(context).size.width * 0.6,
+                                  height: 200,
+                                  color: Colors.grey.shade200,
+                                  child: const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.broken_image, color: Colors.grey),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        '이미지 오류',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              width: MediaQuery.of(context).size.width * 0.6,
+                              height: 200,
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.image_not_supported,
+                                  color: Colors.grey),
                             ),
-                          );
-                        },
-                      ),
                     )
                   : Text(
                       content,
