@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class AlarmItem extends StatelessWidget {
   const AlarmItem({
@@ -38,12 +39,19 @@ class AlarmItem extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  width: 60,
-                  height: 60,
-                ),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        width: 60,
+                        height: 60,
+                      )
+                    : SvgPicture.asset(
+                        'assets/images/empty_image.svg',
+                        fit: BoxFit.cover,
+                        width: 60,
+                        height: 60,
+                      ),
               ),
               content,
             ],
