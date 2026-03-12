@@ -160,7 +160,7 @@ class _ItemInfo extends ConsumerWidget {
                               case PostActionType.edit:
                                 context.pushNamed(
                                   'write',
-                                  pathParameters: {'postId': post.postId},
+                                  queryParameters: {'id': post.postId},
                                 );
                                 break;
                               case PostActionType.report:

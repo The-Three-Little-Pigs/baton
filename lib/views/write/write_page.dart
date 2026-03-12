@@ -16,8 +16,9 @@ class WritePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModelProvider = writePageViewModelProvider(postId: postId);
-    final isLoading = ref.watch(viewModelProvider).isLoading;
+    final isLoading = ref
+        .watch(writePageViewModelProvider(postId: postId))
+        .isLoading;
 
     return Stack(
       children: [
