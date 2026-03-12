@@ -17,7 +17,7 @@ class CompleteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (isLoading || !condition) ? null : onPressed,
+      onTap: onPressed,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(

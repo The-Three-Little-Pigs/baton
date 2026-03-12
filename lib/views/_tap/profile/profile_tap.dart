@@ -143,37 +143,39 @@ class UserProfileCard extends ConsumerWidget {
         child: Row(
           children: [
             CircleAvatar(
-              radius: 32,
-              child: SizedBox(
-                width: 60,
-                height: 60,
-                child: userAsync.when(
-                  data: (user) {
-                    if (user?.profileUrl != null) {
-                      return Image.network(
-                        user!.profileUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            SvgPicture.asset(
-                              'assets/images/profile_image_60.svg',
-                            ),
-                      );
-                    } else {
+              radius: 30,
+              child: ClipOval(
+                child: SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: userAsync.when(
+                    data: (user) {
+                      if (user?.profileUrl != null) {
+                        return Image.network(
+                          user!.profileUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              SvgPicture.asset(
+                                'assets/images/profile_image_60.svg',
+                              ),
+                        );
+                      } else {
+                        return SvgPicture.asset(
+                          'assets/images/profile_image_60.svg',
+                        );
+                      }
+                    },
+                    loading: () {
                       return SvgPicture.asset(
                         'assets/images/profile_image_60.svg',
                       );
-                    }
-                  },
-                  loading: () {
-                    return SvgPicture.asset(
-                      'assets/images/profile_image_60.svg',
-                    );
-                  },
-                  error: (error, stack) {
-                    return SvgPicture.asset(
-                      'assets/images/profile_image_60.svg',
-                    );
-                  },
+                    },
+                    error: (error, stack) {
+                      return SvgPicture.asset(
+                        'assets/images/profile_image_60.svg',
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
