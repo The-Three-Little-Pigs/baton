@@ -10,6 +10,7 @@ import 'package:baton/views/write/viewmodel/category_notifier.dart';
 import 'package:baton/views/write/viewmodel/content_notifier.dart';
 import 'package:baton/views/write/viewmodel/image_notifier.dart';
 import 'package:baton/views/write/viewmodel/sale_notifier.dart';
+import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'write_page_view_model.g.dart';
@@ -17,7 +18,21 @@ part 'write_page_view_model.g.dart';
 @riverpod
 class WritePageViewModel extends _$WritePageViewModel {
   @override
-  FutureOr<void> build({String? postId}) {}
+  FutureOr<void> build({String? postId}) async {
+    if (postId != null) {
+      // initState와 같은 역할: build 시점에 데이터를 가져와 다른 Notifier들을 초기화
+      final result = await ref.read(postRepositoryProvider).getPostById(postId);
+
+      if (result is Success<Post, Failure>) {
+        final post = result.value;
+        // build 도중 다른 Notifier의 상태를 직접 수정하기보다는
+        // addPostFrameCallback 혹은 차후 프레임에서 안전하게 동기화
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          initWithPost(post);
+        });
+      }
+    }
+  }
 
   void initWithPost(Post post) {
     ref.read(contentProvider.notifier).initWithPost(post.title, post.content);

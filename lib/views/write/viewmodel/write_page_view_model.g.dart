@@ -51,7 +51,7 @@ final class WritePageViewModelProvider
 }
 
 String _$writePageViewModelHash() =>
-    r'57a5e89e50590b6d1cc951c6c1d6ad892f818829';
+    r'08ee7c75b2dfb9c9fd75fb2d3367dd47aaa739e8';
 
 final class WritePageViewModelFamily extends $Family
     with

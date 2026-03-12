@@ -106,8 +106,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/write',
         name: 'write',
         builder: (context, state) {
-          final post = state.uri.queryParameters['post'];
-          return WritePage(post: post);
+          final postId = state.uri.queryParameters['postId'];
+          return WritePage(postId: postId);
         },
       ),
       GoRoute(

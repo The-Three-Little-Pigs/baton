@@ -1,4 +1,3 @@
-import 'package:baton/models/entities/post.dart';
 import 'package:baton/views/write/viewmodel/write_page_view_model.dart';
 import 'package:baton/views/write/widgets/bottom_complete_bar.dart';
 import 'package:baton/views/write/widgets/category_section.dart';
@@ -11,27 +10,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class WritePage extends ConsumerWidget {
-  const WritePage({super.key, this.post});
+  const WritePage({super.key, this.postId});
 
-  final Post? post;
+  final String? postId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModelProvider = writePageViewModelProvider(postId: post?.postId);
+    final viewModelProvider = writePageViewModelProvider(postId: postId);
     final isLoading = ref.watch(viewModelProvider).isLoading;
-
-    if (post != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(viewModelProvider.notifier).initWithPost(post!);
-      });
-    }
 
     return Stack(
       children: [
         Scaffold(
           appBar: AppBar(
             title: Text(
-              post != null ? "게시글 수정" : "물건 팔기",
+              postId != null ? "게시글 수정" : "물건 팔기",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             centerTitle: true,
@@ -59,7 +52,7 @@ class WritePage extends ConsumerWidget {
               horizontal: 20,
               vertical: MediaQuery.of(context).padding.bottom + 20,
             ),
-            child: BottomCompleteBar(postId: post?.postId),
+            child: BottomCompleteBar(postId: postId),
           ),
         ),
         if (isLoading)
