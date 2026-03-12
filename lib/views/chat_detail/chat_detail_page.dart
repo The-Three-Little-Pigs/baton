@@ -6,6 +6,7 @@ import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
 import 'package:baton/views/chat_detail/widgets/chat_message_list.dart';
 import 'package:baton/views/chat_detail/widgets/chat_product_banner.dart';
+import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,7 +24,17 @@ class ChatDetailPage extends ConsumerWidget {
     //   () => AppointmentBottomSheet.showAppointmentDialog(context),
     // );
     final myUserId = ref.watch(userProvider).value?.uid;
+    final parts = roomId.split('_');
+    final otherUid = (parts.length >= 2)
+        ? (parts[0] == myUserId ? parts[1] : parts[0])
+        : '';
     final chatroomState = ref.watch(chatRoomStreamProvider(roomId));
+    final opponentAsync = ref.watch(authorProvider(otherUid));
+    final opponentNickname = opponentAsync.when(
+      data: (user) => user.nickname,
+      loading: () => '...',
+      error: (_, __) => '알 수 없는 사용자',
+    );
     // 1. 초기 진입 시 또는 상태 변경 시 모두 체크하기 위해
     // ref.listen 대신 ref.watch로 값을 일단 가져오고 조용히 업데이트를 쏩니다.
     if (myUserId != null && chatroomState.value != null) {
@@ -53,7 +64,7 @@ class ChatDetailPage extends ConsumerWidget {
             ),
           ),
           child: Text(
-            '홍길동',
+            opponentNickname,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
         ),

@@ -1,8 +1,9 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/models/entities/chat_room.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChatRoomListTile extends StatelessWidget {
+class ChatRoomListTile extends ConsumerWidget {
   const ChatRoomListTile({
     required this.room,
     required this.currentUserId,
@@ -13,7 +14,7 @@ class ChatRoomListTile extends StatelessWidget {
   final String currentUserId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       child: Row(

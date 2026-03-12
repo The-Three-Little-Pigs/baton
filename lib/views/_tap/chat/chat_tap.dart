@@ -1,5 +1,4 @@
 import 'package:baton/core/di/time_tick_provider.dart';
-import 'package:baton/models/repositories/repository_impl/auth_repository_impl.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_list_notifier.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_category_chips.dart';
@@ -19,25 +18,21 @@ class ChatTap extends ConsumerWidget {
     final _ = ref.watch(timeTickProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          '채팅',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: const Text(
+            '채팅',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.chat),
-            onPressed: () {
-              context.pushNamed(
-                'chatDetail',
-                pathParameters: {'roomId': 'test_room_id'},
-              );
-            },
-          ),
           // TODO: 지워야함
           Center(
             child: Text(
               "내 접속: $currentUserId",
               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
 
@@ -91,11 +86,5 @@ class ChatTap extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  String _createRoomId(String userId1, String userId2, String productId) {
-    List<String> userIds = [userId1, userId2];
-    userIds.sort();
-    return '${userIds[0]}_${userIds[1]}_$productId';
   }
 }
