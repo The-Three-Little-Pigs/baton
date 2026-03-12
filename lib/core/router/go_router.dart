@@ -54,6 +54,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'like',
         builder: (context, state) => const LikePage(),
       ),
+      GoRoute(
+        path: '/chatDetail/:roomId',
+        name: 'chatDetail',
+        builder: (context, state) {
+          final roomId = state.pathParameters['roomId'] ?? '';
+          return ChatDetailPage(roomId: roomId);
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             MainScaffold(navigationShell: navigationShell),

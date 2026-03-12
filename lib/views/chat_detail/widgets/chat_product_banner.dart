@@ -1,11 +1,19 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChatProductBanner extends StatelessWidget {
-  const ChatProductBanner({super.key});
+class ChatProductBanner extends ConsumerWidget {
+  const ChatProductBanner({super.key, required this.roomId});
+
+  final String roomId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final parts = roomId.split('_');
+    final productId = parts.length >= 3 ? parts[2] : '';
+    final postAsync = ref.watch(productDetailPageViewModelProvider(productId));
+
     return Container(
       decoration: BoxDecoration(),
       child: Padding(

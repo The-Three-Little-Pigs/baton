@@ -17,6 +17,10 @@ class ChatRoomActionNotifier extends _$ChatRoomActionNotifier {
     required String productId,
   }) {
     // 1. 내 UID 가져오기
+    // TODO: targetUserId 검증 주석 해제하기
+    // if (targetUserId.isEmpty) {
+    //   return Error(UnknownFailure('판매자 정보가 올바르지 않습니다.'));
+    // }
     final myUser = ref.read(userProvider).value; // 생성하신 UserNotifier 사용
 
     if (myUser == null) {
