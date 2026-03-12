@@ -1,8 +1,12 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/models/entities/chat_room.dart';
+import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 
-class ChatRoomListTile extends StatelessWidget {
+class ChatRoomListTile extends ConsumerWidget {
   const ChatRoomListTile({
     required this.room,
     required this.currentUserId,
@@ -13,7 +17,15 @@ class ChatRoomListTile extends StatelessWidget {
   final String currentUserId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final otherId = room.participants.firstWhere(
+      (id) => id != currentUserId,
+      orElse: () => '',
+    );
+    final parts = room.roomId.split('_');
+    final productId = parts.length >= 3 ? parts[2] : '';
+    final otherUserAsync = ref.watch(authorProvider(otherId));
+    final postAsync = ref.watch(productDetailPageViewModelProvider(productId));
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       child: Row(
@@ -24,12 +36,15 @@ class ChatRoomListTile extends StatelessWidget {
               width: 60.7326,
               height: 60.7326,
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: Center(
-                child: Icon(
-                  Icons.image,
-                  size: 14,
-                  color: AppColors.textTertiary,
+              child: postAsync.when(
+                data: (post) => post.imageUrls.isNotEmpty
+                    ? Image.network(post.imageUrls[0], fit: BoxFit.cover)
+                    : SvgPicture.asset('assets/images/empty_image_60.svg'),
+                loading: () => const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
+                error: (_, __) =>
+                    const Center(child: Icon(Icons.broken_image, size: 14)),
               ),
             ),
           ),
@@ -41,33 +56,43 @@ class ChatRoomListTile extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      //TODO: nickName
-                      '상대방닉네임',
-                      style: TextStyle(
+                      otherUserAsync.when(
+                        data: (user) => user.nickname,
+                        loading: () => '...',
+                        error: (_, __) => '알 수 없는 사용자',
+                      ),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 4),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Colors.grey.shade500,
-                              width: 1,
+                      child: postAsync.when(
+                        data: (post) {
+                          // 상품 작성자와 내 ID가 같으면 '판매', 다르면 '구매'
+                          final isSeller = post.authorId == currentUserId;
+                          return Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.grey.shade500,
+                                  width: 1,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        child: Text(
-                          // TODO: 판매인지 구매인지
-                          '구매',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
+                            child: Text(
+                              isSeller ? '판매' : '구매',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
                       ),
                     ),
                   ],

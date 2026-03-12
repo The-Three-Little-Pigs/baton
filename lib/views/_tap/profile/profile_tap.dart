@@ -121,11 +121,12 @@ class ProfileTap extends ConsumerWidget {
   }
 }
 
-class UserProfileCard extends StatelessWidget {
+class UserProfileCard extends ConsumerWidget {
   const UserProfileCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
     return Container(
       decoration: BoxDecoration(
         border: Border(
@@ -143,14 +144,36 @@ class UserProfileCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 32,
-              backgroundColor: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest,
-              child: Center(
-                child: Icon(
-                  Icons.image,
-                  size: 14,
-                  color: AppColors.textTertiary,
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: userAsync.when(
+                  data: (user) {
+                    if (user?.profileUrl != null) {
+                      return Image.network(
+                        user!.profileUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            SvgPicture.asset(
+                              'assets/images/profile_image_60.svg',
+                            ),
+                      );
+                    } else {
+                      return SvgPicture.asset(
+                        'assets/images/profile_image_60.svg',
+                      );
+                    }
+                  },
+                  loading: () {
+                    return SvgPicture.asset(
+                      'assets/images/profile_image_60.svg',
+                    );
+                  },
+                  error: (error, stack) {
+                    return SvgPicture.asset(
+                      'assets/images/profile_image_60.svg',
+                    );
+                  },
                 ),
               ),
             ),
@@ -159,10 +182,20 @@ class UserProfileCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '양도합니다',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  userAsync.when(
+                    data: (user) => Text(
+                      user?.nickname ?? '로그인 필요',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    loading: () =>
+                        const Text('...', style: TextStyle(fontSize: 16)),
+                    error: (_, __) =>
+                        const Text('에러 발생', style: TextStyle(fontSize: 16)),
                   ),
+
                   Text(
                     '프로필 수정',
                     style: TextStyle(

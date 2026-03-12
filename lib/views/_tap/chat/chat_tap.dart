@@ -3,6 +3,8 @@ import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_list_notifier.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_category_chips.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_list_tile.dart';
+import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart' show GoRouterHelper;
@@ -18,29 +20,41 @@ class ChatTap extends ConsumerWidget {
     final _ = ref.watch(timeTickProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          '채팅',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: const Text(
+            '채팅',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.chat),
-            onPressed: () {
-              context.pushNamed(
-                'chatDetail',
-                pathParameters: {'roomId': 'test_room_id'},
+          // TODO: 지워야함
+          // Center(
+          //   child: Text(
+          //     "내 접속: $currentUserId",
+          //     style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          //     overflow: TextOverflow.ellipsis,
+          //     maxLines: 1,
+          //   ),
+          // ),
+          GestureDetector(
+            onTap: () async {
+              showCupertinoModalPopup(
+                context: context,
+                builder: (context) => CupertinoModalPopUp(
+                  actions: [
+                    {
+                      '삭제하기': () {
+                        // TODO: 삭제하기 기능 구현
+                        context.pop();
+                      },
+                    },
+                  ],
+                ),
               );
             },
+            child: const Icon(Icons.more_vert, size: 20),
           ),
-          // TODO: 지워야함
-          Center(
-            child: Text(
-              "내 접속: $currentUserId",
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-            ),
-          ),
-
-          const Icon(Icons.more_vert),
         ],
       ),
       body: Column(
@@ -90,11 +104,5 @@ class ChatTap extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  String _createRoomId(String userId1, String userId2, String productId) {
-    List<String> userIds = [userId1, userId2];
-    userIds.sort();
-    return '${userIds[0]}_${userIds[1]}_$productId';
   }
 }
