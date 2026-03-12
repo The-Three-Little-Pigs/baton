@@ -5,6 +5,8 @@ import 'package:baton/core/utils/format_currency.dart';
 import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/mapper/format_time_mapper.dart';
 import 'package:baton/notifier/like/like_notifier.dart';
+import 'package:baton/notifier/post/product_item_notifier.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,11 +25,7 @@ class ProductItem extends ConsumerWidget {
       children: [
         _ItemImage(post: post),
         const SizedBox(height: 9),
-        _ItemInfo(
-          title: post.title,
-          date: formatTime(post.createdAt),
-          price: post.salePrice,
-        ),
+        _ItemInfo(post: post, date: formatTime(post.createdAt)),
       ],
     );
   }
@@ -63,7 +61,7 @@ class _ItemImage extends ConsumerWidget {
               post.imageUrls.isNotEmpty
                   ? Image.network(post.imageUrls.first, fit: BoxFit.cover)
                   : SvgPicture.asset(
-                      'assets/images/empty_image.svg',
+                      'assets/images/empty_image_160.svg',
                       fit: BoxFit.cover,
                     ),
               Positioned(
@@ -109,19 +107,14 @@ class _ItemImage extends ConsumerWidget {
   }
 }
 
-class _ItemInfo extends StatelessWidget {
-  const _ItemInfo({
-    required this.title,
-    required this.date,
-    required this.price,
-  });
+class _ItemInfo extends ConsumerWidget {
+  const _ItemInfo({required this.post, required this.date});
 
-  final String title;
+  final Post post;
   final String date;
-  final int? price;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final appColors = theme.extension<AppColorExtension>();
@@ -137,7 +130,7 @@ class _ItemInfo extends StatelessWidget {
             children: [
               Expanded(
                 child: AutoSizeText(
-                  title,
+                  post.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   maxFontSize: 14,
@@ -149,17 +142,31 @@ class _ItemInfo extends StatelessWidget {
                 ),
               ),
               GestureDetector(
-                onTap: () async {
+                onTap: () {
+                  final actions = ref
+                      .read(productItemProvider.notifier)
+                      .getAvailableActions(post.authorId);
+
+                  if (actions.isEmpty) return;
+
                   showCupertinoModalPopup(
                     context: context,
                     builder: (context) => CupertinoModalPopUp(
-                      actions: [
-                        {
-                          '신고하기': () {
+                      actions: actions.map((action) {
+                        return {
+                          action.label: () {
                             context.pop();
+                            switch (action) {
+                              case PostActionType.edit:
+                                // TODO: 게시글 수정 페이지 이동 로직
+                                break;
+                              case PostActionType.report:
+                                // TODO: 신고하기 로직 실행
+                                break;
+                            }
                           },
-                        },
-                      ],
+                        };
+                      }).toList(),
                     ),
                   );
                 },
@@ -172,7 +179,9 @@ class _ItemInfo extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                price == null ? '나눔' : '${formatCurrency(price!)}원',
+                post.salePrice == null
+                    ? '나눔'
+                    : '${formatCurrency(post.salePrice!)}원',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

@@ -1,3 +1,4 @@
+import 'package:baton/models/entities/post.dart';
 import 'package:baton/views/write/viewmodel/write_page_view_model.dart';
 import 'package:baton/views/write/widgets/bottom_complete_bar.dart';
 import 'package:baton/views/write/widgets/category_section.dart';
@@ -10,7 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class WritePage extends ConsumerWidget {
-  const WritePage({super.key});
+  const WritePage({super.key, this.post});
+
+  final Post? post;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
