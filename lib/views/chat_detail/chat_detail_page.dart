@@ -7,6 +7,8 @@ import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
 import 'package:baton/views/chat_detail/widgets/chat_message_list.dart';
 import 'package:baton/views/chat_detail/widgets/chat_product_banner.dart';
 import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
+import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -71,7 +73,32 @@ class ChatDetailPage extends ConsumerWidget {
             ),
           ),
           centerTitle: true,
-          actions: [Icon(Icons.more_vert, size: 24)],
+          actions: [
+            GestureDetector(
+              onTap: () async {
+                showCupertinoModalPopup(
+                  context: context,
+                  builder: (context) => CupertinoModalPopUp(
+                    actions: [
+                      {
+                        '신고하기': () {
+                          // TODO: 신고하기 기능 구현
+                          context.pop();
+                        },
+                      },
+                      {
+                        '채팅방 나가기': () {
+                          // TODO: 채팅방 나가기 기능 구현
+                          context.pop();
+                        },
+                      },
+                    ],
+                  ),
+                );
+              },
+              child: const Icon(Icons.more_vert, size: 20),
+            ),
+          ],
         ),
         body: Column(
           children: [

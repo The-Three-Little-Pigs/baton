@@ -3,6 +3,8 @@ import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_list_notifier.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_category_chips.dart';
 import 'package:baton/views/_tap/chat/widgets/chat_list_tile.dart';
+import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart' show GoRouterHelper;
@@ -36,7 +38,24 @@ class ChatTap extends ConsumerWidget {
             ),
           ),
 
-          const Icon(Icons.more_vert),
+          GestureDetector(
+            onTap: () async {
+              showCupertinoModalPopup(
+                context: context,
+                builder: (context) => CupertinoModalPopUp(
+                  actions: [
+                    {
+                      '삭제하기': () {
+                        // TODO: 삭제하기 기능 구현
+                        context.pop();
+                      },
+                    },
+                  ],
+                ),
+              );
+            },
+            child: const Icon(Icons.more_vert, size: 20),
+          ),
         ],
       ),
       body: Column(
