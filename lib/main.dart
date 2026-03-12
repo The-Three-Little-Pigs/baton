@@ -31,6 +31,9 @@ class BatonApp extends ConsumerWidget {
     // routerProvider를 읽어옵니다.
     final goRouter = ref.watch(routerProvider);
 
+    // NotificationService에 라우터 주입
+    NotificationService().setRouter(goRouter);
+
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Baton',

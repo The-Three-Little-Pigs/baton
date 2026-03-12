@@ -1,6 +1,5 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -30,9 +29,14 @@ class ProfileTap extends ConsumerWidget {
           MenuListItem(
             svgPath: 'assets/icons/sales_history.svg',
             content: '판매내역',
+            routePath: '/salesHistory',
           ),
           SizedBox(height: 8),
-          MenuListItem(icon: Icons.shopping_cart, content: '구매내역'),
+          MenuListItem(
+            icon: Icons.shopping_cart,
+            content: '구매내역',
+            routePath: '/purchaseHistory',
+          ),
           SizedBox(height: 10),
           SectionTitle(title: '활동'),
           MenuListItem(
@@ -46,63 +50,64 @@ class ProfileTap extends ConsumerWidget {
             routePath: '/like',
           ),
 
-          ///임의로 로그아웃 탈퇴버튼 추가했어용
+          /// 로그아웃 및 탈퇴 버튼
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            padding: const EdgeInsets.symmetric(vertical: 40),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () async {
-                      await FirebaseAuth.instance.signOut();
-                      if (context.mounted) {
-                        context.go('/login');
-                      }
-                    },
-                    child: Container(
-                      height: 40,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text('로그아웃', style: TextStyle(fontSize: 13)),
+                GestureDetector(
+                  onTap: () async {
+                    await ref.read(userProvider.notifier).signOut();
+                    if (context.mounted) {
+                      context.go('/');
+                    }
+                  },
+                  child: Text(
+                    '로그아웃',
+                    style: TextStyle(
+                      color: const Color(0xFFB3B3B3),
+                      fontSize: 12,
+                      fontFamily: 'Pretendard',
+                      fontWeight: FontWeight.w400,
+                      height: 1.3,
+                      decoration: TextDecoration.underline,
+                      decorationColor: const Color(0xFFB3B3B3),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      print('탈퇴 프로세스 시작');
-                      ref
-                          .read(userProvider.notifier)
-                          .withdraw(
-                            onSuccess: () {
-                              if (context.mounted) {
-                                context.go('/');
-                              }
-                            },
-                            onError: (message) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('탈퇴 실패: $message')),
-                                );
-                              }
-                            },
-                          );
-                    },
-                    child: Container(
-                      height: 40,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        '회원탈퇴',
-                        style: TextStyle(color: Colors.red, fontSize: 13),
-                      ),
+                const SizedBox(width: 16),
+                Container(width: 1, height: 10, color: const Color(0xFFB3B3B3)),
+                const SizedBox(width: 16),
+                GestureDetector(
+                  onTap: () {
+                    ref
+                        .read(userProvider.notifier)
+                        .withdraw(
+                          onSuccess: () {
+                            if (context.mounted) {
+                              context.go('/');
+                            }
+                          },
+                          onError: (message) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('탈퇴 실패: $message')),
+                              );
+                            }
+                          },
+                        );
+                  },
+                  child: Text(
+                    '회원탈퇴',
+                    style: TextStyle(
+                      color: const Color(0xFFB3B3B3),
+                      fontSize: 12,
+                      fontFamily: 'Pretendard',
+                      fontWeight: FontWeight.w400,
+                      height: 1.3,
+                      decoration: TextDecoration.underline,
+                      decorationColor: const Color(0xFFB3B3B3),
                     ),
                   ),
                 ),

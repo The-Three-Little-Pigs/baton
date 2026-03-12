@@ -6,6 +6,7 @@ class SocialLoginButton extends StatelessWidget {
   final Color backgroundColor; // 버튼의 배경색
   final VoidCallback onTap; // 클릭 시 실행될 비즈니스 로직
   final Color textColor; // 텍스트 색상 (기본값 검정)
+  final String? iconPath; // 아이콘 이미지 경로
 
   const SocialLoginButton({
     super.key,
@@ -13,6 +14,7 @@ class SocialLoginButton extends StatelessWidget {
     required this.backgroundColor,
     required this.onTap,
     this.textColor = Colors.black,
+    this.iconPath,
   });
 
   @override
@@ -23,29 +25,34 @@ class SocialLoginButton extends StatelessWidget {
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 15),
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              if (backgroundColor == Colors.white)
-                BoxShadow(
-                  // ignore: deprecated_member_use
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-            ],
+            borderRadius: BorderRadius.circular(8),
+            border: backgroundColor == Colors.white
+                ? Border.all(color: const Color(0xFFF2F2F2))
+                : null,
           ),
-          child: Center(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+          child: Stack(
+            children: [
+              if (iconPath != null)
+                Positioned(
+                  left: 20,
+                  top: 0,
+                  bottom: 0,
+                  child: Image.asset(iconPath!, width: 20, height: 20),
+                ),
+              Center(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),

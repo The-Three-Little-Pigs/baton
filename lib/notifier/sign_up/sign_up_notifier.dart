@@ -11,6 +11,7 @@ class SignUpState {
   final bool isAvailable;
   final bool isLoading;
   final String? errorMessage;
+  final String? guideMessage;
 
   const SignUpState({
     this.nickname = '',
@@ -18,6 +19,7 @@ class SignUpState {
     this.isAvailable = false,
     this.isLoading = false,
     this.errorMessage,
+    this.guideMessage = "닉네임을 입력해주세요.",
   });
 
   bool get isValidLength => nickname.length >= 2 && nickname.length <= 8;
@@ -29,7 +31,9 @@ class SignUpState {
     bool? isAvailable,
     bool? isLoading,
     String? errorMessage,
+    String? guideMessage,
     bool clearError = false,
+    bool clearGuide = false,
   }) {
     return SignUpState(
       nickname: nickname ?? this.nickname,
@@ -37,6 +41,7 @@ class SignUpState {
       isAvailable: isAvailable ?? this.isAvailable,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      guideMessage: clearGuide ? null : (guideMessage ?? this.guideMessage),
     );
   }
 }
@@ -52,32 +57,40 @@ class SignUpNotifier extends _$SignUpNotifier {
     if (state.nickname == nickname) return;
 
     String? errorMessage;
+    String? guideMessage;
 
-    // 1. 실시간 글자 수 체크 로직 추가
-    if (nickname.length == 1) {
-      errorMessage = "2자 이상 입력해주세요";
+    if (nickname.isEmpty) {
+      guideMessage = "닉네임을 입력해주세요.";
+    } else if (nickname.length == 1) {
+      guideMessage = "2자 이상 입력해주세요.";
+    } else if (nickname.length < 8) {
+      guideMessage = "중복 확인을 진행해 주세요.";
     } else if (nickname.length >= 8) {
-      errorMessage = "8글자까지 입력 가능합니다.";
+      guideMessage = "8글자까지 입력 가능합니다.";
     }
 
-    // 닉네임이 변경되면 중복 확인 상태 초기화 및 메시지 업데이트
+    // 닉네임이 변경되면 중복 확인 상태 초기화
     state = state.copyWith(
       nickname: nickname,
       isDuplicateChecked: false,
       isAvailable: false,
-      errorMessage: errorMessage, // 계산된 메시지 적용
-      clearError: errorMessage == null, // 에러가 없으면 기존 에러 삭제
+      errorMessage: errorMessage,
+      guideMessage: guideMessage,
+      clearError: true,
+      clearGuide:
+          nickname.length >= 2 && nickname.length < 8 && false, // Logic below
     );
+
+    // 중복 확인이 필요 없는 상태(성공)면 가이드를 비울 수도 있으나,
+    // 여기서는 기본적으로 "중복 확인을 진행해 주세요"를 유지
   }
 
   Future<void> checkDuplicate() async {
-    // 2. 버튼 클릭 시(중복 확인 시) 최종 유효성 검사
     if (state.nickname.length < 2) {
-      state = state.copyWith(errorMessage: "2자 이상 입력해주세요");
+      state = state.copyWith(guideMessage: "2자 이상 입력해주세요.");
       return;
     }
 
-    // 로딩 상태 시작
     state = state.copyWith(isLoading: true, clearError: true);
 
     final repository = ref.read(userRepositoryProvider);
@@ -90,6 +103,8 @@ class SignUpNotifier extends _$SignUpNotifier {
           isDuplicateChecked: true,
           isAvailable: !isDuplicated,
           errorMessage: isDuplicated ? "이미 사용 중인 닉네임입니다." : "사용 가능한 닉네임입니다.",
+          guideMessage: isDuplicated ? "중복 확인을 진행해 주세요." : null,
+          clearGuide: !isDuplicated, // 사용 가능하면 가이드 제거
         );
       case Error(failure: _):
         state = state.copyWith(

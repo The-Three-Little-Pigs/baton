@@ -132,14 +132,13 @@ class UserRepositoryImpl implements UserRepository {
       await _firestore.collection(_collectionPath).doc(uid).delete();
 
       // 2. Auth 계정 삭제 및 세션 정리
-      // 이 로직은 AuthRepository.deleteAccount()와 중복될 수 있으므로,
-      // 향후 서비스 레이어로 통합하는 것이 좋습니다.
+      // Note: 실제 서비스에서는 AuthRepository.deleteAccount()를 호출하는 것이 더 완벽합니다.
+      // 여기서는 DB 데이터 삭제에 집중합니다.
       await user.delete();
       await FirebaseAuth.instance.signOut();
 
       return const Success(null);
     } on FirebaseAuthException catch (e) {
-      // 보안상 재로그인이 필요한 경우 (최근 로그인 기록 없을 때)
       if (e.code == 'requires-recent-login') {
         return Error(AuthFailure('보안을 위해 다시 로그인한 후 탈퇴를 진행해주세요.'));
       }

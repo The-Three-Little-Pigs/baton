@@ -5,13 +5,13 @@ import 'package:baton/views/_tap/chat/chat_tap.dart';
 import 'package:baton/views/_tap/home/home_tap.dart';
 import 'package:baton/views/_tap/profile/profile_tap.dart';
 
-import 'package:baton/views/alarm/alarm_page.dart';
-import 'package:baton/views/chat_detail/chat_detail_page.dart';
 import 'package:baton/views/like/like_page.dart';
 import 'package:baton/views/login/login_page.dart';
 import 'package:baton/views/product_detail/product_detail_page.dart';
 import 'package:baton/views/sign_up/sign_up_page.dart';
 import 'package:baton/views/sign_up_profile_page/widgets/sign_up_profile_page.dart';
+import 'package:baton/views/purchase_history/purchase_history_page.dart';
+import 'package:baton/views/sales_history/sales_history_page.dart';
 import 'package:baton/views/widgets/main_scaffold.dart';
 import 'package:baton/views/write/write_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -98,6 +98,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'write',
         builder: (context, state) => const WritePage(),
       ),
+      GoRoute(
+        path: '/salesHistory',
+        name: 'salesHistory',
+        builder: (context, state) => const SalesHistoryPage(),
+      ),
+      GoRoute(
+        path: '/purchaseHistory',
+        name: 'purchaseHistory',
+        builder: (context, state) => const PurchaseHistoryPage(),
+      ),
     ],
 
     redirect: (context, state) {
@@ -126,23 +136,30 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 3. DB에 유저 정보(닉네임)가 없는 경우 (미가입자)
       if (user == null || user.nickname.isEmpty) {
-        // 이미 가입 관련 페이지로 가고 있다면 허용
-        if (location == '/signUp' || location == '/signUpProfile') {
-          if (location == '/signUpProfile') {
-            if (state.extra == null || (state.extra as String).isEmpty) {
-              return '/signUp';
+        // [중요] 만약 userProvider가 데이터를 가지고 있는데 null이라면 (로딩 완료 후에도 데이터 없음),
+        // 그때 비로소 미가입자로 판단하고 이동시킵니다.
+        // 유저 정보가 정말로 없는 것이 확실할 때만 리다이렉트
+        if (userAsync.hasValue) {
+          // 이미 가입 관련 페이지로 가고 있다면 허용
+          if (location == '/signUp' || location == '/signUpProfile') {
+            if (location == '/signUpProfile') {
+              if (state.extra == null || (state.extra as String).isEmpty) {
+                return '/signUp';
+              }
             }
+            return null;
           }
-          return null;
+
+          // 로그인 페이지('/')에 있다면 -> 신규 가입 페이지로 자동 이동
+          if (location == '/') return '/signUp';
+
+          // 그 외 보호된 페이지(예: /home) 접근 시 로그인 페이지('/')로 유도
+          return '/';
         }
 
-        // 로그인 페이지('/')에 있는 것도 허용 (사용자 요청: 시작을 로그인 페이지에서)
-        if (location == '/') return null;
-
-        // 그 외 보호된 페이지(예: /home) 접근 시 로그인 페이지('/')로 유도
-        return '/';
+        // 아직 유저 정보 유무가 불확실하면 현재 위치 유지 (Loading 상태 등)
+        return null;
       }
-
       // 4. 가입 완료된 유저
       // 로그인/가입 페이지에 있다면 홈으로 리다이렉트
       if (location == '/' ||

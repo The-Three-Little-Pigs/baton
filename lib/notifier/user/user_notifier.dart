@@ -1,6 +1,9 @@
+import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/user.dart' as entity;
+import 'package:baton/models/repositories/repository_impl/auth_repository_impl.dart';
 import 'package:baton/models/repositories/repository_impl/user_repository_impl.dart';
+import 'package:baton/service/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -18,10 +21,23 @@ class UserNotifier extends _$UserNotifier {
     final userRepo = ref.read(userRepositoryProvider);
     final result = await userRepo.fetchUserData(firebaseUser.uid);
 
-    return switch (result) {
+    final user = switch (result) {
       Success(:final value) => value,
       Error() => null,
     };
+
+    // [추가] 로그인 성공 상태라면 FCM 토큰 업데이트/서버 전송
+    if (user != null) {
+      NotificationService().updateFCMToken(user.uid, userRepository: userRepo);
+    }
+
+    return user;
+  }
+
+  /// 유저 정보를 수동으로 다시 불러옵니다.
+  Future<void> refresh() async {
+    ref.invalidateSelf();
+    await future;
   }
 
   Future<void> withdraw({
@@ -37,10 +53,24 @@ class UserNotifier extends _$UserNotifier {
 
     final userRepo = ref.read(userRepositoryProvider);
 
-    // 통합 탈퇴 로직 호출 (Firestore 데이터 삭제 + Auth 계정 삭제 + 로그아웃)
-    final result = await userRepo.withdrawAccount();
+    // [보안] 탈퇴 전 FCM 토큰 삭제 (더 이상 알림이 가지 않도록)
+    await NotificationService().deleteFCMToken(
+      currentUser.uid,
+      userRepository: userRepo,
+    );
 
-    switch (result) {
+    // 1. Firestore 데이터 삭제
+    final result = await userRepo.deleteUserData(currentUser.uid);
+
+    if (result is Error<void, Failure>) {
+      onError(result.failure.message);
+      return;
+    }
+
+    // 2. 소셜 및 Auth 계정 삭제 (AuthRepository 활용)
+    final authResult = await ref.read(authRepositoryProvider).deleteAccount();
+
+    switch (authResult) {
       case Success():
         state = const AsyncData(null);
         ref.invalidateSelf();
@@ -50,6 +80,23 @@ class UserNotifier extends _$UserNotifier {
         onError(failure.message);
         break;
     }
+  }
+
+  /// 로그아웃 시 알림 정리
+  Future<void> signOut() async {
+    final currentUser = state.value;
+    if (currentUser != null) {
+      final userRepo = ref.read(userRepositoryProvider);
+      await NotificationService().deleteFCMToken(
+        currentUser.uid,
+        userRepository: userRepo,
+      );
+    }
+    // AuthRepository를 통한 통합 로그아웃 (소셜 세션 포함)
+    await ref.read(authRepositoryProvider).signOut();
+
+    state = const AsyncData(null);
+    ref.invalidateSelf();
   }
 
   /// 즐겨찾기 토글 (추가/제거)
