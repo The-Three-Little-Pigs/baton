@@ -6,7 +6,7 @@ import 'package:baton/models/enum/category.dart';
 abstract class PostRepository {
   Future<Result<void, Failure>> createPost(Post post);
   Future<Result<void, Failure>> updatePost(Post post);
-  Future<Result<void, Failure>> deletePost(Post post);
+  Future<Result<void, Failure>> deletePost(String postId);
   Future<Result<List<Post>, Failure>> getPosts(
     Set<Category>? categories,
     DateTime? lastTime,

@@ -1,3 +1,4 @@
+import 'package:baton/core/result/result.dart';
 import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/core/utils/format_currency.dart';
 import 'package:baton/models/entities/post.dart';
@@ -148,7 +149,66 @@ class MoreVerButton extends ConsumerWidget {
                       // TODO: 신고하기 로직 실행
                       break;
                     case PostActionType.delete:
-                      // TODO: 게시글 삭제 로직 실행
+                      showCupertinoDialog(
+                        context: context,
+                        builder: (context) => CupertinoAlertDialog(
+                          title: const Text('게시글 삭제'),
+                          content: const Text('게시글을 삭제하시겠습니까?'),
+                          actions: [
+                            CupertinoDialogAction(
+                              onPressed: () => context.pop(),
+                              child: const Text('취소'),
+                            ),
+                            CupertinoDialogAction(
+                              onPressed: () async {
+                                final result = await ref
+                                    .read(
+                                      productDetailPageViewModelProvider(
+                                        post.postId,
+                                      ).notifier,
+                                    )
+                                    .deletePost();
+
+                                if (context.mounted) {
+                                  context.pop();
+
+                                  switch (result) {
+                                    case Success():
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('게시글이 삭제되었습니다.'),
+                                        ),
+                                      );
+                                      ref
+                                          .read(
+                                            productDetailPageViewModelProvider(
+                                              post.postId,
+                                            ).notifier,
+                                          )
+                                          .deletePost();
+                                      break;
+                                    case Error(failure: final f):
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text('삭제 실패: ${f.message}'),
+                                        ),
+                                      );
+                                      break;
+                                  }
+                                }
+                              },
+                              child: const Text(
+                                '삭제',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                       break;
                   }
                 },

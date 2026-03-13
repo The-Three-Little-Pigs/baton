@@ -1,4 +1,5 @@
 import 'package:baton/core/di/repository/post_provider.dart';
+import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -14,6 +15,17 @@ class ProductDetailPageViewModel extends _$ProductDetailPageViewModel {
     return switch (result) {
       Success(value: final post) => post,
       Error(failure: final failure) => throw failure.message,
+    };
+  }
+
+  Future<Result<void, Failure>> deletePost() async {
+    final result = await ref
+        .read(postRepositoryProvider)
+        .deletePost(state.value!.postId);
+
+    return switch (result) {
+      Success() => result,
+      Error(failure: final failure) => Error(failure),
     };
   }
 

@@ -1,3 +1,6 @@
+import 'package:baton/core/di/repository/post_provider.dart';
+import 'package:baton/core/error/failure.dart';
+import 'package:baton/core/result/result.dart';
 import 'package:baton/models/enum/post_action_type.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -22,5 +25,9 @@ class ProductItemNotifier extends _$ProductItemNotifier {
     } else {
       return [PostActionType.report];
     }
+  }
+
+  Future<Result<void, Failure>> deletePost(String postId) async {
+    return await ref.read(postRepositoryProvider).deletePost(postId);
   }
 }

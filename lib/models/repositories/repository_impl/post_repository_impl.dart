@@ -26,9 +26,9 @@ class PostRepositoryImpl implements PostRepository {
   }
 
   @override
-  Future<Result<void, Failure>> deletePost(Post post) async {
+  Future<Result<void, Failure>> deletePost(String postId) async {
     try {
-      final docRef = _firestore.collection('posts').doc(post.postId);
+      final docRef = _firestore.collection('posts').doc(postId);
       await docRef.delete();
 
       return Success(null);
