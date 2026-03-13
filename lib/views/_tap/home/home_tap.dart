@@ -3,6 +3,7 @@ import 'package:baton/views/_tap/home/viewmodel/home_tap_viewmodel.dart';
 import 'package:baton/views/_tap/home/widgets/category_chips.dart';
 import 'package:baton/views/_tap/home/widgets/category_select_button.dart';
 import 'package:baton/views/_tap/home/widgets/no_product.dart';
+import 'package:baton/views/widgets/home_logo.dart';
 import 'package:baton/views/widgets/product_item.dart';
 import 'package:baton/views/widgets/top_modal_sheet.dart';
 import 'package:flutter/material.dart';
@@ -18,8 +19,10 @@ class HomeTap extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Home"),
-        actions: [const Icon(Icons.notifications)],
+        title: HomeLogo(),
+        actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
+        ],
       ),
       body: Column(
         spacing: 10,
@@ -55,34 +58,34 @@ class HomeTap extends ConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: postAsyncValue.when(
-                        data: (posts) {
+                        data: (homeTapState) {
+                          final posts = homeTapState.posts;
                           if (posts.isEmpty) {
                             return Center(child: const NoProduct());
                           }
-                          return GridView.builder(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  childAspectRatio: 0.7,
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 20,
-                                  crossAxisSpacing: 20,
-                                ),
-                            itemBuilder: (context, index) {
-                              return NotificationListener<ScrollNotification>(
-                                onNotification: (notification) {
-                                  if (notification.metrics.pixels >=
-                                      notification.metrics.maxScrollExtent *
-                                          0.8) {
-                                    ref
-                                        .read(homeTapViewModelProvider.notifier)
-                                        .fetchPosts();
-                                  }
-                                  return false;
-                                },
-                                child: ProductItem(post: posts[index]),
-                              );
+                          return NotificationListener<ScrollNotification>(
+                            onNotification: (notification) {
+                              if (notification.metrics.pixels >=
+                                  notification.metrics.maxScrollExtent * 0.8) {
+                                ref
+                                    .read(homeTapViewModelProvider.notifier)
+                                    .fetchPosts();
+                              }
+                              return false;
                             },
-                            itemCount: posts.length,
+                            child: GridView.builder(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    childAspectRatio: 0.7,
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 20,
+                                    crossAxisSpacing: 20,
+                                  ),
+                              itemBuilder: (context, index) {
+                                return ProductItem(post: posts[index]);
+                              },
+                              itemCount: posts.length,
+                            ),
                           );
                         },
                         error: (error, stackTrace) {

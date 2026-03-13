@@ -13,7 +13,7 @@ part of 'home_tap_viewmodel.dart';
 final homeTapViewModelProvider = HomeTapViewModelProvider._();
 
 final class HomeTapViewModelProvider
-    extends $AsyncNotifierProvider<HomeTapViewModel, List<Post>> {
+    extends $AsyncNotifierProvider<HomeTapViewModel, HomeTapState> {
   HomeTapViewModelProvider._()
     : super(
         from: null,
@@ -33,19 +33,19 @@ final class HomeTapViewModelProvider
   HomeTapViewModel create() => HomeTapViewModel();
 }
 
-String _$homeTapViewModelHash() => r'b12c3074b99c259a135584644b9756478739e55d';
+String _$homeTapViewModelHash() => r'211dee44e51ef47a0e644a71510505e55baf57df';
 
-abstract class _$HomeTapViewModel extends $AsyncNotifier<List<Post>> {
-  FutureOr<List<Post>> build();
+abstract class _$HomeTapViewModel extends $AsyncNotifier<HomeTapState> {
+  FutureOr<HomeTapState> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<List<Post>>, List<Post>>;
+    final ref = this.ref as $Ref<AsyncValue<HomeTapState>, HomeTapState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<Post>>, List<Post>>,
-              AsyncValue<List<Post>>,
+              AnyNotifier<AsyncValue<HomeTapState>, HomeTapState>,
+              AsyncValue<HomeTapState>,
               Object?,
               Object?
             >;
