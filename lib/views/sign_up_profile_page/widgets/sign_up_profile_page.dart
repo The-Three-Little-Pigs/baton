@@ -141,7 +141,6 @@ class SignUpProfilePage extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 21),
               child: CompleteButton(
                 label: "가입 완료",
-                condition: signUpState.selectedImage != null,
                 isLoading: signUpState.isLoading,
                 onPressed: () async {
                   await ref

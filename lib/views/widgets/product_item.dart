@@ -185,7 +185,7 @@ class _ItemInfo extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                post.salePrice == null
+                (post.salePrice == 0 || post.salePrice == null)
                     ? '나눔'
                     : '${formatCurrency(post.salePrice!)}원',
                 style: TextStyle(

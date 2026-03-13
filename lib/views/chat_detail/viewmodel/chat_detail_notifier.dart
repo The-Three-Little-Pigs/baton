@@ -6,7 +6,6 @@ import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/chat_room.dart';
 import 'package:baton/models/entities/message.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'chat_detail_notifier.g.dart';

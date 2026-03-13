@@ -44,28 +44,21 @@ class PostRepositoryImpl implements PostRepository {
     String? lastPostId,
   ) async {
     try {
+      Query<Map<String, dynamic>> query = _firestore
+          .collection('posts')
+          .orderBy('created_at', descending: true);
+
       if (categories != null && categories.isNotEmpty) {
         final categoryNames = categories.map((c) => c.label).toList();
-
-        final snapshot = await _firestore
-            .collection('posts')
-            .where('category', whereIn: categoryNames)
-            .orderBy('created_at', descending: true)
-            .limit(20)
-            .get();
-
-        final posts = snapshot.docs
-            .map((doc) => Post.fromJson(doc.data()))
-            .toList();
-
-        return Success(posts);
+        query = query.where('category', whereIn: categoryNames);
       }
 
-      final snapshot = await _firestore
-          .collection('posts')
-          .orderBy('created_at', descending: true)
-          .limit(20)
-          .get();
+      if (lastTime != null) {
+        // startAfter를 사용하여 이전 페이지의 마지막 데이터 이후부터 가져옴
+        query = query.startAfter([Timestamp.fromDate(lastTime)]);
+      }
+
+      final snapshot = await query.limit(20).get();
 
       final posts = snapshot.docs
           .map((doc) => Post.fromJson(doc.data()))

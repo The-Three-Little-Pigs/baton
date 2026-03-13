@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
-import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_notifier.dart';
+import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';

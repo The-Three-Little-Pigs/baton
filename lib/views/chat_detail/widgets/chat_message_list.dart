@@ -1,7 +1,7 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/models/enum/message_type.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
-import 'package:baton/views/chat_detail/viewmodel.dart/chat_detail_notifier.dart';
+import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -219,26 +219,33 @@ class _ChatBubble extends StatelessWidget {
                               content,
                               width: MediaQuery.of(context).size.width * 0.6,
                               fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Container(
-                                  width: MediaQuery.of(context).size.width * 0.6,
-                                  height: 200,
-                                  color: Colors.grey.shade200,
-                                  child: const Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-                              },
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      width:
+                                          MediaQuery.of(context).size.width *
+                                          0.6,
+                                      height: 200,
+                                      color: Colors.grey.shade200,
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  },
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(
-                                  width: MediaQuery.of(context).size.width * 0.6,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.6,
                                   height: 200,
                                   color: Colors.grey.shade200,
                                   child: const Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.broken_image, color: Colors.grey),
+                                      Icon(
+                                        Icons.broken_image,
+                                        color: Colors.grey,
+                                      ),
                                       SizedBox(height: 8),
                                       Text(
                                         '이미지 오류',
@@ -256,8 +263,10 @@ class _ChatBubble extends StatelessWidget {
                               width: MediaQuery.of(context).size.width * 0.6,
                               height: 200,
                               color: Colors.grey.shade200,
-                              child: const Icon(Icons.image_not_supported,
-                                  color: Colors.grey),
+                              child: const Icon(
+                                Icons.image_not_supported,
+                                color: Colors.grey,
+                              ),
                             ),
                     )
                   : Text(

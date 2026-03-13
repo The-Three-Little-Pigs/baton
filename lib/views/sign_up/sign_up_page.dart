@@ -73,7 +73,6 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                     ),
                   CompleteButton(
                     label: "다음",
-                    condition: canProceed,
                     onPressed: () {
                       context.pushNamed(
                         'signUpProfile',

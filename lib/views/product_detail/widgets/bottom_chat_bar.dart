@@ -23,6 +23,7 @@ class BottomChatBar extends ConsumerWidget {
         Expanded(
           child: CompleteButton(
             label: "채팅하기",
+            color: Theme.of(context).colorScheme.primary,
             onPressed: () {
               final result = ref
                   .read(chatRoomActionProvider.notifier)
