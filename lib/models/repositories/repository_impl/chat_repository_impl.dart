@@ -25,8 +25,10 @@ class ChatRepositoryImpl implements ChatRepository {
         .orderBy('updatedAt', descending: true)
         .snapshots()
         .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => Chatroom.fromFirestore(doc)).toList(),
+          (snapshot) => snapshot.docs
+              .map((doc) => Chatroom.fromFirestore(doc))
+              .where((room) => !room.deletedByUids.contains(myUserId))
+              .toList(),
         );
   }
 
@@ -255,7 +257,7 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   Future<void> _deleteStorageFolder(String roomId) async {
-    final folderRef = FirebaseStorage.instance.ref('chats/$roomId');
+    final folderRef = _storage.ref().child('chat_images').child(roomId);
     final ListResult result = await folderRef.listAll();
 
     final deleteTasks = result.items.map((fileRef) => fileRef.delete());
