@@ -27,7 +27,8 @@ class ChatDetailPage extends ConsumerWidget {
     //   Duration.zero,
     //   () => AppointmentBottomSheet.showAppointmentDialog(context),
     // );
-    final myUserId = ref.watch(userProvider).value?.uid;
+    final myUser = ref.watch(userProvider).value;
+    final myUserId = myUser?.uid;
     final parts = roomId.split('_');
     final otherUid = (parts.length >= 2)
         ? (parts[0] == myUserId ? parts[1] : parts[0])
@@ -39,14 +40,12 @@ class ChatDetailPage extends ConsumerWidget {
       loading: () => '...',
       error: (_, __) => '알 수 없는 사용자',
     );
-    // 1. 초기 진입 시 또는 상태 변경 시 모두 체크하기 위해
-    // ref.listen 대신 ref.watch로 값을 일단 가져오고 조용히 업데이트를 쏩니다.
+
+    final bool isBlocked = myUser?.blockedUsers.contains(otherUid) ?? false;
+    // 읽음 처리 로직
     if (myUserId != null && chatroomState.value != null) {
       final unread = chatroomState.value!.unreadCounts[myUserId] ?? 0;
-
       if (unread > 0) {
-        // 2. build 도중에 상태를 변경하면 프레임워크 에러가 나므로,
-        // UI가 다 그려진 직후(PostFrame)에 비동기로 실행되게끔 안전하게 감싸줍니다.
         WidgetsBinding.instance.addPostFrameCallback((_) {
           ref.read(chatDetailProvider(roomId).notifier).markAsRead(roomId);
         });
@@ -83,9 +82,35 @@ class ChatDetailPage extends ConsumerWidget {
                   builder: (context) => CupertinoModalPopUp(
                     actions: [
                       {
-                        '신고하기': () {
-                          // TODO: 신고하기 기능 구현
+                        isBlocked ? '차단 해제하기' : '신고하기/차단하기': () async {
                           context.pop();
+                          if (isBlocked) {
+                            final confirmed = await showCupertinoDialog<bool>(
+                              context: context,
+                              builder: (context) => CupertinoAlertDialog(
+                                title: const Text("신고/차단"),
+                                content: const Text(
+                                  '차단하면 상대방의 게시글과 메시지를'
+                                  '더 이상 볼 수 없어요.\n차단하시겠습니까?',
+                                ),
+                                actions: [
+                                  CupertinoDialogAction(
+                                    child: const Text("취소"),
+                                    onPressed: () {
+                                      context.pop();
+                                    },
+                                  ),
+                                  CupertinoDialogAction(
+                                    child: const Text("신고/차단"),
+                                    onPressed: () {
+                                      context.pop();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirmed == true) {}
+                          }
                         },
                       },
                       {
