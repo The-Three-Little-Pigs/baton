@@ -279,4 +279,33 @@ class ChatRepositoryImpl implements ChatRepository {
     }
     await batch.commit();
   }
+
+  // TODO: 약속하기로 활용
+  @override
+  Future<Result<void, Failure>> sendSystemMessage(
+    String roomId,
+    String content,
+  ) async {
+    try {
+      final roomRef = _firestore.collection('chatrooms').doc(roomId);
+      final messageRef = roomRef.collection('messages').doc();
+      final now = FieldValue.serverTimestamp();
+      await messageRef.set({
+        'id': messageRef.id,
+        'roomId': roomId,
+        'senderId': 'system', // ★ 시스템 메시지 식별자
+        'content': content,
+        'type': 'system', // ★ MessageType.system
+        'createdAt': now,
+        'isPending': false,
+      });
+      // 채팅방의 lastMessage도 업데이트
+      await roomRef.update({'lastMessage': content, 'updatedAt': now});
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('시스템 메시지 전송 실패: $e'));
+    }
+  }
 }

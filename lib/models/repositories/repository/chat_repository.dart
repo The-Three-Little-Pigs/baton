@@ -37,4 +37,10 @@ abstract class ChatRepository {
 
   /// 채팅방 나가기 (삭제)
   Future<Result<bool, Failure>> leaveRoom(String roomId, String myUserId);
+
+  /// 시스템 메시지 전송
+  Future<Result<void, Failure>> sendSystemMessage(
+    String roomId,
+    String content,
+  );
 }

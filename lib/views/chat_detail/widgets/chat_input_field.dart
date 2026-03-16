@@ -276,7 +276,8 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
                   minLines: 1,
                   // 무제한 줄바꿈 가능
                   decoration: const InputDecoration(
-                    hintText: '메시지를 입력하세요',
+                    hintText: '메세지 입력',
+                    hintStyle: TextStyle(color: AppColors.secondary),
                     contentPadding: EdgeInsets.symmetric(vertical: 12), // 패딩 조절
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,

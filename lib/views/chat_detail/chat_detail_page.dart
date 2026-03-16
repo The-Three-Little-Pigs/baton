@@ -79,43 +79,87 @@ class ChatDetailPage extends ConsumerWidget {
               onTap: () async {
                 showCupertinoModalPopup(
                   context: context,
-                  builder: (context) => CupertinoModalPopUp(
+                  builder: (modalContext) => CupertinoModalPopUp(
                     actions: [
                       {
-                        isBlocked ? '차단 해제하기' : '신고하기/차단하기': () async {
-                          context.pop();
-                          if (isBlocked) {
+                        isBlocked ? '차단 해제하기' : '차단하기': () async {
+                          Navigator.pop(modalContext);
+                          if (!isBlocked) {
                             final confirmed = await showCupertinoDialog<bool>(
                               context: context,
-                              builder: (context) => CupertinoAlertDialog(
-                                title: const Text("신고/차단"),
+                              builder: (dialogContext) => CupertinoAlertDialog(
+                                title: const Text("차단하기"),
                                 content: const Text(
-                                  '차단하면 상대방의 게시글과 메시지를'
-                                  '더 이상 볼 수 없어요.\n차단하시겠습니까?',
+                                  '차단하면 상대방의 게시글을\n더 이상 볼 수 없어요.\n차단하시겠습니까?',
                                 ),
                                 actions: [
                                   CupertinoDialogAction(
+                                    isDefaultAction: true,
                                     child: const Text("취소"),
                                     onPressed: () {
-                                      context.pop();
+                                      Navigator.pop(dialogContext, false);
                                     },
                                   ),
                                   CupertinoDialogAction(
-                                    child: const Text("신고/차단"),
+                                    isDestructiveAction: true,
+                                    child: const Text("차단"),
                                     onPressed: () {
-                                      context.pop();
+                                      Navigator.pop(dialogContext, true);
                                     },
                                   ),
                                 ],
                               ),
                             );
-                            if (confirmed == true) {}
+                            if (confirmed == true) {
+                              await ref
+                                  .read(userProvider.notifier)
+                                  // toggleBlockUser
+                                  .toggleBlockUser(otherUid);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("차단되었습니다.")),
+                                );
+                              }
+                            }
+                          } else {
+                            await ref
+                                .read(userProvider.notifier)
+                                .toggleBlockUser(otherUid);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("차단이 해제되었습니다.")),
+                              );
+                            }
                           }
                         },
                       },
                       {
                         '채팅방 나가기': () async {
-                          context.pop();
+                          modalContext.pop();
+
+                          final confirmed = await showCupertinoDialog<bool>(
+                            context: context,
+                            builder: (dialogContext) => CupertinoAlertDialog(
+                              title: const Text("채팅방 나가기"),
+                              content: const Text(
+                                '채팅방을 나가면 메시지를\n더 이상 볼 수 없어요',
+                              ),
+                              actions: [
+                                CupertinoDialogAction(
+                                  child: const Text("취소"),
+                                  onPressed: () =>
+                                      Navigator.pop(dialogContext, false),
+                                ),
+                                CupertinoDialogAction(
+                                  child: const Text("나가기"),
+                                  onPressed: () =>
+                                      Navigator.pop(dialogContext, true),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed != true) return;
+
                           final result = await ref
                               .read(chatRoomActionProvider.notifier)
                               .leaveChatRoom(roomId);
@@ -155,9 +199,35 @@ class ChatDetailPage extends ConsumerWidget {
                 bottom: 30,
                 top: 10,
               ),
-              child: ChatInputField(roomId: roomId),
+              child: isBlocked
+                  ? _BlockedInputPlaceholder()
+                  : ChatInputField(roomId: roomId),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BlockedInputPlaceholder extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 48,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Text(
+        '차단한 사용자입니다. 대화할 수 없습니다.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Colors.grey.shade600,
         ),
       ),
     );
