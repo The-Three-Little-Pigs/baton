@@ -5,10 +5,8 @@ Baton은 헬스장 회원권, 필라테스 이용권 등 다양한 멤버십과 
 - 멤버십 및 물품 양도 포스팅: 사용자가 보유한 이용권(헬스, 요가, PT 등) 및 중고 물품 정보를 상세하게 업로드하고 관리할 수 있습니다.
 
 - 실시간 1:1 채팅: 양도인과 양수인 간의 원활한 소통을 위해 Firebase Cloud Messaging 기반의 실시간 채팅 기능을 제공합니다.
-
-- 지역 기반 필터링: 사용자의 위치를 기반으로 인근 지역의 양도 게시글을 우선적으로 보여줍니다.
-
-- SNS 피드: 운동 진행 상황이나 양도 후기를 공유하여 신뢰도 높은 커뮤니티 환경을 조성합니다.
+  
+- SNS 피드: 양도 후기를 공유하여 신뢰도 높은 커뮤니티 환경을 조성합니다.
 
 - 상태 관리 및 네비게이션: GoRouter를 사용해 복잡한 중첩 네비게이션을 통해 매끄러운 사용자 경험을 제공합니다.
 
@@ -16,62 +14,67 @@ Baton은 헬스장 회원권, 필라테스 이용권 등 다양한 멤버십과 
 
 ## 🏗️ 폴더 구조 (Folder Structure)
 본 프로젝트는 유지보수와 테스트 용이성을 극대화하기 위해 Clean Architecture와 MVVM(Model-View-ViewModel) 패턴을 결합하여 설계되었습니다.
-'''
+```
 lib/
-├── core/                 # 공통 유틸리티, 상수, 테마, 네트워크 에러 처리 (Result/Failure)
-│   ├── constants/
-│   ├── errors/           # Result/Failure 패턴 기반 에러 핸들링
-│   ├── network/
-│   └── theme/
+├── core/              # 앱 전역 설정
+│   ├── theme/
+│   ├── di/
+│   ├── error/
+│   ├── result/
+│   └── router/
 │
-├── data/                 # 데이터 계층 (Data Sources & Repositories Implementation)
-│   ├── datasources/      # Firebase Firestore, Auth, Storage API 호출
-│   ├── models/           # 데이터 전송 객체 (DTO), JSON 직렬화
-│   └── repositories/     # Domain 계층의 Repository Interface 구현체
+├── models/            # 데이터 객체 (Model + DTO)
+│   ├── enum/
+│		│   ├── category.dart
+│		│	  └── transaction_status.dart
+│		│
+│   ├── entities/
+│		│   ├── user.dart
+│		│   ├── message.dart
+│		│   ├── chat_room.dart
+│		│   └── post.dart
+│		│
+│   └── repositories/      # 데이터 소스 접근 (API 호출 등)
+│		    ├── repository/
+│		    └── repository_impl/
 │
-├── domain/               # 비즈니스 로직 계층 (Entities & Repository Interfaces)
-│   ├── entities/         # 앱 전체에서 사용되는 순수 비즈니스 객체
-│   ├── repositories/     # 데이터 접근을 위한 추상 인터페이스
-│   └── usecases/         # 특정 비즈니스 시나리오 (예: 양도글 작성, 채팅 메시지 전송)
+├── notifier/        # Riverpod Notifier (State + Logic)
+│   ├── user/
+│   ├── block/
+│   └── like/
 │
-├── presentation/         # UI 계층 (MVVM 기반 View & ViewModel)
-│   ├── providers/        # Riverpod 3.0을 활용한 ViewModel(StateNotifier/AsyncNotifier)
-│   ├── screens/          # 전체 페이지 (GoRouter StatefulShellRoute 적용)
-│   └── widgets/          # 재사용 가능한 UI 컴포넌트
+├── service/
+│  
+├── domain/     
+│   └── usecase/       # option
 │
-└── main.dart             # 앱 진입점 및 Firebase 초기화 설정
-'''
+├── views/             # UI (Screen + Widgets)
+│   ├── login/
+│   ├── sign_up/
+│   ├── tap/
+│   │   ├── _home/
+│   │   ├── _my/
+│   │   └── _chat/
+│		│
+│   ├── write/
+│   ├── chat_detail/
+│   └── product_detail/
+│       
+└── main.dart          # ProviderScope & App Entry
+```
 
 ## 🛠️ 기술 스택 (Tech Stack)
 - Language: Dart
 
 - Framework: Flutter
 
-- State Management: Riverpod 3.0
+- State Management: Riverpod 3.0 (Generator)
 
 - Navigation: GoRouter (Nested Navigation)
 
 - Backend: Firebase (Authentication, Firestore, Cloud Messaging, Storage)
 
-- Architecture: Clean Architecture + MVVM
-
-## ⚙️ 시작하기 (Getting Started)
-저장소 클론
-'''
-git clone https://github.com/The-Three-Little-Pigs/baton.git
-cd baton
-'''
-
-패키지 설치
-'''
-flutter pub get
-Firebase 설정
-'''
-
-앱 실행
-'''
-flutter run
-'''
+- Architecture: MVVM
 
 ## 🤝 기여 안내
 이 프로젝트는 The Three Little Pigs 팀에 의해 개발되고 있습니다. 버그 리포트나 기능 제안은 Issue 탭을 이용해 주세요.
