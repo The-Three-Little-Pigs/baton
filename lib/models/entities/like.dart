@@ -1,6 +1,6 @@
 class Like {
-  final String liker;
-  final String postId;
+  final String liker; // 좋아요 누른 사람
+  final String postId; // 게시글 아이디
 
   Like({required this.liker, required this.postId});
 

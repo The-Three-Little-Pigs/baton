@@ -9,13 +9,13 @@ DateTime _parseDate(dynamic date) {
 }
 
 class Message {
-  final String id;
-  final String roomId;
-  final String senderId;
-  final String content;
-  final MessageType type;
-  final DateTime createdAt;
-  final bool isPending;
+  final String id; // 메세지 아이디
+  final String roomId; // 채팅방 아이디
+  final String senderId; // 메세지 보낸 사람
+  final String content; // 메세지 내용
+  final MessageType type; // 메세지 타입
+  final DateTime createdAt; // 메세지 생성 시간
+  final bool isPending; // 메세지 전송 상태
 
   Message({
     required this.id,
@@ -29,10 +29,10 @@ class Message {
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      id: json['id'] ?? '',
-      roomId: json['roomId'] ?? '',
-      senderId: json['senderId'] ?? '',
-      content: json['content'] ?? '',
+      id: json['id'] as String,
+      roomId: json['roomId'] as String,
+      senderId: json['senderId'] as String,
+      content: json['content'] as String,
       type: MessageType.values.firstWhere(
         (e) => e.name == json['type'],
         orElse: () => MessageType.text,

@@ -115,7 +115,6 @@ class WritePageViewModel extends _$WritePageViewModel {
       salePrice: saleState.salePrice ?? 0,
       likeCount: 0,
       chatCount: 0,
-      thumbnailUrl: thumbnailUrl,
       createdAt: DateTime.now(),
       authorId: authorResult.value!.uid,
       status: ProductStatus.available,

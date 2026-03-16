@@ -1,23 +1,16 @@
 import 'package:baton/models/enum/chat_status.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-DateTime _parseDate(dynamic date) {
-  if (date == null) return DateTime.now();
-  if (date is Timestamp) return date.toDate();
-  if (date is String) return DateTime.tryParse(date) ?? DateTime.now();
-  return DateTime.now();
-}
-
 class Chatroom {
-  final String roomId;
-  final List<String> participants;
-  final Map<String, int> unreadCounts;
-  final DateTime updatedAt;
-  final String prdImageUrl;
-  final String lastMessage;
-  final Map<String, dynamic> lastReadAt;
-  final ChatStatus status;
-  final List<String> deletedByUids;
+  final String roomId; // 채팅방 아이디
+  final List<String> participants; // 채팅방 참여자
+  final Map<String, int> unreadCounts; // 안읽은 메세지 수
+  final DateTime updatedAt; // 마지막 업데이트 시간
+  final String prdImageUrl; // 상품 이미지
+  final String lastMessage; // 마지막 메세지
+  final Map<String, dynamic> lastReadAt; // 마지막 읽은 시간
+  final ChatStatus status; // 채팅방 상태(거래중, 거래완료, 거래취소)
+  final List<String> deletedByUids; // 채팅방 삭제자
 
   Chatroom({
     required this.roomId,
@@ -36,7 +29,7 @@ class Chatroom {
       roomId: json['roomId'] ?? '',
       participants: List<String>.from(json['participants'] ?? []),
       unreadCounts: Map<String, int>.from(json['unreadCounts'] ?? {}),
-      updatedAt: _parseDate(json['updatedAt']),
+      updatedAt: (json['updatedAt'] as Timestamp).toDate(),
       prdImageUrl: json['prdImageUrl'] ?? '',
       lastMessage: json['lastMessage'] ?? '',
       lastReadAt: Map<String, dynamic>.from(json['lastReadAt'] ?? {}),
@@ -117,7 +110,7 @@ class Chatroom {
       roomId: data['roomId']?.toString() ?? '',
       participants: parsedParticipants,
       unreadCounts: parsedUnreadCounts,
-      updatedAt: _parseDate(data['updatedAt']),
+      updatedAt: DateTime.now(),
       prdImageUrl: data['prdImageUrl']?.toString() ?? '',
       lastMessage: data['lastMessage']?.toString() ?? '',
       lastReadAt: parsedLastReadAt,

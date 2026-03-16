@@ -68,7 +68,6 @@ class SignUpProfile extends _$SignUpProfile {
         nickname: nickname,
         profileUrl: profileUrl,
         score: 36.5,
-        fcmToken: fcmToken,
         favorites: [],
         blockedUsers: [],
       );

@@ -1,18 +1,16 @@
 class User {
-  final String uid;
-  final String nickname;
-  final String? profileUrl;
-  final double score;
-  final String fcmToken;
-  final List<String> favorites;
-  final List<String> blockedUsers;
+  final String uid; // 유저 아이디
+  final String nickname; // 유저 닉네임
+  final String? profileUrl; // 유저 프로필 이미지
+  final double score; // 유저 매너 온도
+  final Set<String> favorites; // 유저 찜 목록
+  final Set<String> blockedUsers; // 유저 차단 목록
 
   User({
     required this.uid,
     required this.nickname,
     required this.profileUrl,
     required this.score,
-    required this.fcmToken,
     required this.favorites,
     required this.blockedUsers,
   });
@@ -22,16 +20,14 @@ class User {
     String? nickname,
     String? profileUrl,
     double? score,
-    String? fcmToken,
-    List<String>? favorites,
-    List<String>? blockedUsers,
+    Set<String>? favorites,
+    Set<String>? blockedUsers,
   }) {
     return User(
       uid: uid ?? this.uid,
       nickname: nickname ?? this.nickname,
       profileUrl: profileUrl ?? this.profileUrl,
       score: score ?? this.score,
-      fcmToken: fcmToken ?? this.fcmToken,
       favorites: favorites ?? this.favorites,
       blockedUsers: blockedUsers ?? this.blockedUsers,
     );
@@ -42,9 +38,8 @@ class User {
     'nickname': nickname,
     'profileUrl': profileUrl,
     'score': score,
-    'fcmToken': fcmToken,
-    'favorites': favorites,
-    'blockedUsers': blockedUsers,
+    'favorites': favorites.toSet(),
+    'blockedUsers': blockedUsers.toSet(),
   };
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -53,9 +48,8 @@ class User {
       nickname: json['nickname'] ?? '',
       profileUrl: json['profileUrl'] ?? '',
       score: (json['score'] ?? 36.5).toDouble(),
-      fcmToken: json['fcmToken'] ?? '',
-      favorites: List<String>.from(json['favorites'] ?? []),
-      blockedUsers: List<String>.from(json['blockedUsers'] ?? []),
+      favorites: Set<String>.from(json['favorites'] ?? []),
+      blockedUsers: Set<String>.from(json['blockedUsers'] ?? []),
     );
   }
 }

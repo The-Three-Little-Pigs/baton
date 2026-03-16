@@ -45,7 +45,6 @@ class LoginService {
             nickname: '', // [수정] 신규 유저는 항상 닉네임을 비워두어 가입 프로세스를 유도합니다.
             profileUrl: firebaseUser.photoURL ?? '',
             score: 36.5, // 기본 매너 온도 설정
-            fcmToken: '', // 초기값 빈 문자열
             favorites: [], // 초기값 빈 리스트
             blockedUsers: [], // 초기값 빈 리스트
           );
