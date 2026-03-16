@@ -21,16 +21,16 @@ class AuthorNotifier extends _$AuthorNotifier {
               nickname: "알 수 없는 사용자",
               profileUrl: null,
               score: 0,
-              favorites: [],
-              blockedUsers: [],
+              favorites: {},
+              blockedUsers: {},
             ),
       Error() => User(
         uid: "알 수 없는 사용자",
         nickname: "알 수 없는 사용자",
         profileUrl: null,
         score: 0,
-        favorites: [],
-        blockedUsers: [],
+        favorites: {},
+        blockedUsers: {},
       ),
     };
   }

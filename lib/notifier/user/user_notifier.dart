@@ -104,7 +104,7 @@ class UserNotifier extends _$UserNotifier {
     final currentUser = state.value;
     if (currentUser == null) return;
 
-    final updatedFavorites = List<String>.from(currentUser.favorites);
+    final updatedFavorites = Set<String>.from(currentUser.favorites);
     if (updatedFavorites.contains(productId)) {
       updatedFavorites.remove(productId);
     } else {
@@ -124,7 +124,7 @@ class UserNotifier extends _$UserNotifier {
     final currentUser = state.value;
     if (currentUser == null) return;
 
-    final updatedBlocked = List<String>.from(currentUser.blockedUsers);
+    final updatedBlocked = Set<String>.from(currentUser.blockedUsers);
     if (updatedBlocked.contains(otherUid)) {
       updatedBlocked.remove(otherUid);
     } else {
