@@ -13,7 +13,7 @@ part 'chat_detail_notifier.g.dart';
 
 @riverpod
 class ChatDetailNotifier extends _$ChatDetailNotifier {
-  late final String _myUserId;
+  late String _myUserId;
 
   @override
   Stream<List<Message>> build(String roomId) {
