@@ -15,7 +15,7 @@ LikeRepository likeRepository(Ref ref) {
 class LikeNotifier extends _$LikeNotifier {
   // TODO: 수정 필요
   final String currentUserId = "TEMP_USER_ID_123";
-
+  
   @override
   FutureOr<List<Post>> build() async {
     return _fetchLikedPosts();

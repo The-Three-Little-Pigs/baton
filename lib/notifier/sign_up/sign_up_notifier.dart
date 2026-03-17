@@ -1,4 +1,3 @@
-// lib/notifier/sign_up/sign_up_notifier.dart
 import 'package:baton/core/di/repository/user_provider.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

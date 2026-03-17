@@ -3,18 +3,18 @@ import 'package:baton/models/enum/product_status.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Post {
-  final String postId;
-  final String title;
-  final int? purchasePrice;
-  final int? salePrice;
-  final List<String> imageUrls;
-  final String content;
-  final int likeCount;
-  final int chatCount;
-  final Category category;
-  final String authorId;
-  final DateTime createdAt;
-  final ProductStatus status;
+  final String postId; // 게시글 아이디
+  final String title; // 게시글 제목
+  final int? purchasePrice; // 구매 가격
+  final int? salePrice; // 판매 가격
+  final List<String> imageUrls; // 게시글 이미지
+  final String content; // 게시글 내용
+  final int likeCount; // 좋아요 수
+  final int chatCount; // 채팅방 수
+  final Category category; // 카테고리
+  final String authorId; // 작성자 아이디
+  final DateTime createdAt; // 작성 시간
+  final ProductStatus status; // 게시글 상태
 
   Post({
     required this.postId,
@@ -29,7 +29,6 @@ class Post {
     required this.authorId,
     required this.createdAt,
     required this.status,
-    String? thumbnailUrl,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {

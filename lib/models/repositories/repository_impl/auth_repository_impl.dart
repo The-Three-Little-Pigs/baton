@@ -173,6 +173,4 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 }
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepositoryImpl();
-});
+

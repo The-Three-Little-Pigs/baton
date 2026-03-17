@@ -16,6 +16,6 @@ String formatTime(DateTime time) {
       return '${time.year}.${time.month.toString().padLeft(2, '0')}.${time.day.toString().padLeft(2, '0')}';
     }
   } catch (e) {
-    return '';
+    return '포맷팅 오류';
   }
 }

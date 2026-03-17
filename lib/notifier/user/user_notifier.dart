@@ -1,7 +1,7 @@
+import 'package:baton/core/di/repository/auth_provider.dart';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/user.dart' as entity;
-import 'package:baton/models/repositories/repository_impl/auth_repository_impl.dart';
 import 'package:baton/models/repositories/repository_impl/user_repository_impl.dart';
 import 'package:baton/service/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
