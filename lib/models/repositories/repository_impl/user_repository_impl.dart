@@ -52,6 +52,21 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Stream<Result<User?, Failure>> watchUserData(String uid) {
+    return _firestore.collection(_collectionPath).doc(uid).snapshots().map((
+      snapshot,
+    ) {
+      try {
+        final data = snapshot.data();
+        if (data == null) return const Success(null);
+        return Success(User.fromJson(data));
+      } catch (e) {
+        return Error(ServerFailure(e.toString()));
+      }
+    });
+  }
+
+  @override
   Future<Result<void, Failure>> userCreate(User user) async {
     try {
       await _firestore

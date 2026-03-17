@@ -16,6 +16,7 @@ class HomeTapViewModel extends _$HomeTapViewModel {
   @override
   Future<List<Post>> build() async {
     final categories = ref.watch(categoryChipsProvider);
+    ref.watch(userProvider);
 
     _lastTime = null;
     _lastPostId = null;

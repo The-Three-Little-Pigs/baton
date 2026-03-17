@@ -13,13 +13,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 class ChatRepositoryImpl implements ChatRepository {
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
+  final _collectionPath = 'chatrooms';
 
   ChatRepositoryImpl(this._firestore, this._storage);
 
   @override
   Stream<List<Chatroom>> watchChatRooms(String myUserId) {
     return _firestore
-        .collection('chatrooms')
+        .collection(_collectionPath)
         .where('participants', arrayContains: myUserId)
         // .where('deletedByUids', arrayContains: myUserId)
         .orderBy('updatedAt', descending: true)
@@ -35,7 +36,7 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Stream<List<Message>> watchMessages(String roomId) {
     return _firestore
-        .collection('chatrooms')
+        .collection(_collectionPath)
         .doc(roomId)
         .collection('messages')
         .orderBy('createdAt', descending: true)
@@ -49,7 +50,7 @@ class ChatRepositoryImpl implements ChatRepository {
 
   @override
   Stream<Chatroom?> watchChatRoom(String roomId) {
-    return _firestore.collection('chatrooms').doc(roomId).snapshots().map((
+    return _firestore.collection(_collectionPath).doc(roomId).snapshots().map((
       doc,
     ) {
       if (!doc.exists) return null;
@@ -63,7 +64,7 @@ class ChatRepositoryImpl implements ChatRepository {
     String myUserId,
   ) async {
     try {
-      final chatroomDocRef = _firestore.collection('chatrooms').doc(roomId);
+      final chatroomDocRef = _firestore.collection(_collectionPath).doc(roomId);
       await chatroomDocRef.update({
         'unreadCounts.$myUserId': 0,
         'lastReadAt.$myUserId': FieldValue.serverTimestamp(),
@@ -87,7 +88,7 @@ class ChatRepositoryImpl implements ChatRepository {
     if (content.trim().isEmpty) return const Success(null);
 
     try {
-      final chatroomDocRef = _firestore.collection('chatrooms').doc(roomId);
+      final chatroomDocRef = _firestore.collection(_collectionPath).doc(roomId);
       final messageDocRef = chatroomDocRef.collection('messages').doc();
 
       final messageData = {
@@ -142,7 +143,9 @@ class ChatRepositoryImpl implements ChatRepository {
 
       try {
         // 2. DB 저장 (트랜잭션/배치)
-        final chatroomDocRef = _firestore.collection('chatrooms').doc(roomId);
+        final chatroomDocRef = _firestore
+            .collection(_collectionPath)
+            .doc(roomId);
         final messageDocRef = chatroomDocRef.collection('messages').doc();
 
         final messageData = {
@@ -224,7 +227,7 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<Result<bool, Failure>> leaveRoom(String roomId, String myUid) async {
     try {
-      final roomRef = _firestore.collection('chatrooms').doc(roomId);
+      final roomRef = _firestore.collection(_collectionPath).doc(roomId);
       // 1. deletedByUids에 내 UID 추가 (중복 없이)
       await roomRef.update({
         'deletedByUids': FieldValue.arrayUnion([myUid]),
@@ -267,7 +270,7 @@ class ChatRepositoryImpl implements ChatRepository {
   // 💡 메시지 컬렉션의 모든 문서 삭제 (Batch 처리)
   Future<void> _deleteAllMessages(String roomId) async {
     final messagesRef = _firestore
-        .collection('chatrooms')
+        .collection(_collectionPath)
         .doc(roomId)
         .collection('messages');
     final snapshots = await messagesRef.get();
@@ -287,7 +290,7 @@ class ChatRepositoryImpl implements ChatRepository {
     String content,
   ) async {
     try {
-      final roomRef = _firestore.collection('chatrooms').doc(roomId);
+      final roomRef = _firestore.collection(_collectionPath).doc(roomId);
       final messageRef = roomRef.collection('messages').doc();
       final now = FieldValue.serverTimestamp();
       await messageRef.set({
