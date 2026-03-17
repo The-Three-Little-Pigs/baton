@@ -47,6 +47,8 @@ class LoginService {
             score: 36.5, // 기본 매너 온도 설정
             favorites: {}, // 초기값 빈 리스트
             blockedUsers: {}, // 초기값 빈 리스트
+            recentlySearch: {}, // 초기값 빈 리스트
+            deletedAt: null,
           );
           return Success(NewUser(tempUser));
         }

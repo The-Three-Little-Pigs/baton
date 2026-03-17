@@ -13,4 +13,5 @@ abstract class PostRepository {
     String? lastPostId,
   );
   Future<Result<Post, Failure>> getPostById(String postId);
+  Future<Result<List<Post>, Failure>> getPostBySearch(String keyword);
 }

@@ -100,4 +100,24 @@ class PostRepositoryImpl implements PostRepository {
       return Error(FirebaseErrorMapper.toFailure(e));
     }
   }
+
+  @override
+  Future<Result<List<Post>, Failure>> getPostBySearch(String keyword) async {
+    try {
+      final snapshot = await _firestore
+          .collection('posts')
+          .where('title', arrayContains: keyword)
+          .get();
+
+      final posts = snapshot.docs
+          .map((doc) => Post.fromJson(doc.data()))
+          .toList();
+
+      return Success(posts);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('데이터를 불러오는 중 오류가 발생했습니다: $e'));
+    }
+  }
 }

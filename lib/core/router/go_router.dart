@@ -4,11 +4,13 @@ import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/chat_tap.dart';
 import 'package:baton/views/_tap/home/home_tap.dart';
 import 'package:baton/views/_tap/profile/profile_tap.dart';
+import 'package:baton/views/alarm/alarm_page.dart';
 import 'package:baton/views/chat_detail/chat_detail_page.dart';
 
 import 'package:baton/views/like/like_page.dart';
 import 'package:baton/views/login/login_page.dart';
 import 'package:baton/views/product_detail/product_detail_page.dart';
+import 'package:baton/views/search/search_page.dart';
 import 'package:baton/views/sign_up/sign_up_page.dart';
 import 'package:baton/views/sign_up_profile_page/widgets/sign_up_profile_page.dart';
 import 'package:baton/views/purchase_history/purchase_history_page.dart';
@@ -119,6 +121,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/purchaseHistory',
         name: 'purchaseHistory',
         builder: (context, state) => const PurchaseHistoryPage(),
+      ),
+      GoRoute(
+        path: '/alarm',
+        name: 'alarm',
+        builder: (context, state) => const AlarmPage(),
+      ),
+      GoRoute(
+        path: '/search',
+        name: 'search',
+        builder: (context, state) => const SearchPage(),
       ),
     ],
 

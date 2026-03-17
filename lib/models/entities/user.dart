@@ -5,6 +5,8 @@ class User {
   final double score; // 유저 매너 온도
   final Set<String> favorites; // 유저 찜 목록
   final Set<String> blockedUsers; // 유저 차단 목록
+  final Set<String> recentlySearch;
+  final DateTime? deletedAt;
 
   User({
     required this.uid,
@@ -13,6 +15,8 @@ class User {
     required this.score,
     required this.favorites,
     required this.blockedUsers,
+    required this.recentlySearch,
+    this.deletedAt,
   });
 
   User copyWith({
@@ -22,6 +26,8 @@ class User {
     double? score,
     Set<String>? favorites,
     Set<String>? blockedUsers,
+    Set<String>? recentlySearch,
+    DateTime? deletedAt,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -30,6 +36,8 @@ class User {
       score: score ?? this.score,
       favorites: favorites ?? this.favorites,
       blockedUsers: blockedUsers ?? this.blockedUsers,
+      recentlySearch: recentlySearch ?? this.recentlySearch,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -40,6 +48,8 @@ class User {
     'score': score,
     'favorites': favorites.toSet(),
     'blockedUsers': blockedUsers.toSet(),
+    'recentlySearch': recentlySearch,
+    'deletedAt': deletedAt,
   };
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -50,6 +60,10 @@ class User {
       score: (json['score'] ?? 36.5).toDouble(),
       favorites: Set<String>.from(json['favorites'] ?? []),
       blockedUsers: Set<String>.from(json['blockedUsers'] ?? []),
+      recentlySearch: Set<String>.from(json['recentlySearch'] ?? []),
+      deletedAt: json['deletedAt'] == null
+          ? null
+          : DateTime.parse(json['deletedAt']),
     );
   }
 }

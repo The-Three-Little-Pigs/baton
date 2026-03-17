@@ -23,6 +23,8 @@ class AuthorNotifier extends _$AuthorNotifier {
               score: 0,
               favorites: {},
               blockedUsers: {},
+              recentlySearch: {},
+              deletedAt: null,
             ),
       Error() => User(
         uid: "알 수 없는 사용자",
@@ -31,6 +33,8 @@ class AuthorNotifier extends _$AuthorNotifier {
         score: 0,
         favorites: {},
         blockedUsers: {},
+        recentlySearch: {},
+        deletedAt: null,
       ),
     };
   }
