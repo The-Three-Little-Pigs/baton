@@ -48,6 +48,7 @@ class LoginService {
             fcmToken: '', // 초기값 빈 문자열
             favorites: [], // 초기값 빈 리스트
             blockedUsers: [], // 초기값 빈 리스트
+            blockedBy: [], // 초기값 빈 리스트
           );
           return Success(NewUser(tempUser));
         }

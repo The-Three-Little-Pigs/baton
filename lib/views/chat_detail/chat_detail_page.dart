@@ -82,15 +82,15 @@ class ChatDetailPage extends ConsumerWidget {
                   builder: (modalContext) => CupertinoModalPopUp(
                     actions: [
                       {
-                        isBlocked ? '차단 해제하기' : '차단하기': () async {
+                        isBlocked ? '차단 해제하기' : '신고/차단하기': () async {
                           Navigator.pop(modalContext);
                           if (!isBlocked) {
                             final confirmed = await showCupertinoDialog<bool>(
                               context: context,
                               builder: (dialogContext) => CupertinoAlertDialog(
-                                title: const Text("차단하기"),
+                                title: const Text("신고/차단하기"),
                                 content: const Text(
-                                  '차단하면 상대방의 게시글을\n더 이상 볼 수 없어요.\n차단하시겠습니까?',
+                                  '신고/차단하면 상대방의 게시글을\n더 이상 볼 수 없어요.\n신고/차단하시겠습니까?',
                                 ),
                                 actions: [
                                   CupertinoDialogAction(
@@ -102,7 +102,7 @@ class ChatDetailPage extends ConsumerWidget {
                                   ),
                                   CupertinoDialogAction(
                                     isDestructiveAction: true,
-                                    child: const Text("차단"),
+                                    child: const Text("신고/차단"),
                                     onPressed: () {
                                       Navigator.pop(dialogContext, true);
                                     },

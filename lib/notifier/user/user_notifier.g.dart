@@ -33,7 +33,7 @@ final class UserNotifierProvider
   UserNotifier create() => UserNotifier();
 }
 
-String _$userNotifierHash() => r'0e824b6325a8631402745f64343784130cd7758b';
+String _$userNotifierHash() => r'a466b1a45fa1a31824b2fe3a12ccc0428a98c301';
 
 abstract class _$UserNotifier extends $AsyncNotifier<entity.User?> {
   FutureOr<entity.User?> build();

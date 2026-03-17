@@ -125,10 +125,11 @@ class UserNotifier extends _$UserNotifier {
     if (currentUser == null) return;
 
     final updatedBlocked = List<String>.from(currentUser.blockedUsers);
-    if (updatedBlocked.contains(otherUid)) {
-      updatedBlocked.remove(otherUid);
-    } else {
+    final isBlocking = !updatedBlocked.contains(otherUid);
+    if (isBlocking) {
       updatedBlocked.add(otherUid);
+    } else {
+      updatedBlocked.remove(otherUid);
     }
 
     final updatedUser = currentUser.copyWith(blockedUsers: updatedBlocked);
@@ -137,6 +138,12 @@ class UserNotifier extends _$UserNotifier {
     // DB 동기화
     final userRepo = ref.read(userRepositoryProvider);
     await userRepo.updateUserData(updatedUser);
+
+    if (isBlocking) {
+      await userRepo.addBlockedBy(otherUid, currentUser.uid);
+    } else {
+      await userRepo.removeBlockedBy(otherUid, currentUser.uid);
+    }
   }
 
   /// 외부(회원가입 완료 등)에서 유저 정보를 수동으로 주입할 때 사용합니다.

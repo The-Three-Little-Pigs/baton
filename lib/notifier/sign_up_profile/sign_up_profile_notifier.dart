@@ -71,6 +71,7 @@ class SignUpProfile extends _$SignUpProfile {
         fcmToken: fcmToken,
         favorites: [],
         blockedUsers: [],
+        blockedBy: [],
       );
 
       // 4. Firestore 'user' 컬렉션에 저장

@@ -6,6 +6,7 @@ class User {
   final String fcmToken;
   final List<String> favorites;
   final List<String> blockedUsers;
+  final List<String> blockedBy;
 
   User({
     required this.uid,
@@ -15,6 +16,7 @@ class User {
     required this.fcmToken,
     required this.favorites,
     required this.blockedUsers,
+    required this.blockedBy,
   });
 
   User copyWith({
@@ -25,6 +27,7 @@ class User {
     String? fcmToken,
     List<String>? favorites,
     List<String>? blockedUsers,
+    List<String>? blockedBy,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -34,6 +37,7 @@ class User {
       fcmToken: fcmToken ?? this.fcmToken,
       favorites: favorites ?? this.favorites,
       blockedUsers: blockedUsers ?? this.blockedUsers,
+      blockedBy: blockedBy ?? this.blockedBy,
     );
   }
 
@@ -45,6 +49,7 @@ class User {
     'fcmToken': fcmToken,
     'favorites': favorites,
     'blockedUsers': blockedUsers,
+    'blockedBy': blockedBy,
   };
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -56,6 +61,7 @@ class User {
       fcmToken: json['fcmToken'] ?? '',
       favorites: List<String>.from(json['favorites'] ?? []),
       blockedUsers: List<String>.from(json['blockedUsers'] ?? []),
+      blockedBy: List<String>.from(json['blockedBy'] ?? []),
     );
   }
 }

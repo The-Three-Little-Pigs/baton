@@ -24,6 +24,7 @@ class AuthorNotifier extends _$AuthorNotifier {
               fcmToken: "",
               favorites: [],
               blockedUsers: [],
+              blockedBy: [],
             ),
       Error() => User(
         uid: "알 수 없는 사용자",
@@ -33,6 +34,7 @@ class AuthorNotifier extends _$AuthorNotifier {
         fcmToken: "",
         favorites: [],
         blockedUsers: [],
+        blockedBy: [],
       ),
     };
   }

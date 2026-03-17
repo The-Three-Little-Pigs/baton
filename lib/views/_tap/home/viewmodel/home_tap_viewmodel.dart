@@ -1,6 +1,7 @@
 import 'package:baton/core/di/repository/post_provider.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/post.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/category_chips_notifier.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -25,7 +26,9 @@ class HomeTapViewModel extends _$HomeTapViewModel {
         .getPosts(categories, null, null);
 
     return switch (result) {
-      Success(value: final posts) => _processNewPosts(posts),
+      Success(value: final posts) => _processNewPosts(
+        filterBlockedPosts(posts),
+      ),
       Error(failure: final failure) => throw failure.message,
     };
   }
@@ -57,7 +60,7 @@ class HomeTapViewModel extends _$HomeTapViewModel {
 
     switch (result) {
       case Success(value: final newPosts):
-        final processedPosts = _processNewPosts(newPosts);
+        final processedPosts = _processNewPosts(filterBlockedPosts(newPosts));
         // 기존 데이터 뒤에 새 데이터 붙이기 (Append)
         state = AsyncData([...previousPosts, ...processedPosts]);
 
@@ -69,5 +72,20 @@ class HomeTapViewModel extends _$HomeTapViewModel {
 
   Future<void> refresh() async {
     ref.invalidateSelf();
+  }
+
+  List<Post> filterBlockedPosts(List<Post> posts) {
+    final currentUser = ref.watch(userProvider).value;
+    if (currentUser == null) return posts;
+
+    final blockedUsers = currentUser.blockedUsers;
+    final blockedByUsers = currentUser.blockedBy;
+
+    final allHiddenUsers = {...blockedUsers, ...blockedByUsers};
+    if (allHiddenUsers.isEmpty) return posts;
+
+    return posts
+        .where((post) => !allHiddenUsers.contains(post.authorId))
+        .toList();
   }
 }
