@@ -41,7 +41,17 @@ class ChatDetailPage extends ConsumerWidget {
       error: (_, __) => '알 수 없는 사용자',
     );
 
-    final bool isBlocked = myUser?.blockedUsers.contains(otherUid) ?? false;
+    final bool iBlockedHim = myUser?.blockedUsers.contains(otherUid) ?? false;
+    final bool heBlockedMe = myUser?.blockedBy.contains(otherUid) ?? false;
+    final bool isInteractionBlocked = iBlockedHim || heBlockedMe;
+
+    String blockedMessage = '';
+    if (iBlockedHim) {
+      blockedMessage = '차단한 사용자입니다. 대화할 수 없습니다.';
+    } else if (heBlockedMe) {
+      blockedMessage = '채팅이 종료되었습니다.';
+    }
+
     // 읽음 처리 로직
     if (myUserId != null && chatroomState.value != null) {
       final unread = chatroomState.value!.unreadCounts[myUserId] ?? 0;
@@ -82,9 +92,9 @@ class ChatDetailPage extends ConsumerWidget {
                   builder: (modalContext) => CupertinoModalPopUp(
                     actions: [
                       {
-                        isBlocked ? '차단 해제하기' : '신고/차단하기': () async {
+                        iBlockedHim ? '차단 해제하기' : '신고/차단하기': () async {
                           Navigator.pop(modalContext);
-                          if (!isBlocked) {
+                          if (!iBlockedHim) {
                             final confirmed = await showCupertinoDialog<bool>(
                               context: context,
                               builder: (dialogContext) => CupertinoAlertDialog(
@@ -113,23 +123,12 @@ class ChatDetailPage extends ConsumerWidget {
                             if (confirmed == true) {
                               await ref
                                   .read(userProvider.notifier)
-                                  // toggleBlockUser
                                   .toggleBlockUser(otherUid);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text("차단되었습니다.")),
-                                );
-                              }
                             }
                           } else {
                             await ref
                                 .read(userProvider.notifier)
                                 .toggleBlockUser(otherUid);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("차단이 해제되었습니다.")),
-                              );
-                            }
                           }
                         },
                       },
@@ -199,8 +198,8 @@ class ChatDetailPage extends ConsumerWidget {
                 bottom: 30,
                 top: 10,
               ),
-              child: isBlocked
-                  ? _BlockedInputPlaceholder()
+              child: isInteractionBlocked
+                  ? _BlockedInputPlaceholder(message: blockedMessage)
                   : ChatInputField(roomId: roomId),
             ),
           ],
@@ -211,6 +210,9 @@ class ChatDetailPage extends ConsumerWidget {
 }
 
 class _BlockedInputPlaceholder extends StatelessWidget {
+  final String message;
+  const _BlockedInputPlaceholder({required this.message});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -222,7 +224,7 @@ class _BlockedInputPlaceholder extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
       ),
       child: Text(
-        '차단한 사용자입니다. 대화할 수 없습니다.',
+        message,
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 14,

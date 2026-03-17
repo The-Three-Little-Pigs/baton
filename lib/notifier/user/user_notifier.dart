@@ -149,3 +149,24 @@ class UserNotifier extends _$UserNotifier {
     state = AsyncData(user);
   }
 }
+
+// @override
+//   FutureOr<entity.User?> build() async {
+//     final firebaseUser = FirebaseAuth.instance.currentUser;
+//     if (firebaseUser == null) return null;
+
+//     final userRepo = ref.read(userRepositoryProvider);
+//     final result = await userRepo.fetchUserData(firebaseUser.uid);
+
+//     final user = switch (result) {
+//       Success(:final value) => value,
+//       Error() => null,
+//     };
+
+//     // [추가] 로그인 성공 상태라면 FCM 토큰 업데이트/서버 전송
+//     if (user != null) {
+//       NotificationService().updateFCMToken(user.uid, userRepository: userRepo);
+//     }
+
+//     return user;
+//   }
