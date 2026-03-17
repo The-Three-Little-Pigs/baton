@@ -1,3 +1,4 @@
+// 블락 유저 사용
 class Block {
   final String blockerId;
   final String blokedId;
