@@ -142,11 +142,13 @@ class SignUpProfilePage extends ConsumerWidget {
               child: CompleteButton(
                 label: "가입 완료",
                 isLoading: signUpState.isLoading,
-                onPressed: () async {
-                  await ref
-                      .read(signUpProfileProvider.notifier)
-                      .completeSignUp(uid: uid, nickname: nickname);
-                },
+                onPressed: signUpState.selectedImage != null
+                    ? () async {
+                        await ref
+                            .read(signUpProfileProvider.notifier)
+                            .completeSignUp(uid: uid, nickname: nickname);
+                      }
+                    : null,
               ),
             ),
           ],

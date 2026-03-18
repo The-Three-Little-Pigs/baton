@@ -2,7 +2,7 @@ import 'package:baton/core/di/repository/auth_provider.dart';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/user.dart' as entity;
-import 'package:baton/models/repositories/repository_impl/user_repository_impl.dart';
+import 'package:baton/core/di/repository/user_provider.dart';
 import 'package:baton/service/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -23,7 +23,7 @@ class UserNotifier extends _$UserNotifier {
 
     final user = switch (result) {
       Success(:final value) => value,
-      Error() => null,
+      Error(:final failure) => throw Exception(failure.message),
     };
 
     // [추가] 로그인 성공 상태라면 FCM 토큰 업데이트/서버 전송

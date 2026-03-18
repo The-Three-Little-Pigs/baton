@@ -15,6 +15,8 @@ class NotificationService {
   /// 알림 클릭 시 이동을 위한 Router (main.dart에서 주입)
   dynamic _router;
 
+  bool _isTokenRefreshRegistered = false;
+
   void setRouter(dynamic router) {
     _router = router;
   }
@@ -155,14 +157,17 @@ class NotificationService {
       }
 
       // 앱 실행 중 토큰이 바뀌는 경우 대응
-      _fcm.onTokenRefresh.listen((newToken) async {
-        try {
-          await userRepository.updateFCMToken(uid, newToken);
-          print("🔄 [FCM] Token Refreshed: $newToken");
-        } catch (e) {
-          print("❌ [FCM] Error updating refreshed token: $e");
-        }
-      });
+      if (!_isTokenRefreshRegistered) {
+        _fcm.onTokenRefresh.listen((newToken) async {
+          try {
+            await userRepository.updateFCMToken(uid, newToken);
+            print("🔄 [FCM] Token Refreshed: $newToken");
+          } catch (e) {
+            print("❌ [FCM] Error updating refreshed token: $e");
+          }
+        });
+        _isTokenRefreshRegistered = true;
+      }
     } catch (e) {
       print("❌ [FCM] Unexpected Error: $e");
     }

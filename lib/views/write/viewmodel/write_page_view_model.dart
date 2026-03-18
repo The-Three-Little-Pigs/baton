@@ -5,7 +5,7 @@ import 'package:baton/core/utils/validation/write_validation.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
-import 'package:baton/service/image_picker_service.dart';
+import 'package:baton/service/firebase_storage_uploader.dart';
 import 'package:baton/views/write/viewmodel/category_notifier.dart';
 import 'package:baton/views/write/viewmodel/content_notifier.dart';
 import 'package:baton/views/write/viewmodel/image_notifier.dart';
@@ -84,7 +84,7 @@ class WritePageViewModel extends _$WritePageViewModel {
         .toList();
 
     if (newFiles.isNotEmpty) {
-      final uploadResult = await ImagePickerService().getDownloadUrls(newFiles);
+      final uploadResult = await FirebaseStorageUploader().getDownloadUrls(newFiles);
       switch (uploadResult) {
         case Success(value: final urls):
           imageUrls = [...existingUrls, ...urls];

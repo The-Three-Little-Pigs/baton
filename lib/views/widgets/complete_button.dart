@@ -4,26 +4,31 @@ class CompleteButton extends StatelessWidget {
   const CompleteButton({
     super.key,
     required this.label,
-    required this.onPressed,
+    this.onPressed,
     this.isLoading = false,
     this.color,
   });
 
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isLoading;
   final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDisabled = onPressed == null;
+
     return GestureDetector(
-      onTap: onPressed,
+      onTap: isDisabled ? null : onPressed,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: isLoading
-              ? Theme.of(context).colorScheme.primary
-              : color ?? Theme.of(context).colorScheme.secondary,
+              ? theme.colorScheme.primary
+              : isDisabled
+                  ? Colors.grey.shade300
+                  : (color ?? theme.colorScheme.primary),
           borderRadius: BorderRadius.circular(12),
         ),
         child: SizedBox.square(
@@ -43,7 +48,9 @@ class CompleteButton extends StatelessWidget {
                   : Text(
                       label,
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
+                        color: isDisabled
+                            ? Colors.grey.shade500
+                            : theme.colorScheme.onPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
