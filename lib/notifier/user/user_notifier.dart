@@ -173,3 +173,28 @@ class UserNotifier extends _$UserNotifier {
 
 //     return user;
 //   }
+
+// @override
+//   Stream<entity.User?> build() {
+//     final firebaseUser = FirebaseAuth.instance.currentUser;
+//     if (firebaseUser == null) return Stream.value(null);
+
+//     final userRepo = ref.read(userRepositoryProvider);
+//     // ⭐️ 실시간 감시 시작 (Stream)
+//     return userRepo.watchUserData(firebaseUser.uid).map((result) {
+//       final user = switch (result) {
+//         Success(:final value) => value,
+//         Error() => null,
+//       };
+
+//       // 유저 데이터가 로드/업데이트될 때마다 FCM 토큰 갱신 보장
+//       if (user != null) {
+//         NotificationService().updateFCMToken(
+//           user.uid,
+//           userRepository: userRepo,
+//         );
+//       }
+
+//       return user;
+//     });
+//   }

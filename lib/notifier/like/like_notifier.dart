@@ -2,6 +2,7 @@ import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/repositories/repository/like_repository.dart';
 import 'package:baton/models/repositories/repository_impl/like_repository_impl.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'like_notifier.g.dart';
@@ -13,15 +14,14 @@ LikeRepository likeRepository(Ref ref) {
 
 @Riverpod(keepAlive: true)
 class LikeNotifier extends _$LikeNotifier {
-  // TODO: 수정 필요
-  final String currentUserId = "TEMP_USER_ID_123";
-  
   @override
   FutureOr<List<Post>> build() async {
-    return _fetchLikedPosts();
+    final user = ref.watch(userProvider);
+    final currentUserId = user.value?.uid ?? "";
+    return _fetchLikedPosts(currentUserId);
   }
 
-  Future<List<Post>> _fetchLikedPosts() async {
+  Future<List<Post>> _fetchLikedPosts(String currentUserId) async {
     final repository = ref.read(likeRepositoryProvider);
     final result = await repository.getLikedPosts(currentUserId);
 
@@ -34,6 +34,7 @@ class LikeNotifier extends _$LikeNotifier {
   }
 
   Future<void> toggleLike(Post post) async {
+    final currentUserId = ref.read(userProvider).value?.uid ?? "";
     final previousState = state; // 실패 시 원복을 위한 보험 데이터
 
     // (1) UI 낙관적 렌더링 - 서버를 기다리지 않고 화면용 데이터부터 먼저 조작!

@@ -4,6 +4,7 @@ import 'package:baton/notifier/post/product_item_notifier.dart';
 
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_room_action_notifier.dart';
+import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
 import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
@@ -24,10 +25,10 @@ class ChatDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // TODO: 약속하기 버튼 완성하면 지우기
-    // Future.delayed(
-    //   Duration.zero,
-    //   () => AppointmentBottomSheet.showAppointmentDialog(context),
-    // );
+    Future.delayed(
+      Duration.zero,
+      () => AppointmentBottomSheet.showAppointmentDialog(context),
+    );
     final myUser = ref.watch(userProvider).value;
     final myUserId = myUser?.uid;
     final parts = roomId.split('_');
