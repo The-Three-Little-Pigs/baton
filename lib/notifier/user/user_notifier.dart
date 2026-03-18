@@ -17,7 +17,6 @@ class UserNotifier extends _$UserNotifier {
     if (firebaseUser == null) return Stream.value(null);
 
     final userRepo = ref.read(userRepositoryProvider);
-
     // ⭐️ 실시간 감시 시작 (Stream)
     return userRepo.watchUserData(firebaseUser.uid).map((result) {
       final user = switch (result) {

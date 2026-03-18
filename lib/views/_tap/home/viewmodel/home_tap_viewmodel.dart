@@ -4,6 +4,7 @@ import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/category.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/category_chips_notifier.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'home_tap_viewmodel.g.dart';
@@ -45,10 +46,10 @@ class HomeTapViewModel extends _$HomeTapViewModel {
   @override
   Future<HomeTapState> build() async {
     // 카테고리 변경 시 자동으로 build가 다시 실행되도록 감시
+    ref.watch(userProvider);
     final categories = ref.watch(categoryChipsProvider);
     return _fetchPosts(categories: categories);
   }
-  // ref.watch(userProvider);
 
   /// 공통 데이터 페칭 및 상태 생성 로직
   Future<HomeTapState> _fetchPosts({
@@ -62,7 +63,10 @@ class HomeTapViewModel extends _$HomeTapViewModel {
         .getPosts(categories, lastTime, lastPostId);
 
     return switch (result) {
-      Success(value: final newPosts) => _createState(newPosts, previousPosts),
+      Success(value: final newPosts) => _createState(
+        filterBlockedPosts(newPosts),
+        previousPosts,
+      ),
       // Success(value: final posts) => _processNewPosts(
       //   filterBlockedPosts(posts),
       // ),
@@ -131,7 +135,7 @@ class HomeTapViewModel extends _$HomeTapViewModel {
   }
 
   List<Post> filterBlockedPosts(List<Post> posts) {
-    final currentUser = ref.watch(userProvider).value;
+    final currentUser = ref.read(userProvider).value;
     if (currentUser == null) return posts;
 
     final blockedUsers = currentUser.blockedUsers;
