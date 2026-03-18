@@ -34,6 +34,7 @@ class ChatDetailPage extends ConsumerWidget {
         ? (parts[0] == myUserId ? parts[1] : parts[0])
         : '';
     final chatroomState = ref.watch(chatRoomStreamProvider(roomId));
+    final chatroom = chatroomState.value;
     final opponentAsync = ref.watch(authorProvider(otherUid));
     final opponentNickname = opponentAsync.when(
       data: (user) => user.nickname,
@@ -43,12 +44,13 @@ class ChatDetailPage extends ConsumerWidget {
 
     final bool iBlockedHim = myUser?.blockedUsers.contains(otherUid) ?? false;
     final bool heBlockedMe = myUser?.blockedBy.contains(otherUid) ?? false;
-    final bool isInteractionBlocked = iBlockedHim || heBlockedMe;
+    final bool isExited = chatroom?.deletedByUids.contains(otherUid) ?? false;
+    final bool isInteractionBlocked = iBlockedHim || heBlockedMe || isExited;
 
     String blockedMessage = '';
     if (iBlockedHim) {
       blockedMessage = '차단한 사용자입니다. 대화할 수 없습니다.';
-    } else if (heBlockedMe) {
+    } else if (heBlockedMe || isExited) {
       blockedMessage = '채팅이 종료되었습니다.';
     }
 
