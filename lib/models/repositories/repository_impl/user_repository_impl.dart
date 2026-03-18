@@ -52,6 +52,21 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Stream<Result<User?, Failure>> watchUserData(String uid) {
+    return _firestore.collection(_collectionPath).doc(uid).snapshots().map((
+      snapshot,
+    ) {
+      try {
+        final data = snapshot.data();
+        if (data == null) return const Success(null);
+        return Success(User.fromJson(data));
+      } catch (e) {
+        return Error(ServerFailure(e.toString()));
+      }
+    });
+  }
+
+  @override
   Future<Result<void, Failure>> userCreate(User user) async {
     try {
       await _firestore
@@ -144,6 +159,36 @@ class UserRepositoryImpl implements UserRepository {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
       return Error(ServerFailure('회원 탈퇴 처리 중 오류가 발생했습니다.'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> addBlockedBy(
+    String targetUid,
+    String blokerUid,
+  ) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(targetUid).update({
+        'blockedBy': FieldValue.arrayUnion([blokerUid]),
+      });
+      return const Success(null);
+    } catch (e) {
+      return Error(ServerFailure('차단 처리 실패: $e'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> removeBlockedBy(
+    String targetUid,
+    String blockerUid,
+  ) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(targetUid).update({
+        'blockedBy': FieldValue.arrayRemove([blockerUid]),
+      });
+      return const Success(null);
+    } catch (e) {
+      return Error(ServerFailure('차단 해제 실패: $e'));
     }
   }
 }

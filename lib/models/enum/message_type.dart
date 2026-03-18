@@ -1,6 +1,7 @@
 enum MessageType {
   text("텍스트"),
-  image("이미지");
+  image("이미지"),
+  system("시스템");
 
   final String label;
 

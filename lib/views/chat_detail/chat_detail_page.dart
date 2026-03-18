@@ -28,26 +28,37 @@ class ChatDetailPage extends ConsumerWidget {
     //   Duration.zero,
     //   () => AppointmentBottomSheet.showAppointmentDialog(context),
     // );
-    final myUserId = ref.watch(userProvider).value?.uid;
+    final myUser = ref.watch(userProvider).value;
+    final myUserId = myUser?.uid;
     final parts = roomId.split('_');
     final otherUid = (parts.length >= 2)
         ? (parts[0] == myUserId ? parts[1] : parts[0])
         : '';
     final chatroomState = ref.watch(chatRoomStreamProvider(roomId));
+    final chatroom = chatroomState.value;
     final opponentAsync = ref.watch(authorProvider(otherUid));
     final opponentNickname = opponentAsync.when(
       data: (user) => user.nickname,
       loading: () => '...',
       error: (_, __) => '알 수 없는 사용자',
     );
-    // 1. 초기 진입 시 또는 상태 변경 시 모두 체크하기 위해
-    // ref.listen 대신 ref.watch로 값을 일단 가져오고 조용히 업데이트를 쏩니다.
+
+    final bool iBlockedHim = myUser?.blockedUsers.contains(otherUid) ?? false;
+    final bool heBlockedMe = myUser?.blockedBy.contains(otherUid) ?? false;
+    final bool isExited = chatroom?.deletedByUids.contains(otherUid) ?? false;
+    final bool isInteractionBlocked = iBlockedHim || heBlockedMe || isExited;
+
+    String blockedMessage = '';
+    if (iBlockedHim) {
+      blockedMessage = '차단한 사용자입니다. 대화할 수 없습니다.';
+    } else if (heBlockedMe || isExited) {
+      blockedMessage = '채팅이 종료되었습니다.';
+    }
+
+    // 읽음 처리 로직
     if (myUserId != null && chatroomState.value != null) {
       final unread = chatroomState.value!.unreadCounts[myUserId] ?? 0;
-
       if (unread > 0) {
-        // 2. build 도중에 상태를 변경하면 프레임워크 에러가 나므로,
-        // UI가 다 그려진 직후(PostFrame)에 비동기로 실행되게끔 안전하게 감싸줍니다.
         WidgetsBinding.instance.addPostFrameCallback((_) {
           ref.read(chatDetailProvider(roomId).notifier).markAsRead(roomId);
         });
@@ -81,17 +92,76 @@ class ChatDetailPage extends ConsumerWidget {
               onTap: () async {
                 showCupertinoModalPopup(
                   context: context,
-                  builder: (context) => CupertinoModalPopUp(
+                  builder: (modalContext) => CupertinoModalPopUp(
                     actions: [
                       {
-                        '신고하기': () {
-                          // TODO: 신고하기 기능 구현
-                          context.pop();
+                        iBlockedHim ? '차단 해제하기' : '신고/차단하기': () async {
+                          Navigator.pop(modalContext);
+                          if (!iBlockedHim) {
+                            final confirmed = await showCupertinoDialog<bool>(
+                              context: context,
+                              builder: (dialogContext) => CupertinoAlertDialog(
+                                title: const Text("신고/차단하기"),
+                                content: const Text(
+                                  '신고/차단하면 상대방의 게시글을\n더 이상 볼 수 없어요.\n신고/차단하시겠습니까?',
+                                ),
+                                actions: [
+                                  CupertinoDialogAction(
+                                    isDefaultAction: true,
+                                    child: const Text("취소"),
+                                    onPressed: () {
+                                      Navigator.pop(dialogContext, false);
+                                    },
+                                  ),
+                                  CupertinoDialogAction(
+                                    isDestructiveAction: true,
+                                    child: const Text("신고/차단"),
+                                    onPressed: () {
+                                      Navigator.pop(dialogContext, true);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirmed == true) {
+                              await ref
+                                  .read(userProvider.notifier)
+                                  .toggleBlockUser(otherUid);
+                            }
+                          } else {
+                            await ref
+                                .read(userProvider.notifier)
+                                .toggleBlockUser(otherUid);
+                          }
                         },
                       },
                       {
                         '채팅방 나가기': () async {
-                          context.pop();
+                          modalContext.pop();
+
+                          final confirmed = await showCupertinoDialog<bool>(
+                            context: context,
+                            builder: (dialogContext) => CupertinoAlertDialog(
+                              title: const Text("채팅방 나가기"),
+                              content: const Text(
+                                '채팅방을 나가면 메시지를\n더 이상 볼 수 없어요',
+                              ),
+                              actions: [
+                                CupertinoDialogAction(
+                                  child: const Text("취소"),
+                                  onPressed: () =>
+                                      Navigator.pop(dialogContext, false),
+                                ),
+                                CupertinoDialogAction(
+                                  child: const Text("나가기"),
+                                  onPressed: () =>
+                                      Navigator.pop(dialogContext, true),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed != true) return;
+
                           final result = await ref
                               .read(chatRoomActionProvider.notifier)
                               .leaveChatRoom(roomId);
@@ -131,9 +201,38 @@ class ChatDetailPage extends ConsumerWidget {
                 bottom: 30,
                 top: 10,
               ),
-              child: ChatInputField(roomId: roomId),
+              child: isInteractionBlocked
+                  ? _BlockedInputPlaceholder(message: blockedMessage)
+                  : ChatInputField(roomId: roomId),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BlockedInputPlaceholder extends StatelessWidget {
+  final String message;
+  const _BlockedInputPlaceholder({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 48,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Colors.grey.shade600,
         ),
       ),
     );

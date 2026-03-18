@@ -50,7 +50,7 @@ final class AuthorNotifierProvider
   }
 }
 
-String _$authorNotifierHash() => r'b0333feb6bffd19f7650bd781fc00b5b75f193d3';
+String _$authorNotifierHash() => r'acd0a06ef1b726a6255434af956e8b73a6a42cb7';
 
 final class AuthorNotifierFamily extends $Family
     with

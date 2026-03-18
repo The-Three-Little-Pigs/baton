@@ -12,7 +12,7 @@ part 'chat_detail_notifier.g.dart';
 
 @riverpod
 class ChatDetailNotifier extends _$ChatDetailNotifier {
-  late final String _myUserId;
+  late String _myUserId;
 
   @override
   Stream<List<Message>> build(String roomId) {
@@ -77,6 +77,18 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
       Success() => null,
       Error(:final failure) => failure.message,
     };
+  }
+
+  // TODO: 약속하기로 활용
+  Future<void> sendSystemMessage(String roomId, String message) async {
+    final repository = ref.read(chatRepositoryProvider);
+    final result = await repository.sendSystemMessage(roomId, message);
+    switch (result) {
+      case Success():
+        break;
+      case Error(:final failure):
+        print('시스템 메시지 전송 실패: ${failure.message}');
+    }
   }
 }
 

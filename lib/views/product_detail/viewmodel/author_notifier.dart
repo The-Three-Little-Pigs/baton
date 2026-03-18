@@ -22,7 +22,8 @@ class AuthorNotifier extends _$AuthorNotifier {
               profileUrl: null,
               score: 0,
               favorites: {},
-              blockedUsers: {},
+              blockedUsers: [],
+              blockedBy: [],
             ),
       Error() => User(
         uid: "알 수 없는 사용자",
@@ -30,7 +31,8 @@ class AuthorNotifier extends _$AuthorNotifier {
         profileUrl: null,
         score: 0,
         favorites: {},
-        blockedUsers: {},
+        blockedUsers: [],
+        blockedBy: [],
       ),
     };
   }
