@@ -20,6 +20,8 @@ class AppointmentBottomSheet extends StatefulWidget {
 
 class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
   static const int _kInfiniteOffset = 1000;
+  final int _currentYear = DateTime.now().year;
+  final int _yearRange = 5;
   late int _selectedYear;
   late int _selectedMonth;
   late int _selectedDay;
@@ -64,119 +66,222 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
+    final sheetHeight = MediaQuery.of(context).size.height * 0.7;
+    return SizedBox(
+      height: sheetHeight,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 20.5, right: 20.5, top: 14),
-            child: BottomSheetHeader(),
-          ),
-
-          _buildExpansionSection(
-            title: '날짜',
-            displayValue: '$_selectedYear년 $_selectedMonth월 $_selectedDay일',
-            expandedChild: SizedBox(
-              height: 180,
-              child: Row(
-                children: [
-                  _buildInfiniteWheel(
-                    count: 10,
-                    initialItem: _selectedYear - 2026,
-                    onChanged: (value) =>
-                        setState(() => _selectedYear = 2026 + (value % 10)),
-                    suffix: '년',
-                  ),
-                  _buildInfiniteWheel(
-                    count: 12,
-                    initialItem: _selectedMonth - 1,
-                    onChanged: (value) =>
-                        setState(() => _selectedMonth = (value % 12) + 1),
-                    suffix: '월',
-                  ),
-                  _buildInfiniteWheel(
-                    count: 31,
-                    initialItem: _selectedDay - 1,
-                    onChanged: (value) =>
-                        setState(() => _selectedDay = (value % 31) + 1),
-                    suffix: '일',
-                  ),
-                ],
-              ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 20.5, right: 20.5, top: 14),
+              child: BottomSheetHeader(),
             ),
-          ),
-
-          _buildExpansionSection(
-            title: '시간',
-            displayValue:
-                '${_isAm ? "오전" : "오후"} $_selectedHour시 ${_selectedMinute.toString().padLeft(2, "0")}분',
-            expandedChild: SizedBox(
-              height: 180,
-              child: Row(
-                children: [
-                  _buildInfiniteWheel(
-                    count: 2,
-                    initialItem: _isAm ? 0 : 1,
-                    onChanged: (value) =>
-                        setState(() => _isAm = (value % 2) == 0),
-                    items: ['오전', '오후'],
-                  ),
-                  _buildInfiniteWheel(
-                    count: 12,
-                    initialItem: _selectedHour - 1,
-                    onChanged: (value) =>
-                        setState(() => _selectedHour = (value % 12) + 1),
-                    suffix: '시',
-                  ),
-                  _buildInfiniteWheel(
-                    count: 60,
-                    initialItem: _selectedMinute,
-                    onChanged: (value) =>
-                        setState(() => _selectedMinute = value % 60),
-                    suffix: '분',
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          SizedBox(height: 9),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 28),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '거래 방법',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurface,
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    // --- 날짜 섹션 ---
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12, right: 4),
+                      child: _buildExpansionSection(
+                        title: '날짜',
+                        displayValue:
+                            '$_selectedYear년 $_selectedMonth월 $_selectedDay일',
+                        expandedChild: Padding(
+                          // TODO: 휠 좌우 간격 임의 조정
+                          padding: const EdgeInsets.only(left: 0, right: 30),
+                          child: SizedBox(
+                            height: 120,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildWheel(
+                                  count: _yearRange,
+                                  initialItem: _selectedYear - _currentYear,
+                                  onChanged: (value) => setState(
+                                    () => _selectedYear = _currentYear + value,
+                                  ),
+                                  suffix: '년',
+                                  isInfinite: false,
+                                ),
+                                const SizedBox(width: 58),
+                                _buildWheel(
+                                  count: 12,
+                                  initialItem: _selectedMonth - 1,
+                                  onChanged: (value) => setState(
+                                    () => _selectedMonth = (value % 12) + 1,
+                                  ),
+                                  suffix: '월',
+                                ),
+                                const SizedBox(width: 42),
+                                _buildWheel(
+                                  count: 31,
+                                  initialItem: _selectedDay - 1,
+                                  onChanged: (value) => setState(
+                                    () => _selectedDay = (value % 31) + 1,
+                                  ),
+                                  suffix: '일',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // --- 시간 섹션 ---
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12, right: 4),
+                      child: _buildExpansionSection(
+                        title: '시간',
+                        displayValue:
+                            '${_isAm ? "오전" : "오후"} $_selectedHour시 ${_selectedMinute.toString().padLeft(2, "0")}분',
+                        expandedChild: Padding(
+                          // TODO:휠 좌우 간격 임의 조정
+                          padding: const EdgeInsets.only(left: 0, right: 10),
+                          child: SizedBox(
+                            height: 120,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildWheel(
+                                  count: 2,
+                                  initialItem: _isAm ? 0 : 1,
+                                  onChanged: (value) =>
+                                      setState(() => _isAm = (value % 2) == 0),
+                                  items: ['오전', '오후'],
+                                  isInfinite: false,
+                                ),
+                                const SizedBox(width: 58),
+                                _buildWheel(
+                                  count: 12,
+                                  initialItem: _selectedHour - 1,
+                                  onChanged: (value) => setState(
+                                    () => _selectedHour = (value % 12) + 1,
+                                  ),
+                                  suffix: '시',
+                                ),
+                                const SizedBox(width: 42),
+                                _buildWheel(
+                                  count: 60,
+                                  initialItem: _selectedMinute,
+                                  onChanged: (value) => setState(
+                                    () => _selectedMinute = value % 60,
+                                  ),
+                                  suffix: '분',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // --- 거래 방법 ---
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 28,
+                      ),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '거래 방법',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                        child: Container(
+                          height: 46,
+                          width: 74,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '직거래',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-          SizedBox(height: 4),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Container(
-                height: 46,
-                width: 74,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: Theme.of(context).colorScheme.primary,
+
+            SizedBox(height: 32),
+            // --- 하단 요약 및 버튼 ---
+            Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Center(
                   child: Text(
-                    '직거래',
+                    _summaryText,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 10,
+                bottom: 30,
+              ),
+              child: SizedBox(
+                height: 54,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final result = {
+                      'dateTime': _selectedDateTime,
+                      'method': _selectedMethod,
+                    };
+                    Navigator.pop(context, result);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    '약속 신청',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -186,65 +291,8 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
                 ),
               ),
             ),
-          ),
-          SizedBox(height: 32),
-          Container(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: Theme.of(context).colorScheme.secondary),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Center(
-                child: Text(
-                  _summaryText,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 10,
-              bottom: 30,
-            ),
-            child: SizedBox(
-              height: 54,
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  final result = {
-                    'dateTime': _selectedDateTime,
-                    'method': _selectedMethod,
-                  };
-                  Navigator.pop(context, result);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Text(
-                  '약속 신청',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -254,81 +302,106 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
     required String displayValue,
     required Widget expandedChild,
   }) {
-    return ExpansionTile(
-      shape: const Border(),
-      title: Row(
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+    return Column(
+      children: [
+        ExpansionTile(
+          shape: const Border(),
+          title: Row(
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                displayValue,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ],
           ),
-          Spacer(),
-          Text(
-            displayValue,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+          children: [expandedChild],
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16), // 구분선 좌우 여백
+          child: Divider(
+            thickness: 1,
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
-        ],
-      ),
-      children: [expandedChild],
+        ),
+      ],
     );
   }
 
-  Widget _buildInfiniteWheel({
+  Widget _buildWheel({
     required int count,
     required int initialItem,
     required ValueChanged<int> onChanged,
     List<String>? items,
     String suffix = '',
+    bool isInfinite = true,
   }) {
-    return Expanded(
-      child: ListWheelScrollView.useDelegate(
-        itemExtent: 40,
-        physics: FixedExtentScrollPhysics(),
-        controller: FixedExtentScrollController(
-          initialItem: initialItem + (count * _kInfiniteOffset),
-        ),
-        onSelectedItemChanged: onChanged,
-        childDelegate: ListWheelChildBuilderDelegate(
-          builder: (context, index) {
-            final actualIndex = index % count;
-            final text = items != null
-                ? items[actualIndex]
-                : '${actualIndex + (suffix == '분' ? 0 : (suffix == '년' ? 2026 : 1))}';
-            return Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
+    final int finalInitialItem = isInfinite
+        ? initialItem + (count * _kInfiniteOffset)
+        : initialItem;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: suffix == '년' ? 50 : (items != null ? 50 : 35),
+          child: ListWheelScrollView.useDelegate(
+            itemExtent: 40,
+            physics: FixedExtentScrollPhysics(),
+            controller: FixedExtentScrollController(
+              initialItem: finalInitialItem,
+            ),
+            onSelectedItemChanged: onChanged,
+            childDelegate: ListWheelChildBuilderDelegate(
+              childCount: isInfinite ? null : count,
+              builder: (context, index) {
+                final actualIndex = index % count;
+                final isSelected = actualIndex == initialItem;
+                final text = items != null
+                    ? items[actualIndex]
+                    : '${actualIndex + (suffix == '분' ? 0 : (suffix == '년' ? _currentYear : 1))}';
+                return Center(
+                  child: Text(
                     text,
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 20,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.secondary,
                     ),
                   ),
-                  if (suffix.isNotEmpty)
-                    Text(
-                      suffix,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                ],
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         ),
-      ),
+        if (suffix.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(left: 2),
+            child: Text(
+              suffix,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

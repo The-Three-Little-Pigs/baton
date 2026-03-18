@@ -25,10 +25,10 @@ class ChatDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // TODO: 약속하기 버튼 완성하면 지우기
-    Future.delayed(
-      Duration.zero,
-      () => AppointmentBottomSheet.showAppointmentDialog(context),
-    );
+    // Future.delayed(
+    //   Duration.zero,
+    //   () => AppointmentBottomSheet.showAppointmentDialog(context),
+    // );
     final myUser = ref.watch(userProvider).value;
     final myUserId = myUser?.uid;
     final parts = roomId.split('_');
