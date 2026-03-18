@@ -46,7 +46,8 @@ class LoginService {
             profileUrl: firebaseUser.photoURL ?? '',
             score: 36.5, // 기본 매너 온도 설정
             favorites: {}, // 초기값 빈 리스트
-            blockedUsers: {}, // 초기값 빈 리스트
+            blockedUsers: [], // 초기값 빈 리스트
+            blockedBy: [], // 초기값 빈 리스트
           );
           return Success(NewUser(tempUser));
         }

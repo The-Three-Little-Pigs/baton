@@ -30,6 +30,10 @@ class ChatMessageList extends ConsumerWidget {
             itemBuilder: (context, index) {
               final model = uiMessages[index];
               final msg = model.message;
+              // TODO: 약속하기로 활용
+              if (msg.type == MessageType.system) {
+                return _SystemMessageBubble(content: msg.content);
+              }
               final isReadByTarget = model.isReadByTarget;
               final isMyMessage = msg.senderId == myUserId;
               final nextVisualMsg = index > 0
@@ -297,6 +301,37 @@ class _ChatBubble extends StatelessWidget {
           // 내 메시지일 때: 오른쪽 가장자리 여백 20
           if (isMyMessage) const SizedBox(width: 20),
         ],
+      ),
+    );
+  }
+}
+
+/// TODO: 약속하기로 활용
+class _SystemMessageBubble extends StatelessWidget {
+  final String content;
+
+  const _SystemMessageBubble({required this.content});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 40),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          content,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: Colors.grey.shade700,
+          ),
+        ),
       ),
     );
   }

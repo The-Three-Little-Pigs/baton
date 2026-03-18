@@ -1,10 +1,11 @@
 class User {
-  final String uid; // 유저 아이디
-  final String nickname; // 유저 닉네임
-  final String? profileUrl; // 유저 프로필 이미지
-  final double score; // 유저 매너 온도
-  final Set<String> favorites; // 유저 찜 목록
-  final Set<String> blockedUsers; // 유저 차단 목록
+  final String uid;
+  final String nickname;
+  final String? profileUrl;
+  final double score;
+  final Set<String> favorites;
+  final List<String> blockedUsers;
+  final List<String> blockedBy;
 
   User({
     required this.uid,
@@ -13,6 +14,7 @@ class User {
     required this.score,
     required this.favorites,
     required this.blockedUsers,
+    required this.blockedBy,
   });
 
   User copyWith({
@@ -21,7 +23,8 @@ class User {
     String? profileUrl,
     double? score,
     Set<String>? favorites,
-    Set<String>? blockedUsers,
+    List<String>? blockedUsers,
+    List<String>? blockedBy,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -30,6 +33,7 @@ class User {
       score: score ?? this.score,
       favorites: favorites ?? this.favorites,
       blockedUsers: blockedUsers ?? this.blockedUsers,
+      blockedBy: blockedBy ?? this.blockedBy,
     );
   }
 
@@ -39,7 +43,8 @@ class User {
     'profileUrl': profileUrl,
     'score': score,
     'favorites': favorites.toSet(),
-    'blockedUsers': blockedUsers.toSet(),
+    'blockedUsers': blockedUsers,
+    'blockedBy': blockedBy,
   };
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -49,7 +54,8 @@ class User {
       profileUrl: json['profileUrl'] ?? '',
       score: (json['score'] ?? 36.5).toDouble(),
       favorites: Set<String>.from(json['favorites'] ?? []),
-      blockedUsers: Set<String>.from(json['blockedUsers'] ?? []),
+      blockedUsers: List<String>.from(json['blockedUsers'] ?? []),
+      blockedBy: List<String>.from(json['blockedBy'] ?? []),
     );
   }
 }
