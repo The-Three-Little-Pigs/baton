@@ -17,17 +17,6 @@ class UserNotifier extends _$UserNotifier {
     if (firebaseUser == null) return Stream.value(null);
 
     final userRepo = ref.read(userRepositoryProvider);
-    final result = await userRepo.fetchUserData(firebaseUser.uid);
-
-    final user = switch (result) {
-      Success(:final value) => value,
-      Error(:final failure) => throw Exception(failure.message),
-    };
-
-    // [추가] 로그인 성공 상태라면 FCM 토큰 업데이트/서버 전송
-    if (user != null) {
-      NotificationService().updateFCMToken(user.uid, userRepository: userRepo);
-    }
 
     // ⭐️ 실시간 감시 시작 (Stream)
     return userRepo.watchUserData(firebaseUser.uid).map((result) {
