@@ -8,7 +8,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'
     show FirebaseAuth, FirebaseAuthException;
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class UserRepositoryImpl implements UserRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -192,7 +191,3 @@ class UserRepositoryImpl implements UserRepository {
     }
   }
 }
-
-final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return UserRepositoryImpl();
-});

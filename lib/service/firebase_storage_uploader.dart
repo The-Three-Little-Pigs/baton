@@ -6,7 +6,7 @@ import 'package:baton/core/result/result.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 
-class ImagePickerService {
+class FirebaseStorageUploader {
   Future<Result<List<String>, Failure>> getDownloadUrls(
     List<String> imagePaths,
   ) async {

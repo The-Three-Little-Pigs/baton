@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/user.dart';
-import 'package:baton/models/repositories/repository_impl/user_repository_impl.dart';
+import 'package:baton/core/di/repository/user_provider.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/service/notification_service.dart';
 
@@ -74,12 +74,16 @@ class SignUpProfile extends _$SignUpProfile {
       );
 
       // 4. Firestore 'user' 컬렉션에 저장
-      await userRepo.userCreate(newUser);
+      final createResult = await userRepo.userCreate(newUser);
+
+      if (createResult is Error) {
+        return false;
+      }
 
       // 5. [추가] 토큰 갱신 리스너 등록 (백그라운드 등에서 바뀔 경우 대비)
       NotificationService().updateFCMToken(uid, userRepository: userRepo);
 
-      // 5. 유저 정보 상태 즉시 업데이트 (라우터 리다이렉션 트리거)
+      // 6. 유저 정보 상태 즉시 업데이트 (라우터 리다이렉션 트리거)
       ref.read(userProvider.notifier).updateState(newUser);
 
       return true;
