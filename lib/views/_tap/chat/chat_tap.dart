@@ -28,33 +28,24 @@ class ChatTap extends ConsumerWidget {
           ),
         ),
         actions: [
-          // TODO: 지워야함
-          // Center(
-          //   child: Text(
-          //     "내 접속: $currentUserId",
-          //     style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-          //     overflow: TextOverflow.ellipsis,
-          //     maxLines: 1,
-          //   ),
+          // GestureDetector(
+          //   onTap: () async {
+          //     showCupertinoModalPopup(
+          //       context: context,
+          //       builder: (context) => CupertinoModalPopUp(
+          //         actions: [
+          //           {
+          //             '삭제하기': () {
+          //               // TODO: 삭제하기 기능 구현
+          //               context.pop();
+          //             },
+          //           },
+          //         ],
+          //       ),
+          //     );
+          //   },
+          //   child: const Icon(Icons.more_vert, size: 20),
           // ),
-          GestureDetector(
-            onTap: () async {
-              showCupertinoModalPopup(
-                context: context,
-                builder: (context) => CupertinoModalPopUp(
-                  actions: [
-                    {
-                      '삭제하기': () {
-                        // TODO: 삭제하기 기능 구현
-                        context.pop();
-                      },
-                    },
-                  ],
-                ),
-              );
-            },
-            child: const Icon(Icons.more_vert, size: 20),
-          ),
         ],
       ),
       body: Column(

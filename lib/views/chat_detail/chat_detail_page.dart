@@ -4,6 +4,7 @@ import 'package:baton/notifier/post/product_item_notifier.dart';
 
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_room_action_notifier.dart';
+import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
 import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
