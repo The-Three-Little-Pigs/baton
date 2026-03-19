@@ -75,6 +75,7 @@ class ProductDetailPage extends ConsumerWidget {
                       content: post.content,
                       likeCount: post.likeCount,
                       chatCount: post.chatCount,
+                      viewCount: post.viewCount,
                     ),
                   ),
                   Divider(color: appColors?.divider),

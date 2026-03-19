@@ -10,7 +10,13 @@ part 'product_detail_page_view_model.g.dart';
 class ProductDetailPageViewModel extends _$ProductDetailPageViewModel {
   @override
   Future<Post> build(String postId) async {
-    final result = await ref.read(postRepositoryProvider).getPostById(postId);
+    final repo = ref.read(postRepositoryProvider);
+    
+    // 🔥 상세 페이지 진입 시 조회수 1 증가 (Fire and forget 또는 간단히 대기)
+    // 에러가 나더라도 무시하거나 로그만 남김 (사용자 경험에 치명적이지 않음)
+    await repo.incrementViewCount(postId);
+
+    final result = await repo.getPostById(postId);
 
     return switch (result) {
       Success(value: final post) => post,

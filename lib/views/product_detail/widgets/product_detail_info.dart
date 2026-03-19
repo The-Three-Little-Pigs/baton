@@ -12,6 +12,7 @@ class ProductDetailInfo extends StatelessWidget {
     required this.content,
     required this.likeCount,
     required this.chatCount,
+    required this.viewCount,
   });
 
   final String title;
@@ -22,6 +23,7 @@ class ProductDetailInfo extends StatelessWidget {
   final String content;
   final int likeCount;
   final int chatCount;
+  final int viewCount;
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +77,9 @@ class ProductDetailInfo extends StatelessWidget {
               AppSpacing.w8,
               Icon(Icons.chat_bubble, size: 16),
               Text("$chatCount", style: TextStyle(fontWeight: FontWeight.w400)),
+              AppSpacing.w8,
+              Icon(Icons.visibility, size: 16),
+              Text("$viewCount", style: TextStyle(fontWeight: FontWeight.w400)),
             ],
           ),
         ],

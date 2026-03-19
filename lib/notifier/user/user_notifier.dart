@@ -25,6 +25,11 @@ class UserNotifier extends _$UserNotifier {
         Error() => null,
       };
 
+      // 🔥 [Soft Delete] 이미 탈퇴 처리된 유저라면 null 반환 (미가입 상태로 취급)
+      if (user != null && user.isDeleted) {
+        return null;
+      }
+
       // 유저 데이터가 로드/업데이트될 때마다 FCM 토큰 갱신 보장
       if (user != null) {
         NotificationService().updateFCMToken(
@@ -62,8 +67,9 @@ class UserNotifier extends _$UserNotifier {
       userRepository: userRepo,
     );
 
-    // 1. Firestore 데이터 삭제
-    final result = await userRepo.deleteUserData(currentUser.uid);
+    // 1. Firestore 데이터 삭제 대신 '삭제됨' 표시 (Soft Delete)
+    // 닉네임을 변경하여 기존 닉네임을 다른 사람에게 돌려줍니다.
+    final result = await userRepo.markUserAsDeleted(currentUser.uid);
 
     if (result is Error<void, Failure>) {
       onError(result.failure.message);
@@ -75,6 +81,8 @@ class UserNotifier extends _$UserNotifier {
 
     switch (authResult) {
       case Success():
+        // 🔥 즉시 로그아웃 처리하여 라우터가 로그인 페이지로 인식하게 함
+        await FirebaseAuth.instance.signOut();
         ref.invalidateSelf();
         onSuccess();
         break;

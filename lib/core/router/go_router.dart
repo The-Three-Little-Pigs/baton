@@ -138,9 +138,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 1. 비로그인 상태
       if (!isLoggedIn) {
-        if (location == '/' ||
-            location == '/signUp' ||
-            location == '/signUpProfile') {
+        // 비로그인 시에는 오직 로그인 페이지('/')만 허용합니다.
+        if (location == '/') {
           return null;
         }
         return '/';
@@ -171,7 +170,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             return null;
           }
 
-          // 로그인 페이지('/')에 있다면 -> 신규 가입 페이지로 자동 이동
+          // 로그인 페이지('/')에 있다면 -> 신규 가입 페이지로 자동 이동 (복구)
           if (location == '/') return '/signUp';
 
           // 그 외 보호된 페이지(예: /home) 접근 시 로그인 페이지('/')로 유도
