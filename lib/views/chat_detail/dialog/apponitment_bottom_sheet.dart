@@ -27,8 +27,6 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
   late int _selectedMinute;
   bool _isAm = true;
   String _selectedMethod = '직거래';
-  bool _isDateExpanded = false;
-  bool _isTimeExpanded = false;
 
   @override
   void initState() {
@@ -96,92 +94,111 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
                   children: [
                     // --- 날짜 섹션 ---
                     Padding(
-                      padding: const EdgeInsets.only(left: 28, right: 0),
-                      child: _buildExpansionSection(
-                        title: '날짜',
-                        displayValue: '$_selectedMonth 월   $_selectedDay 일',
-                        expandedChild: Padding(
-                          // TODO: 휠 좌우 간격 임의 조정
-                          padding: const EdgeInsets.only(left: 0, right: 30),
-                          child: SizedBox(
-                            height: 120,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildWheel(
-                                  count: 12,
-                                  initialItem: _selectedMonth - 1,
-                                  onChanged: (value) => setState(
-                                    () => _selectedMonth = (value % 12) + 1,
-                                  ),
-                                  suffix: '월',
-                                ),
-                                const SizedBox(width: 42),
-                                _buildWheel(
-                                  count: 31,
-                                  initialItem: _selectedDay - 1,
-                                  onChanged: (value) => setState(
-                                    () => _selectedDay = (value % 31) + 1,
-                                  ),
-                                  suffix: '일',
-                                ),
-                              ],
+                      padding: const EdgeInsets.only(left: 28, right: 32),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
+                              width: 1,
                             ),
                           ),
                         ),
-                        isExpanded: _isDateExpanded,
-                        onToggle: () =>
-                            setState(() => _isDateExpanded = !_isDateExpanded),
+                        child: _buildExpansionSection(
+                          title: '날짜',
+                          displayValue: '$_selectedMonth 월   $_selectedDay 일',
+                          expandedChild: Padding(
+                            // TODO: 휠 좌우 간격 임의 조정
+                            padding: const EdgeInsets.only(left: 0, right: 30),
+                            child: SizedBox(
+                              height: 120,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _buildWheel(
+                                    count: 12,
+                                    initialItem: _selectedMonth - 1,
+                                    onChanged: (value) => setState(
+                                      () => _selectedMonth = (value % 12) + 1,
+                                    ),
+                                    suffix: '월',
+                                  ),
+                                  const SizedBox(width: 42),
+                                  _buildWheel(
+                                    count: 31,
+                                    initialItem: _selectedDay - 1,
+                                    onChanged: (value) => setState(
+                                      () => _selectedDay = (value % 31) + 1,
+                                    ),
+                                    suffix: '일',
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                     // --- 시간 섹션 ---
                     Padding(
-                      padding: const EdgeInsets.only(left: 28, right: 0),
-                      child: _buildExpansionSection(
-                        title: '시간',
-                        displayValue:
-                            '${_isAm ? "오전" : "오후"}   $_selectedHour 시   ${_selectedMinute.toString().padLeft(2, "0")} 분',
-                        expandedChild: Padding(
-                          // TODO:휠 좌우 간격 임의 조정
-                          padding: const EdgeInsets.only(left: 0, right: 36),
-                          child: SizedBox(
-                            height: 120,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildWheel(
-                                  count: 2,
-                                  initialItem: _isAm ? 0 : 1,
-                                  onChanged: (value) =>
-                                      setState(() => _isAm = (value % 2) == 0),
-                                  items: ['오전', '오후'],
-                                  isInfinite: false,
-                                ),
-                                const SizedBox(width: 58),
-                                _buildWheel(
-                                  count: 12,
-                                  initialItem: _selectedHour - 1,
-                                  onChanged: (value) => setState(
-                                    () => _selectedHour = (value % 12) + 1,
-                                  ),
-                                  suffix: '시',
-                                ),
-                                const SizedBox(width: 42),
-                                _buildWheel(
-                                  count: 60,
-                                  initialItem: _selectedMinute,
-                                  onChanged: (value) => setState(
-                                    () => _selectedMinute = value % 60,
-                                  ),
-                                  suffix: '분',
-                                ),
-                              ],
+                      padding: const EdgeInsets.only(left: 28, right: 32),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
+                              width: 1,
                             ),
                           ),
                         ),
-                        isExpanded: _isTimeExpanded,
-                        onToggle: () =>
-                            setState(() => _isTimeExpanded = !_isTimeExpanded),
+                        child: _buildExpansionSection(
+                          title: '시간',
+                          displayValue:
+                              '${_isAm ? "오전" : "오후"}   $_selectedHour 시   ${_selectedMinute.toString().padLeft(2, "0")} 분',
+                          expandedChild: Padding(
+                            // TODO:휠 좌우 간격 임의 조정
+                            padding: const EdgeInsets.only(left: 0, right: 36),
+                            child: SizedBox(
+                              height: 120,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _buildWheel(
+                                    count: 2,
+                                    initialItem: _isAm ? 0 : 1,
+                                    onChanged: (value) => setState(
+                                      () => _isAm = (value % 2) == 0,
+                                    ),
+                                    items: ['오전', '오후'],
+                                    isInfinite: false,
+                                  ),
+                                  const SizedBox(width: 58),
+                                  _buildWheel(
+                                    count: 12,
+                                    initialItem: _selectedHour - 1,
+                                    onChanged: (value) => setState(
+                                      () => _selectedHour = (value % 12) + 1,
+                                    ),
+                                    suffix: '시',
+                                  ),
+                                  const SizedBox(width: 42),
+                                  _buildWheel(
+                                    count: 60,
+                                    initialItem: _selectedMinute,
+                                    onChanged: (value) => setState(
+                                      () => _selectedMinute = value % 60,
+                                    ),
+                                    suffix: '분',
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                     // --- 거래 방법 ---
@@ -231,7 +248,6 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
                 ),
               ),
             ),
-
             SizedBox(height: 32),
             // --- 하단 요약 및 버튼 ---
             Container(
@@ -302,53 +318,50 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
     required String title,
     required String displayValue,
     required Widget expandedChild,
-    required bool isExpanded,
-    required VoidCallback onToggle,
   }) {
-    return ExpansionTile(
-      tilePadding: EdgeInsets.zero,
-      shape: const Border(),
-      trailing: const SizedBox.shrink(),
-      onExpansionChanged: (expanded) => onToggle(),
-      title: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                displayValue,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                isExpanded ? Icons.expand_less : Icons.expand_more,
-                size: 24,
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ],
-          ),
-          Divider(
-            thickness: 1,
-            color: Theme.of(context).colorScheme.outlineVariant,
-            indent: 0,
-            endIndent: 0,
-          ),
-        ],
+    return Theme(
+      data: Theme.of(context).copyWith(
+        visualDensity: VisualDensity.compact,
+        dividerColor: Colors.transparent,
+        listTileTheme: ListTileThemeData(
+          contentPadding: EdgeInsets.zero,
+          horizontalTitleGap: 0,
+          minLeadingWidth: 0,
+          minVerticalPadding: 0,
+        ),
       ),
-      children: [expandedChild],
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        shape: const Border(),
+        // trailing: null,
+        title: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  displayValue,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        children: [expandedChild],
+      ),
     );
   }
 
