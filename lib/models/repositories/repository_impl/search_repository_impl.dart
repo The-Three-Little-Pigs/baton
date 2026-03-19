@@ -1,7 +1,7 @@
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
-import 'package:baton/models/entities/hot_keyword.dart';
+import 'package:baton/models/entities/keyword.dart';
 import 'package:baton/models/repositories/repository/search_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -9,19 +9,19 @@ class SearchRepositoryImpl implements SearchRepository {
   final firestore = FirebaseFirestore.instance;
 
   @override
-  Future<Result<List<HotKeyword>, Failure>> getHotKeywords() async {
+  Future<Result<List<Keyword>, Failure>> getHotKeywords() async {
     try {
       final snapshot = await firestore
-          .collection('hot_keywords')
+          .collection('keywords')
           .orderBy('count', descending: true)
           .limit(10)
           .get();
 
-      final hotKeywords = snapshot.docs.map((doc) {
-        return HotKeyword.fromJson(doc.data());
+      final keywords = snapshot.docs.map((doc) {
+        return Keyword.fromJson(doc.data());
       }).toList();
 
-      return Success(hotKeywords);
+      return Success(keywords);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
@@ -30,22 +30,28 @@ class SearchRepositoryImpl implements SearchRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateKeyword(String keyword) async {
+  Future<Result<void, Failure>> updateSearchRecord(
+    String uid,
+    String keyword,
+  ) async {
     try {
-      final snapshot = await firestore
-          .collection('keywords')
-          .doc(keyword)
-          .get();
+      final batch = firestore.batch();
 
-      if (snapshot.exists) {
-        await firestore.collection('keywords').doc(keyword).update({
-          'count': FieldValue.increment(1),
-        });
-      } else {
-        await firestore.collection('keywords').doc(keyword).set({'count': 1});
-      }
+      // 1. 키워드 검색량 증가 (set with merge를 통해 get 없이 1번의 쿼리로 처리)
+      final keywordRef = firestore.collection('keywords').doc(keyword);
+      batch.set(keywordRef, {
+        'count': FieldValue.increment(1),
+      }, SetOptions(merge: true));
 
-      return Success(null);
+      // 2. 유저의 최근 검색어 추가
+      final userRef = firestore.collection('user').doc(uid);
+      batch.update(userRef, {
+        'recentlySearch': FieldValue.arrayUnion([keyword]),
+      });
+
+      await batch.commit();
+
+      return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
