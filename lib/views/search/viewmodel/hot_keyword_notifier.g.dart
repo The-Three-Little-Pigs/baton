@@ -34,7 +34,7 @@ final class HotKeywordNotifierProvider
 }
 
 String _$hotKeywordNotifierHash() =>
-    r'179e6f324b71b579789ba3158bcb20a357118905';
+    r'03929677ce96321e9b15e6bb6fe483331d40af03';
 
 abstract class _$HotKeywordNotifier extends $AsyncNotifier<List<Keyword>> {
   FutureOr<List<Keyword>> build();

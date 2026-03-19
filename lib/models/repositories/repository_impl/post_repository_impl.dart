@@ -89,12 +89,8 @@ class PostRepositoryImpl implements PostRepository {
     try {
       final docRef = _firestore.collection('posts').doc(postId);
       final doc = await docRef.get();
-
-      if (!doc.exists) {
-        return Error(ServerFailure('Post not found'));
-      }
-
       final post = Post.fromJson(doc.data()!);
+
       return Success(post);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));

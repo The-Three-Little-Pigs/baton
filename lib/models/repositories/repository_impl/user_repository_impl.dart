@@ -163,6 +163,37 @@ class UserRepositoryImpl implements UserRepository {
       return Error(ServerFailure('알 수 없는 에러가 발생했습니다.'));
     }
   }
+
+  @override
+  Future<Result<void, Failure>> removeRecentlySearch(
+    String uid,
+    String keyword,
+  ) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(uid).update({
+        'recentlySearch': FieldValue.arrayRemove([keyword]),
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('최근 검색어 삭제 중 오류가 발생했습니다.'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> clearRecentlySearch(String uid) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(uid).update({
+        'recentlySearch': FieldValue.arrayRemove([]),
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('최근 검색어 삭제 중 오류가 발생했습니다.'));
+    }
+  }
 }
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {

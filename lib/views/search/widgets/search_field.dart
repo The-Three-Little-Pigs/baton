@@ -16,7 +16,7 @@ class SearchField extends StatelessWidget {
           borderRadius: BorderRadius.circular(99),
           borderSide: BorderSide(color: Colors.black),
         ),
-        suffixIcon: const Icon(Icons.search),
+        suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: () {}),
         suffixIconColor: Color(0xFF1A1A1A),
         hintText: "검색어를 입력해주세요.",
         hintStyle: TextStyle(color: Color(0xFF1A1A1A)),

@@ -1,11 +1,15 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:baton/views/search/viewmodel/hot_keyword_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HotKeywordSection extends StatelessWidget {
+class HotKeywordSection extends ConsumerWidget {
   const HotKeywordSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hotKeywordState = ref.watch(hotKeywordProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 14,
@@ -14,33 +18,64 @@ class HotKeywordSection extends StatelessWidget {
           "인기 검색어",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                spacing: 12,
-                children: [
-                  SearchTerm(label: "", idx: 1),
-                  SearchTerm(label: "", idx: 2),
-                  SearchTerm(label: "", idx: 3),
-                  SearchTerm(label: "", idx: 4),
-                  SearchTerm(label: "", idx: 5),
-                ],
-              ),
+        hotKeywordState.when(
+          data: (keywords) {
+            if (keywords.isEmpty) {
+              return const Center(
+                child: Text(
+                  '인기 검색어가 없습니다.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              );
+            }
+
+            // 좌측: 1~5위, 우측: 6~10위 분할
+            final leftKeywords = keywords.take(5).toList();
+            final rightKeywords = keywords.skip(5).take(5).toList();
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 12,
+                    children: List.generate(
+                      leftKeywords.length,
+                      (index) => SearchTerm(
+                        label: leftKeywords[index].keyword,
+                        idx: index + 1,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 12,
+                    children: List.generate(
+                      rightKeywords.length,
+                      (index) => SearchTerm(
+                        label: rightKeywords[index].keyword,
+                        idx: index + 6,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+          loading: () => const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (error, stack) => const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              '인기 검색어를 불러오는데 실패했습니다.',
+              style: TextStyle(color: Colors.red),
             ),
-            Expanded(
-              child: Column(
-                spacing: 12,
-                children: [
-                  SearchTerm(label: "", idx: 6),
-                  SearchTerm(label: "", idx: 7),
-                  SearchTerm(label: "", idx: 8),
-                  SearchTerm(label: "", idx: 9),
-                  SearchTerm(label: "", idx: 10),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ],
     );

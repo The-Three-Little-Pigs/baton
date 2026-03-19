@@ -17,4 +17,9 @@ abstract class UserRepository {
   Future<Result<void, Failure>> deleteUserData(String uid);
   Future<Result<void, Failure>> withdrawAccount();
   Future<Result<void, Failure>> addRecentlySearch(String uid, String keyword);
+  Future<Result<void, Failure>> removeRecentlySearch(
+    String uid,
+    String keyword,
+  );
+  Future<Result<void, Failure>> clearRecentlySearch(String uid);
 }

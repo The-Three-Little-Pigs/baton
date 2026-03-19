@@ -16,11 +16,14 @@ class SearchPage extends StatelessWidget {
         ),
         titleSpacing: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        child: Column(
-          spacing: 24,
-          children: [HotKeywordSection(), RecentlySearchSection()],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 24,
+            children: [HotKeywordSection(), RecentlySearchSection()],
+          ),
         ),
       ),
     );
