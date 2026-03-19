@@ -6,6 +6,7 @@ class User {
   final Set<String> favorites;
   final List<String> blockedUsers;
   final List<String> blockedBy;
+  final bool isDeleted; // 🔥 추가: 소프트 삭제 여부
 
   User({
     required this.uid,
@@ -15,6 +16,7 @@ class User {
     required this.favorites,
     required this.blockedUsers,
     required this.blockedBy,
+    this.isDeleted = false,
   });
 
   User copyWith({
@@ -25,6 +27,7 @@ class User {
     Set<String>? favorites,
     List<String>? blockedUsers,
     List<String>? blockedBy,
+    bool? isDeleted,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -34,6 +37,7 @@ class User {
       favorites: favorites ?? this.favorites,
       blockedUsers: blockedUsers ?? this.blockedUsers,
       blockedBy: blockedBy ?? this.blockedBy,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -45,6 +49,7 @@ class User {
     'favorites': favorites.toSet(),
     'blockedUsers': blockedUsers,
     'blockedBy': blockedBy,
+    'isDeleted': isDeleted,
   };
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -56,6 +61,7 @@ class User {
       favorites: Set<String>.from(json['favorites'] ?? []),
       blockedUsers: List<String>.from(json['blockedUsers'] ?? []),
       blockedBy: List<String>.from(json['blockedBy'] ?? []),
+      isDeleted: json['isDeleted'] ?? json['is_deleted'] ?? false,
     );
   }
 }

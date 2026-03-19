@@ -132,4 +132,19 @@ class PostRepositoryImpl implements PostRepository {
       return Error(FirebaseErrorMapper.toFailure(e));
     }
   }
+
+  @override
+  Future<Result<void, Failure>> incrementViewCount(String postId) async {
+    try {
+      final docRef = _firestore.collection('posts').doc(postId);
+      await docRef.update({
+        'view_count': FieldValue.increment(1),
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('조회수 업데이트 중 오류가 발생했습니다: $e'));
+    }
+  }
 }

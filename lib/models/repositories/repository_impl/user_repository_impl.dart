@@ -132,6 +132,30 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<Result<void, Failure>> markUserAsDeleted(String uid) async {
+    try {
+      final docRef = _firestore.collection(_collectionPath).doc(uid);
+      final doc = await docRef.get();
+      if (!doc.exists) return Error(ServerFailure('사용자 정보를 찾을 수 없습니다.'));
+
+      final currentNickname = doc.data()?['nickname'] ?? 'user';
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      await docRef.update({
+        'isDeleted': true,
+        'deleted_at': FieldValue.serverTimestamp(),
+        // 닉네임을 해방하기 위해 뒤에 타임스탬프를 붙입니다.
+        'nickname': '${currentNickname}_deleted_$timestamp',
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('회원 탈퇴 처리 중 오류가 발생했습니다: $e'));
+    }
+  }
+
+  @override
   Future<Result<void, Failure>> withdrawAccount() async {
     try {
       final user = FirebaseAuth.instance.currentUser;

@@ -119,6 +119,7 @@ class WritePageViewModel extends _$WritePageViewModel {
       authorId: authorResult.value!.uid,
       status: ProductStatus.available,
       imageUrls: imageUrls,
+      viewCount: 0, // 🔥 신규 작성 시 0으로 초기화
     );
 
     final result = (postId != null)
