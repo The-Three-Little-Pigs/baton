@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "729164587947",
+    "project_id": "baton-18034",
+    "storage_bucket": "baton-18034.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:729164587947:android:582814a964d04d957528ee",
+        "android_client_info": {
+          "package_name": "com.threepigs.baton"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "729164587947-b1lmsi5q9qglutuopur2cfplhq3uj6ou.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.threepigs.baton",
+            "certificate_hash": "e8401ee04e86a81382dec366f91b458f5518d335"
+          }
+        },
+        {
+          "client_id": "729164587947-e4lm0286cb62in11g81m692hs245ct9l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.threepigs.baton",
+            "certificate_hash": "a08eb93fa7cd68a919df2f01c13baf4a05439f16"
+          }
+        },
+        {
+          "client_id": "729164587947-140fphk1s9f36cf6ce4glmgnfh0bgdem.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_oLjABZuCJQAj4yJM4F9EgB7ET_1SGXQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "729164587947-140fphk1s9f36cf6ce4glmgnfh0bgdem.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "729164587947-hgg24ik9h6u0v3jjkaq3nbh923il1msj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.threepigs.baton"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
