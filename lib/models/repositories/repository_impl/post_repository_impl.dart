@@ -80,11 +80,13 @@ class PostRepositoryImpl implements PostRepository {
           .where('author_id', isEqualTo: userId);
 
       final snapshot = await query.get();
-      final posts = snapshot.docs.map((doc) => Post.fromJson(doc.data())).toList();
-      
+      final posts = snapshot.docs
+          .map((doc) => Post.fromJson(doc.data()))
+          .toList();
+
       // 로컬에서 최신순 정렬 (Firestore 복합 인덱스 에러 방지)
       posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      
+
       return Success(posts);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
@@ -146,12 +148,14 @@ class PostRepositoryImpl implements PostRepository {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
       return Error(ServerFailure('데이터를 불러오는 중 오류가 발생했습니다: $e'));
+    }
+  }
+
+  @override
   Future<Result<void, Failure>> incrementViewCount(String postId) async {
     try {
       final docRef = _firestore.collection('posts').doc(postId);
-      await docRef.update({
-        'view_count': FieldValue.increment(1),
-      });
+      await docRef.update({'view_count': FieldValue.increment(1)});
       return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));

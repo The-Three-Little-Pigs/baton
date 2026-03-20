@@ -25,7 +25,7 @@ class UserNotifier extends _$UserNotifier {
       };
 
       // 🔥 [Soft Delete] 이미 탈퇴 처리된 유저라면 null 반환 (미가입 상태로 취급)
-      if (user != null && user.isDeleted) {
+      if (user != null && user.deletedAt != null) {
         return null;
       }
 

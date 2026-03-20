@@ -5,6 +5,6 @@ class SearchResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return 
+    return Scaffold(appBar: AppBar(title: Text('검색 결과')));
   }
 }
