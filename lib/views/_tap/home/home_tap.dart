@@ -21,7 +21,18 @@ class HomeTap extends ConsumerWidget {
       appBar: AppBar(
         title: HomeLogo(),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
+          IconButton(
+            onPressed: () {
+              context.pushNamed('search');
+            },
+            icon: const Icon(Icons.search),
+          ),
+          IconButton(
+            onPressed: () {
+              context.pushNamed('alarm');
+            },
+            icon: const Icon(Icons.notifications),
+          ),
         ],
       ),
       body: Column(

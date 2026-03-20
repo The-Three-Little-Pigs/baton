@@ -60,7 +60,10 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.14.4
   build_runner: ^2.12.2
+  flutter_lints: ^6.0.0
+  riverpod_generator: ^4.0.0+1
 
+  
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
@@ -69,11 +72,10 @@ flutter_launcher_icons:
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
+  # package. See that file for information   about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^6.0.0
-  build_runner: ^2.12.1
-  riverpod_generator: ^4.0.0+1
+  
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

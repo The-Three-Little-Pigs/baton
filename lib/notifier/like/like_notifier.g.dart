@@ -74,7 +74,7 @@ final class LikeNotifierProvider
   LikeNotifier create() => LikeNotifier();
 }
 
-String _$likeNotifierHash() => r'7c99459b249a936bfffabcd696fed4671d9a59cf';
+String _$likeNotifierHash() => r'902577600714db71e9656f17da054c4d353c4ec2';
 
 abstract class _$LikeNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();

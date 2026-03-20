@@ -186,32 +186,50 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<Result<void, Failure>> addBlockedBy(
-    String targetUid,
-    String blokerUid,
+  Future<Result<void, Failure>> addRecentlySearch(
+    String uid,
+    String keyword,
   ) async {
     try {
-      await _firestore.collection(_collectionPath).doc(targetUid).update({
-        'blockedBy': FieldValue.arrayUnion([blokerUid]),
+      await _firestore.collection(_collectionPath).doc(uid).update({
+        'recentlySearch': FieldValue.arrayUnion([keyword]),
       });
       return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
-      return Error(ServerFailure('차단 처리 실패: $e'));
+      return Error(ServerFailure('알 수 없는 에러가 발생했습니다.'));
     }
   }
 
   @override
-  Future<Result<void, Failure>> removeBlockedBy(
-    String targetUid,
-    String blockerUid,
+  Future<Result<void, Failure>> removeRecentlySearch(
+    String uid,
+    String keyword,
   ) async {
     try {
-      await _firestore.collection(_collectionPath).doc(targetUid).update({
-        'blockedBy': FieldValue.arrayRemove([blockerUid]),
+      await _firestore.collection(_collectionPath).doc(uid).update({
+        'recentlySearch': FieldValue.arrayRemove([keyword]),
       });
       return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
-      return Error(ServerFailure('차단 해제 실패: $e'));
+      return Error(ServerFailure('최근 검색어 삭제 중 오류가 발생했습니다.'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> clearRecentlySearch(String uid) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(uid).update({
+        'recentlySearch': FieldValue.arrayRemove([]),
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('최근 검색어 삭제 중 오류가 발생했습니다.'));
     }
   }
 }
