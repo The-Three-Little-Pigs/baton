@@ -4,8 +4,6 @@ class User {
   final String? profileUrl;
   final double score;
   final Set<String> favorites;
-  final List<String> blockedUsers;
-  final List<String> blockedBy;
   final bool isDeleted; // 🔥 추가: 소프트 삭제 여부
 
   User({
@@ -14,8 +12,6 @@ class User {
     required this.profileUrl,
     required this.score,
     required this.favorites,
-    required this.blockedUsers,
-    required this.blockedBy,
     this.isDeleted = false,
   });
 
@@ -25,8 +21,6 @@ class User {
     String? profileUrl,
     double? score,
     Set<String>? favorites,
-    List<String>? blockedUsers,
-    List<String>? blockedBy,
     bool? isDeleted,
   }) {
     return User(
@@ -35,8 +29,6 @@ class User {
       profileUrl: profileUrl ?? this.profileUrl,
       score: score ?? this.score,
       favorites: favorites ?? this.favorites,
-      blockedUsers: blockedUsers ?? this.blockedUsers,
-      blockedBy: blockedBy ?? this.blockedBy,
       isDeleted: isDeleted ?? this.isDeleted,
     );
   }
@@ -47,8 +39,6 @@ class User {
     'profileUrl': profileUrl,
     'score': score,
     'favorites': favorites.toSet(),
-    'blockedUsers': blockedUsers,
-    'blockedBy': blockedBy,
     'isDeleted': isDeleted,
   };
 
@@ -59,8 +49,6 @@ class User {
       profileUrl: json['profileUrl'] ?? '',
       score: (json['score'] ?? 36.5).toDouble(),
       favorites: Set<String>.from(json['favorites'] ?? []),
-      blockedUsers: List<String>.from(json['blockedUsers'] ?? []),
-      blockedBy: List<String>.from(json['blockedBy'] ?? []),
       isDeleted: json['isDeleted'] ?? json['is_deleted'] ?? false,
     );
   }

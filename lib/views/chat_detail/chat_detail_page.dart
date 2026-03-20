@@ -1,5 +1,6 @@
 import 'package:baton/core/result/result.dart';
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:baton/notifier/block/block_notifier.dart';
 import 'package:baton/notifier/post/product_item_notifier.dart';
 
 import 'package:baton/notifier/user/user_notifier.dart';
@@ -43,9 +44,9 @@ class ChatDetailPage extends ConsumerWidget {
       loading: () => '...',
       error: (_, __) => '알 수 없는 사용자',
     );
-
-    final bool iBlockedHim = myUser?.blockedUsers.contains(otherUid) ?? false;
-    final bool heBlockedMe = myUser?.blockedBy.contains(otherUid) ?? false;
+    final blockState = ref.watch(blockProvider);
+    final bool iBlockedHim = blockState.isBlockedByMe(otherUid);
+    final bool heBlockedMe = blockState.isBlockedMe(otherUid);
     final bool isExited = chatroom?.deletedByUids.contains(otherUid) ?? false;
     final bool isInteractionBlocked = iBlockedHim || heBlockedMe || isExited;
 
@@ -126,13 +127,13 @@ class ChatDetailPage extends ConsumerWidget {
                             );
                             if (confirmed == true) {
                               await ref
-                                  .read(userProvider.notifier)
-                                  .toggleBlockUser(otherUid);
+                                  .read(blockProvider.notifier)
+                                  .toggleBlock(otherUid);
                             }
                           } else {
                             await ref
-                                .read(userProvider.notifier)
-                                .toggleBlockUser(otherUid);
+                                .read(blockProvider.notifier)
+                                .toggleBlock(otherUid);
                           }
                         },
                       },

@@ -13,7 +13,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 class ChatRepositoryImpl implements ChatRepository {
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
-  final _collectionPath = 'chatrooms';
+  static const String _collectionPath = 'chatrooms';
 
   ChatRepositoryImpl(this._firestore, this._storage);
 

@@ -123,38 +123,6 @@ class UserNotifier extends _$UserNotifier {
     await ref.read(userRepositoryProvider).updateUserData(updatedUser);
   }
 
-  /// 유저 차단 토글 (추가/제거)
-  Future<void> toggleBlockUser(String otherUid) async {
-    final currentUser = state.value;
-    if (currentUser == null) return;
-
-    // final updatedBlocked = Set<String>.from(currentUser.blockedUsers);
-    // if (updatedBlocked.contains(otherUid)) {
-    //   updatedBlocked.remove(otherUid);
-    // } else {
-    final updatedBlocked = List<String>.from(currentUser.blockedUsers);
-    final isBlocking = !updatedBlocked.contains(otherUid);
-
-    if (isBlocking) {
-      updatedBlocked.add(otherUid);
-    } else {
-      updatedBlocked.remove(otherUid);
-    }
-
-    final updatedUser = currentUser.copyWith(blockedUsers: updatedBlocked);
-    final userRepo = ref.read(userRepositoryProvider);
-
-    // DB 업데이트 (내 문서)
-    await userRepo.updateUserData(updatedUser);
-
-    // 상대방의 blockedBy 필드 업데이트 (상호 필터링을 위함)
-    if (isBlocking) {
-      await userRepo.addBlockedBy(otherUid, currentUser.uid);
-    } else {
-      await userRepo.removeBlockedBy(otherUid, currentUser.uid);
-    }
-  }
-
   /// 외부에서 상태 주입 (필요 시)
   void updateState(entity.User? user) {
     state = AsyncData(user);

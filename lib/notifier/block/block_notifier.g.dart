@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'product_item_notifier.dart';
+part of 'block_notifier.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,52 +9,51 @@ part of 'product_item_notifier.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(ProductItemNotifier)
-final productItemProvider = ProductItemNotifierProvider._();
+@ProviderFor(BlockNotifier)
+final blockProvider = BlockNotifierProvider._();
 
-final class ProductItemNotifierProvider
-    extends $NotifierProvider<ProductItemNotifier, void> {
-  ProductItemNotifierProvider._()
+final class BlockNotifierProvider
+    extends $NotifierProvider<BlockNotifier, BlockState> {
+  BlockNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'productItemProvider',
-        isAutoDispose: true,
+        name: r'blockProvider',
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$productItemNotifierHash();
+  String debugGetCreateSourceHash() => _$blockNotifierHash();
 
   @$internal
   @override
-  ProductItemNotifier create() => ProductItemNotifier();
+  BlockNotifier create() => BlockNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(void value) {
+  Override overrideWithValue(BlockState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<void>(value),
+      providerOverride: $SyncValueProvider<BlockState>(value),
     );
   }
 }
 
-String _$productItemNotifierHash() =>
-    r'b6e59356369586e0a801c248e2c956f4f899695b';
+String _$blockNotifierHash() => r'0c0e1ceeb2514402ef19a87e6a4d5ca8c6d07306';
 
-abstract class _$ProductItemNotifier extends $Notifier<void> {
-  void build();
+abstract class _$BlockNotifier extends $Notifier<BlockState> {
+  BlockState build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<void, void>;
+    final ref = this.ref as $Ref<BlockState, BlockState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<void, void>,
-              void,
+              AnyNotifier<BlockState, BlockState>,
+              BlockState,
               Object?,
               Object?
             >;
