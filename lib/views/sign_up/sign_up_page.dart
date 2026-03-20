@@ -73,12 +73,14 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                     ),
                   CompleteButton(
                     label: "다음",
-                    onPressed: () {
-                      context.pushNamed(
-                        'signUpProfile',
-                        extra: _nicknameController.text,
-                      );
-                    },
+                    onPressed: canProceed
+                        ? () {
+                            context.pushNamed(
+                              'signUpProfile',
+                              extra: _nicknameController.text,
+                            );
+                          }
+                        : null,
                   ),
                 ],
               ),

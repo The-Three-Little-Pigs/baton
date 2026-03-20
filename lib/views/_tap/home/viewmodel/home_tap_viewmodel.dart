@@ -2,7 +2,9 @@ import 'package:baton/core/di/repository/post_provider.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/category.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/category_chips_notifier.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'home_tap_viewmodel.g.dart';
@@ -43,8 +45,16 @@ class HomeTapState {
 class HomeTapViewModel extends _$HomeTapViewModel {
   @override
   Future<HomeTapState> build() async {
-    // 카테고리 변경 시 자동으로 build가 다시 실행되도록 감시
+    // ⭐️ 최적화 포인트 1: '내가 차단한 목록'의 실제 내용물이 바뀔 때만 새로고침 트리거
+    // .join(',')을 통해 List(객체 비교)가 아닌 String(값 비교)으로 감시 범위를 좁혔습니다.
+    // 상대방이 나를 차단해서 내 데이터가 업데이트되어도, 내 차단 목록이 그대로면 무시됩니다.
+    ref.watch(
+      userProvider.select((user) => user.value?.blockedUsers.join(',')),
+    );
+
+    // 카테고리 변경 감시
     final categories = ref.watch(categoryChipsProvider);
+
     return _fetchPosts(categories: categories);
   }
 
@@ -60,7 +70,11 @@ class HomeTapViewModel extends _$HomeTapViewModel {
         .getPosts(categories, lastTime, lastPostId);
 
     return switch (result) {
-      Success(value: final newPosts) => _createState(newPosts, previousPosts),
+      // ⭐️ 최적화 포인트 2: 필터링 로직 적용 (filterBlockedPosts를 거쳐서 상태 생성)
+      Success(value: final newPosts) => _createState(
+        filterBlockedPosts(newPosts),
+        previousPosts,
+      ),
       Error(failure: final failure) => throw failure.message,
     };
   }
@@ -79,9 +93,9 @@ class HomeTapViewModel extends _$HomeTapViewModel {
     );
   }
 
+  /// 기존 데이터를 유지한 채로 추가 로딩 (Pagination)
   Future<void> fetchPosts() async {
     final currentState = state.value;
-    // 이미 로딩 중이거나 데이터가 없거나 마지막 데이터인 경우 중복 호출 방지
     if (state.isLoading ||
         currentState == null ||
         currentState.isFetchingMore ||
@@ -89,7 +103,6 @@ class HomeTapViewModel extends _$HomeTapViewModel {
       return;
     }
 
-    // 기존 데이터를 유지한 채로 내부 로딩 상태만 표시 (isFetchingMore: true)
     state = AsyncData(currentState.copyWith(isFetchingMore: true));
 
     try {
@@ -107,5 +120,24 @@ class HomeTapViewModel extends _$HomeTapViewModel {
 
   Future<void> refresh() async {
     ref.invalidateSelf();
+  }
+
+  /// 차단한 사용자 및 나를 차단한 사용자의 게시물을 필터링
+  List<Post> filterBlockedPosts(List<Post> posts) {
+    // ⭐️ 최적화 포인트 3: 여기서는 watch 대신 read를 사용합니다.
+    // build에서 이미 필요한 시점에만 새로고침을 수행하므로, 여기서 watch를 하면 필터링이 꼬이게 됩니다.
+    final currentUser = ref.read(userProvider).value;
+    if (currentUser == null) return posts;
+
+    final blockedUsers = currentUser.blockedUsers;
+    final blockedByUsers = currentUser.blockedBy;
+
+    // 내가 차단한 사람 + 나를 차단한 사람 모두 합침
+    final allHiddenUsers = {...blockedUsers, ...blockedByUsers};
+    if (allHiddenUsers.isEmpty) return posts;
+
+    return posts
+        .where((post) => !allHiddenUsers.contains(post.authorId))
+        .toList();
   }
 }

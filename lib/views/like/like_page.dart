@@ -2,7 +2,7 @@ import 'package:baton/notifier/like/like_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/home_tap_viewmodel.dart';
 import 'package:baton/views/_tap/home/widgets/category_chips.dart';
 import 'package:baton/views/_tap/home/widgets/category_select_button.dart';
-import 'package:baton/views/like/widgets/no_like_product';
+import 'package:baton/views/like/widgets/no_like_product.dart';
 import 'package:baton/views/widgets/product_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

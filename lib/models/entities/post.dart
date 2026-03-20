@@ -15,6 +15,7 @@ class Post {
   final String authorId; // 작성자 아이디
   final DateTime createdAt; // 작성 시간
   final ProductStatus status; // 게시글 상태
+  final int viewCount; // 🔥 추가: 조회수
 
   Post({
     required this.postId,
@@ -29,6 +30,7 @@ class Post {
     required this.authorId,
     required this.createdAt,
     required this.status,
+    this.viewCount = 0,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -45,6 +47,7 @@ class Post {
       authorId: json['author_id'] as String,
       createdAt: (json['created_at'] as Timestamp).toDate(),
       status: ProductStatus.values.firstWhere((e) => e.label == json['status']),
+      viewCount: json['view_count'] as int? ?? 0,
     );
   }
 
@@ -62,6 +65,7 @@ class Post {
       'author_id': authorId,
       'created_at': createdAt,
       'status': status.label,
+      'view_count': viewCount,
     };
   }
 
@@ -78,6 +82,7 @@ class Post {
     String? authorId,
     DateTime? createdAt,
     ProductStatus? status,
+    int? viewCount,
   }) {
     return Post(
       postId: postId ?? this.postId,
@@ -92,6 +97,7 @@ class Post {
       authorId: authorId ?? this.authorId,
       createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
+      viewCount: viewCount ?? this.viewCount,
     );
   }
 }

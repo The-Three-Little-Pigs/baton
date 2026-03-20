@@ -3,7 +3,6 @@ import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/core/utils/format_currency.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/post_action_type.dart';
-
 import 'package:baton/models/mapper/format_time_mapper.dart';
 import 'package:baton/notifier/post/product_item_notifier.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
@@ -38,6 +37,9 @@ class ProductDetailPage extends ConsumerWidget {
           slivers: [
             post.imageUrls.isEmpty
                 ? SliverAppBar(actions: [MoreVerButton(post: post)])
+                // ? SliverAppBar(
+                //     actions: [MoreVerButton(authorId: post.authorId)],
+                //   )
                 : SliverAppBar(
                     expandedHeight: 300,
                     pinned: true,
@@ -48,6 +50,7 @@ class ProductDetailPage extends ConsumerWidget {
                       background: ImageSection(imageUrls: post.imageUrls),
                     ),
                     actions: [MoreVerButton(post: post)],
+                    // actions: [MoreVerButton(authorId: post.authorId)],
                   ),
             SliverToBoxAdapter(
               child: Column(
@@ -72,6 +75,7 @@ class ProductDetailPage extends ConsumerWidget {
                       content: post.content,
                       likeCount: post.likeCount,
                       chatCount: post.chatCount,
+                      viewCount: post.viewCount,
                     ),
                   ),
                   Divider(color: appColors?.divider),
@@ -124,6 +128,13 @@ class MoreVerButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // const MoreVerButton({super.key, required this.authorId});
+    // final String authorId;
+
+    // @override
+    // Widget build(BuildContext context, WidgetRef ref) {
+    //   final myUid = ref.watch(userProvider).value?.uid;
+    //   final isMyPost = myUid == authorId;
     return IconButton(
       icon: const Icon(Icons.more_vert),
       onPressed: () {
@@ -214,6 +225,15 @@ class MoreVerButton extends ConsumerWidget {
                 },
               };
             }).toList(),
+            // actions: [
+            //   if (!isMyPost)
+            //     {
+            //       '신고/차단하기': () {
+            //         context.pop();
+            //         ref.read(userProvider.notifier).toggleBlockUser(authorId);
+            //       },
+            //     },
+            // ],
           ),
         );
       },

@@ -13,7 +13,7 @@ part of 'user_notifier.dart';
 final userProvider = UserNotifierProvider._();
 
 final class UserNotifierProvider
-    extends $AsyncNotifierProvider<UserNotifier, entity.User?> {
+    extends $StreamNotifierProvider<UserNotifier, entity.User?> {
   UserNotifierProvider._()
     : super(
         from: null,
@@ -33,10 +33,10 @@ final class UserNotifierProvider
   UserNotifier create() => UserNotifier();
 }
 
-String _$userNotifierHash() => r'266cfab481b0edaac48275aec0448057c72d1e39';
+String _$userNotifierHash() => r'371d9077374ea44eca5789bb4c8d4cde7841e260';
 
-abstract class _$UserNotifier extends $AsyncNotifier<entity.User?> {
-  FutureOr<entity.User?> build();
+abstract class _$UserNotifier extends $StreamNotifier<entity.User?> {
+  Stream<entity.User?> build();
   @$mustCallSuper
   @override
   void runBuild() {

@@ -2,39 +2,46 @@ import 'package:baton/core/di/repository/auth_provider.dart';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/user.dart' as entity;
-import 'package:baton/models/repositories/repository_impl/user_repository_impl.dart';
+import 'package:baton/core/di/repository/user_provider.dart';
 import 'package:baton/service/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'user_notifier.g.dart';
 
-// ... 상단 import 생략
-
 @Riverpod(keepAlive: true)
 class UserNotifier extends _$UserNotifier {
   @override
-  FutureOr<entity.User?> build() async {
+  Stream<entity.User?> build() {
     final firebaseUser = FirebaseAuth.instance.currentUser;
-    if (firebaseUser == null) return null;
+    if (firebaseUser == null) return Stream.value(null);
 
     final userRepo = ref.read(userRepositoryProvider);
-    final result = await userRepo.fetchUserData(firebaseUser.uid);
+    // ⭐️ 실시간 감시 시작 (Stream)
+    return userRepo.watchUserData(firebaseUser.uid).map((result) {
+      final user = switch (result) {
+        Success(:final value) => value,
+        Error() => null,
+      };
 
-    final user = switch (result) {
-      Success(:final value) => value,
-      Error() => null,
-    };
+      // 🔥 [Soft Delete] 이미 탈퇴 처리된 유저라면 null 반환 (미가입 상태로 취급)
+      if (user != null && user.isDeleted) {
+        return null;
+      }
 
-    // [추가] 로그인 성공 상태라면 FCM 토큰 업데이트/서버 전송
-    if (user != null) {
-      NotificationService().updateFCMToken(user.uid, userRepository: userRepo);
-    }
+      // 유저 데이터가 로드/업데이트될 때마다 FCM 토큰 갱신 보장
+      if (user != null) {
+        NotificationService().updateFCMToken(
+          user.uid,
+          userRepository: userRepo,
+        );
+      }
 
-    return user;
+      return user;
+    });
   }
 
-  /// 유저 정보를 수동으로 다시 불러옵니다.
+  /// 유저 정보를 수동으로 다시 불러옵니다. (필요 시)
   Future<void> refresh() async {
     ref.invalidateSelf();
     await future;
@@ -53,26 +60,28 @@ class UserNotifier extends _$UserNotifier {
 
     final userRepo = ref.read(userRepositoryProvider);
 
-    // [보안] 탈퇴 전 FCM 토큰 삭제 (더 이상 알림이 가지 않도록)
+    // [보안] 탈퇴 전 FCM 토큰 삭제
     await NotificationService().deleteFCMToken(
       currentUser.uid,
       userRepository: userRepo,
     );
 
-    // 1. Firestore 데이터 삭제
-    final result = await userRepo.deleteUserData(currentUser.uid);
+    // 1. Firestore 데이터 삭제 대신 '삭제됨' 표시 (Soft Delete)
+    // 닉네임을 변경하여 기존 닉네임을 다른 사람에게 돌려줍니다.
+    final result = await userRepo.markUserAsDeleted(currentUser.uid);
 
     if (result is Error<void, Failure>) {
       onError(result.failure.message);
       return;
     }
 
-    // 2. 소셜 및 Auth 계정 삭제 (AuthRepository 활용)
+    // 2. 소셜 및 Auth 계정 삭제
     final authResult = await ref.read(authRepositoryProvider).deleteAccount();
 
     switch (authResult) {
       case Success():
-        state = const AsyncData(null);
+        // 🔥 즉시 로그아웃 처리하여 라우터가 로그인 페이지로 인식하게 함
+        await FirebaseAuth.instance.signOut();
         ref.invalidateSelf();
         onSuccess();
         break;
@@ -92,10 +101,7 @@ class UserNotifier extends _$UserNotifier {
         userRepository: userRepo,
       );
     }
-    // AuthRepository를 통한 통합 로그아웃 (소셜 세션 포함)
     await ref.read(authRepositoryProvider).signOut();
-
-    state = const AsyncData(null);
     ref.invalidateSelf();
   }
 
@@ -112,11 +118,9 @@ class UserNotifier extends _$UserNotifier {
     }
 
     final updatedUser = currentUser.copyWith(favorites: updatedFavorites);
-    state = AsyncData(updatedUser);
 
-    // DB 동기화
-    final userRepo = ref.read(userRepositoryProvider);
-    await userRepo.updateUserData(updatedUser);
+    // DB 업데이트 -> Stream이 감지하여 state는 자동 갱신됨
+    await ref.read(userRepositoryProvider).updateUserData(updatedUser);
   }
 
   /// 유저 차단 토글 (추가/제거)
@@ -124,22 +128,34 @@ class UserNotifier extends _$UserNotifier {
     final currentUser = state.value;
     if (currentUser == null) return;
 
-    final updatedBlocked = Set<String>.from(currentUser.blockedUsers);
-    if (updatedBlocked.contains(otherUid)) {
-      updatedBlocked.remove(otherUid);
-    } else {
+    // final updatedBlocked = Set<String>.from(currentUser.blockedUsers);
+    // if (updatedBlocked.contains(otherUid)) {
+    //   updatedBlocked.remove(otherUid);
+    // } else {
+    final updatedBlocked = List<String>.from(currentUser.blockedUsers);
+    final isBlocking = !updatedBlocked.contains(otherUid);
+
+    if (isBlocking) {
       updatedBlocked.add(otherUid);
+    } else {
+      updatedBlocked.remove(otherUid);
     }
 
     final updatedUser = currentUser.copyWith(blockedUsers: updatedBlocked);
-    state = AsyncData(updatedUser);
-
-    // DB 동기화
     final userRepo = ref.read(userRepositoryProvider);
+
+    // DB 업데이트 (내 문서)
     await userRepo.updateUserData(updatedUser);
+
+    // 상대방의 blockedBy 필드 업데이트 (상호 필터링을 위함)
+    if (isBlocking) {
+      await userRepo.addBlockedBy(otherUid, currentUser.uid);
+    } else {
+      await userRepo.removeBlockedBy(otherUid, currentUser.uid);
+    }
   }
 
-  /// 외부(회원가입 완료 등)에서 유저 정보를 수동으로 주입할 때 사용합니다.
+  /// 외부에서 상태 주입 (필요 시)
   void updateState(entity.User? user) {
     state = AsyncData(user);
   }
@@ -206,3 +222,49 @@ class UserNotifier extends _$UserNotifier {
     }
   }
 }
+
+// @override
+//   FutureOr<entity.User?> build() async {
+//     final firebaseUser = FirebaseAuth.instance.currentUser;
+//     if (firebaseUser == null) return null;
+
+//     final userRepo = ref.read(userRepositoryProvider);
+//     final result = await userRepo.fetchUserData(firebaseUser.uid);
+
+//     final user = switch (result) {
+//       Success(:final value) => value,
+//       Error() => null,
+//     };
+
+//     // [추가] 로그인 성공 상태라면 FCM 토큰 업데이트/서버 전송
+//     if (user != null) {
+//       NotificationService().updateFCMToken(user.uid, userRepository: userRepo);
+//     }
+
+//     return user;
+//   }
+
+// @override
+//   Stream<entity.User?> build() {
+//     final firebaseUser = FirebaseAuth.instance.currentUser;
+//     if (firebaseUser == null) return Stream.value(null);
+
+//     final userRepo = ref.read(userRepositoryProvider);
+//     // ⭐️ 실시간 감시 시작 (Stream)
+//     return userRepo.watchUserData(firebaseUser.uid).map((result) {
+//       final user = switch (result) {
+//         Success(:final value) => value,
+//         Error() => null,
+//       };
+
+//       // 유저 데이터가 로드/업데이트될 때마다 FCM 토큰 갱신 보장
+//       if (user != null) {
+//         NotificationService().updateFCMToken(
+//           user.uid,
+//           userRepository: userRepo,
+//         );
+//       }
+
+//       return user;
+//     });
+//   }

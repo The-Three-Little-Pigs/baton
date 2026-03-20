@@ -7,6 +7,14 @@ class User {
   final Set<String> blockedUsers; // 유저 차단 목록
   final Set<String> recentlySearch;
   final DateTime? deletedAt;
+  final String uid;
+  final String nickname;
+  final String? profileUrl;
+  final double score;
+  final Set<String> favorites;
+  final List<String> blockedUsers;
+  final List<String> blockedBy;
+  final bool isDeleted; // 🔥 추가: 소프트 삭제 여부
 
   User({
     required this.uid,
@@ -17,6 +25,8 @@ class User {
     required this.blockedUsers,
     required this.recentlySearch,
     this.deletedAt,
+    required this.blockedBy,
+    this.isDeleted = false,
   });
 
   User copyWith({
@@ -28,6 +38,7 @@ class User {
     Set<String>? blockedUsers,
     Set<String>? recentlySearch,
     DateTime? deletedAt,
+    bool? isDeleted,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -38,6 +49,7 @@ class User {
       blockedUsers: blockedUsers ?? this.blockedUsers,
       recentlySearch: recentlySearch ?? this.recentlySearch,
       deletedAt: deletedAt ?? this.deletedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -50,6 +62,8 @@ class User {
     'blockedUsers': blockedUsers.toSet(),
     'recentlySearch': recentlySearch,
     'deletedAt': deletedAt,
+    'blockedUsers': blockedUsers,
+    'isDeleted': isDeleted,
   };
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -64,6 +78,7 @@ class User {
       deletedAt: json['deletedAt'] == null
           ? null
           : DateTime.parse(json['deletedAt']),
+      isDeleted: json['isDeleted'] ?? json['is_deleted'] ?? false,
     );
   }
 }

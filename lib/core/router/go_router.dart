@@ -25,7 +25,16 @@ import 'package:go_router/go_router.dart';
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final userAsync = ref.watch(userProvider);
+  final userAsync = ref.watch(
+    userProvider.select(
+      (asyncUser) => (
+        isLoading: asyncUser.isLoading,
+        isRefreshing: asyncUser.isRefreshing,
+        hasValue: asyncUser.hasValue,
+        nickname: asyncUser.value?.nickname ?? '',
+      ),
+    ),
+  );
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -141,9 +150,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 1. 비로그인 상태
       if (!isLoggedIn) {
-        if (location == '/' ||
-            location == '/signUp' ||
-            location == '/signUpProfile') {
+        // 비로그인 시에는 오직 로그인 페이지('/')만 허용합니다.
+        if (location == '/') {
           return null;
         }
         return '/';
@@ -156,10 +164,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final user = userAsync.value;
+      final nickname = userAsync.nickname;
 
       // 3. DB에 유저 정보(닉네임)가 없는 경우 (미가입자)
-      if (user == null || user.nickname.isEmpty) {
+      if (nickname.isEmpty) {
         // [중요] 만약 userProvider가 데이터를 가지고 있는데 null이라면 (로딩 완료 후에도 데이터 없음),
         // 그때 비로소 미가입자로 판단하고 이동시킵니다.
         // 유저 정보가 정말로 없는 것이 확실할 때만 리다이렉트
@@ -174,7 +182,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             return null;
           }
 
-          // 로그인 페이지('/')에 있다면 -> 신규 가입 페이지로 자동 이동
+          // 로그인 페이지('/')에 있다면 -> 신규 가입 페이지로 자동 이동 (복구)
           if (location == '/') return '/signUp';
 
           // 그 외 보호된 페이지(예: /home) 접근 시 로그인 페이지('/')로 유도

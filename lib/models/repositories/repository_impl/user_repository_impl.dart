@@ -8,7 +8,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'
     show FirebaseAuth, FirebaseAuthException;
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class UserRepositoryImpl implements UserRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -49,6 +48,21 @@ class UserRepositoryImpl implements UserRepository {
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
     }
+  }
+
+  @override
+  Stream<Result<User?, Failure>> watchUserData(String uid) {
+    return _firestore.collection(_collectionPath).doc(uid).snapshots().map((
+      snapshot,
+    ) {
+      try {
+        final data = snapshot.data();
+        if (data == null) return const Success(null);
+        return Success(User.fromJson(data));
+      } catch (e) {
+        return Error(ServerFailure(e.toString()));
+      }
+    });
   }
 
   @override
@@ -114,6 +128,30 @@ class UserRepositoryImpl implements UserRepository {
       return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> markUserAsDeleted(String uid) async {
+    try {
+      final docRef = _firestore.collection(_collectionPath).doc(uid);
+      final doc = await docRef.get();
+      if (!doc.exists) return Error(ServerFailure('사용자 정보를 찾을 수 없습니다.'));
+
+      final currentNickname = doc.data()?['nickname'] ?? 'user';
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      await docRef.update({
+        'isDeleted': true,
+        'deleted_at': FieldValue.serverTimestamp(),
+        // 닉네임을 해방하기 위해 뒤에 타임스탬프를 붙입니다.
+        'nickname': '${currentNickname}_deleted_$timestamp',
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('회원 탈퇴 처리 중 오류가 발생했습니다: $e'));
     }
   }
 
@@ -196,6 +234,33 @@ class UserRepositoryImpl implements UserRepository {
   }
 }
 
-final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return UserRepositoryImpl();
-});
+  @override
+  Future<Result<void, Failure>> addBlockedBy(
+    String targetUid,
+    String blokerUid,
+  ) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(targetUid).update({
+        'blockedBy': FieldValue.arrayUnion([blokerUid]),
+      });
+      return const Success(null);
+    } catch (e) {
+      return Error(ServerFailure('차단 처리 실패: $e'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> removeBlockedBy(
+    String targetUid,
+    String blockerUid,
+  ) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(targetUid).update({
+        'blockedBy': FieldValue.arrayRemove([blockerUid]),
+      });
+      return const Success(null);
+    } catch (e) {
+      return Error(ServerFailure('차단 해제 실패: $e'));
+    }
+  }
+}
