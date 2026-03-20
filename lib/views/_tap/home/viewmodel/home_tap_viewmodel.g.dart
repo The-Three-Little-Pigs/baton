@@ -33,7 +33,7 @@ final class HomeTapViewModelProvider
   HomeTapViewModel create() => HomeTapViewModel();
 }
 
-String _$homeTapViewModelHash() => r'cb8299e15efd47400895e5bfd3e31f25c8de0ede';
+String _$homeTapViewModelHash() => r'ea196dfca3204707bd11af255f8883f041c8add3';
 
 abstract class _$HomeTapViewModel extends $AsyncNotifier<HomeTapState> {
   FutureOr<HomeTapState> build();

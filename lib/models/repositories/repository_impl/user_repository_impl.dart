@@ -234,33 +234,5 @@ class UserRepositoryImpl implements UserRepository {
   }
 }
 
-  @override
-  Future<Result<void, Failure>> addBlockedBy(
-    String targetUid,
-    String blokerUid,
-  ) async {
-    try {
-      await _firestore.collection(_collectionPath).doc(targetUid).update({
-        'blockedBy': FieldValue.arrayUnion([blokerUid]),
-      });
-      return const Success(null);
-    } catch (e) {
-      return Error(ServerFailure('차단 처리 실패: $e'));
-    }
-  }
-
-  @override
-  Future<Result<void, Failure>> removeBlockedBy(
-    String targetUid,
-    String blockerUid,
-  ) async {
-    try {
-      await _firestore.collection(_collectionPath).doc(targetUid).update({
-        'blockedBy': FieldValue.arrayRemove([blockerUid]),
-      });
-      return const Success(null);
-    } catch (e) {
-      return Error(ServerFailure('차단 해제 실패: $e'));
-    }
-  }
+ 
 }

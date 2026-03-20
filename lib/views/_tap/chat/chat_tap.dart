@@ -50,7 +50,10 @@ class ChatTap extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          ChatCategoryChips(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
+            child: ChatCategoryChips(),
+          ),
           Expanded(
             child: chatroomStream.when(
               data: (chatrooms) {

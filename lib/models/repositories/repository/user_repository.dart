@@ -25,12 +25,5 @@ abstract class UserRepository {
     String keyword,
   );
   Future<Result<void, Failure>> clearRecentlySearch(String uid);
-  Future<Result<void, Failure>> addBlockedBy(
-    String targetUid,
-    String blockerUid,
-  );
-  Future<Result<void, Failure>> removeBlockedBy(
-    String targetUid,
-    String blockerUid,
-  );
+ 
 }

@@ -22,7 +22,7 @@ class AuthorNotifier extends _$AuthorNotifier {
               profileUrl: null,
               score: 0,
               favorites: {},
-              blockedUsers: {},
+              
               recentlySearch: {},
               deletedAt: null,
             ),
@@ -32,7 +32,7 @@ class AuthorNotifier extends _$AuthorNotifier {
         profileUrl: null,
         score: 0,
         favorites: {},
-        blockedUsers: {},
+        
         recentlySearch: {},
         deletedAt: null,
       ),

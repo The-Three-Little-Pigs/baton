@@ -109,33 +109,29 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
                         child: _buildExpansionSection(
                           title: '날짜',
                           displayValue: '$_selectedMonth 월   $_selectedDay 일',
-                          expandedChild: Padding(
-                            // TODO: 휠 좌우 간격 임의 조정
-                            padding: const EdgeInsets.only(left: 0, right: 30),
-                            child: SizedBox(
-                              height: 120,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildWheel(
-                                    count: 12,
-                                    initialItem: _selectedMonth - 1,
-                                    onChanged: (value) => setState(
-                                      () => _selectedMonth = (value % 12) + 1,
-                                    ),
-                                    suffix: '월',
+                          expandedChild: SizedBox(
+                            height: 120,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildWheel(
+                                  count: 12,
+                                  initialItem: _selectedMonth - 1,
+                                  onChanged: (value) => setState(
+                                    () => _selectedMonth = (value % 12) + 1,
                                   ),
-                                  const SizedBox(width: 42),
-                                  _buildWheel(
-                                    count: 31,
-                                    initialItem: _selectedDay - 1,
-                                    onChanged: (value) => setState(
-                                      () => _selectedDay = (value % 31) + 1,
-                                    ),
-                                    suffix: '일',
+                                  suffix: '월',
+                                ),
+                                const SizedBox(width: 42),
+                                _buildWheel(
+                                  count: 31,
+                                  initialItem: _selectedDay - 1,
+                                  onChanged: (value) => setState(
+                                    () => _selectedDay = (value % 31) + 1,
                                   ),
-                                ],
-                              ),
+                                  suffix: '일',
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -159,43 +155,38 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
                           title: '시간',
                           displayValue:
                               '${_isAm ? "오전" : "오후"}   $_selectedHour 시   ${_selectedMinute.toString().padLeft(2, "0")} 분',
-                          expandedChild: Padding(
-                            // TODO:휠 좌우 간격 임의 조정
-                            padding: const EdgeInsets.only(left: 0, right: 36),
-                            child: SizedBox(
-                              height: 120,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildWheel(
-                                    count: 2,
-                                    initialItem: _isAm ? 0 : 1,
-                                    onChanged: (value) => setState(
-                                      () => _isAm = (value % 2) == 0,
-                                    ),
-                                    items: ['오전', '오후'],
-                                    isInfinite: false,
+                          expandedChild: SizedBox(
+                            height: 120,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildWheel(
+                                  count: 2,
+                                  initialItem: _isAm ? 0 : 1,
+                                  onChanged: (value) =>
+                                      setState(() => _isAm = (value % 2) == 0),
+                                  items: ['오전', '오후'],
+                                  isInfinite: false,
+                                ),
+                                const SizedBox(width: 58),
+                                _buildWheel(
+                                  count: 12,
+                                  initialItem: _selectedHour - 1,
+                                  onChanged: (value) => setState(
+                                    () => _selectedHour = (value % 12) + 1,
                                   ),
-                                  const SizedBox(width: 58),
-                                  _buildWheel(
-                                    count: 12,
-                                    initialItem: _selectedHour - 1,
-                                    onChanged: (value) => setState(
-                                      () => _selectedHour = (value % 12) + 1,
-                                    ),
-                                    suffix: '시',
+                                  suffix: '시',
+                                ),
+                                const SizedBox(width: 42),
+                                _buildWheel(
+                                  count: 60,
+                                  initialItem: _selectedMinute,
+                                  onChanged: (value) => setState(
+                                    () => _selectedMinute = value % 60,
                                   ),
-                                  const SizedBox(width: 42),
-                                  _buildWheel(
-                                    count: 60,
-                                    initialItem: _selectedMinute,
-                                    onChanged: (value) => setState(
-                                      () => _selectedMinute = value % 60,
-                                    ),
-                                    suffix: '분',
-                                  ),
-                                ],
-                              ),
+                                  suffix: '분',
+                                ),
+                              ],
                             ),
                           ),
                         ),

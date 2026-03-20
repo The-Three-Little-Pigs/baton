@@ -62,6 +62,7 @@ dev_dependencies:
   build_runner: ^2.12.2
   flutter_lints: ^6.0.0
   riverpod_generator: ^4.0.0+1
+
   
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -73,6 +74,7 @@ flutter_launcher_icons:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information   about deactivating specific lint
   # rules and activating additional ones.
+  
 
 
 # For information on the generic Dart part of this file, see the

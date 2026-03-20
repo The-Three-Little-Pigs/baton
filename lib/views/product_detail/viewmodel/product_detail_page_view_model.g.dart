@@ -52,7 +52,7 @@ final class ProductDetailPageViewModelProvider
 }
 
 String _$productDetailPageViewModelHash() =>
-    r'ad028ef57933666be6ad0b3ff505bfdbfa4c810b';
+    r'99dcbb207a602d6a2509f272cc56a67823c6d9a3';
 
 final class ProductDetailPageViewModelFamily extends $Family
     with
