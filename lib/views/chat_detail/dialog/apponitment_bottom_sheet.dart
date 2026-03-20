@@ -26,7 +26,7 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
   late int _selectedHour;
   late int _selectedMinute;
   bool _isAm = true;
-  String _selectedMethod = '직거래';
+  final String _selectedMethod = '직거래';
 
   @override
   void initState() {
