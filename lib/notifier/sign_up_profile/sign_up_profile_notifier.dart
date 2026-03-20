@@ -69,6 +69,10 @@ class SignUpProfile extends _$SignUpProfile {
         profileUrl: profileUrl,
         score: 36.5,
         favorites: {},
+        
+        recentlySearch: {},
+        deletedAt: null,
+        
       );
 
       // 4. Firestore 'user' 컬렉션에 저장
