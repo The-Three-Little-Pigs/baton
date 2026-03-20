@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'product_item_notifier.dart';
+part of 'search_field_notifier.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,52 +9,52 @@ part of 'product_item_notifier.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(ProductItemNotifier)
-final productItemProvider = ProductItemNotifierProvider._();
+@ProviderFor(SearchFieldNotifier)
+final searchFieldProvider = SearchFieldNotifierProvider._();
 
-final class ProductItemNotifierProvider
-    extends $NotifierProvider<ProductItemNotifier, void> {
-  ProductItemNotifierProvider._()
+final class SearchFieldNotifierProvider
+    extends $NotifierProvider<SearchFieldNotifier, String> {
+  SearchFieldNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'productItemProvider',
+        name: r'searchFieldProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$productItemNotifierHash();
+  String debugGetCreateSourceHash() => _$searchFieldNotifierHash();
 
   @$internal
   @override
-  ProductItemNotifier create() => ProductItemNotifier();
+  SearchFieldNotifier create() => SearchFieldNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(void value) {
+  Override overrideWithValue(String value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<void>(value),
+      providerOverride: $SyncValueProvider<String>(value),
     );
   }
 }
 
-String _$productItemNotifierHash() =>
-    r'b6e59356369586e0a801c248e2c956f4f899695b';
+String _$searchFieldNotifierHash() =>
+    r'f6595defc05e267eff2f774104ecdf96fd7b1558';
 
-abstract class _$ProductItemNotifier extends $Notifier<void> {
-  void build();
+abstract class _$SearchFieldNotifier extends $Notifier<String> {
+  String build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<void, void>;
+    final ref = this.ref as $Ref<String, String>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<void, void>,
-              void,
+              AnyNotifier<String, String>,
+              String,
               Object?,
               Object?
             >;

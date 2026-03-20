@@ -159,6 +159,68 @@ class UserNotifier extends _$UserNotifier {
   void updateState(entity.User? user) {
     state = AsyncData(user);
   }
+
+  Future<void> toggleRecentlySearch(String keyword) async {
+    final originUser = state.value;
+    if (originUser == null) return;
+
+    final updatedRecentlySearch = Set<String>.from(originUser.recentlySearch);
+    final bool isAdding = !updatedRecentlySearch.contains(keyword);
+
+    if (isAdding) {
+      updatedRecentlySearch.add(keyword);
+    } else {
+      updatedRecentlySearch.remove(keyword);
+    }
+
+    final updatedUser = originUser.copyWith(
+      recentlySearch: updatedRecentlySearch,
+    );
+
+    // UI 즉각 반영 (Optimistic Update)
+    state = AsyncData(updatedUser);
+
+    // DB 동기화 (Atomic Update)
+    final userRepo = ref.read(userRepositoryProvider);
+    final Result<void, Failure> result;
+
+    if (isAdding) {
+      result = await userRepo.addRecentlySearch(originUser.uid, keyword);
+    } else {
+      result = await userRepo.removeRecentlySearch(originUser.uid, keyword);
+    }
+
+    // DB 업데이트 실패 시 이전 상태로 롤백
+    if (result is Error<void, Failure>) {
+      state = AsyncData(originUser);
+    }
+  }
+
+  Future<void> clearRecentlySearch() async {
+    final originUser = state.value;
+    if (originUser == null) return;
+
+    final updatedRecentlySearch = Set<String>.from(originUser.recentlySearch);
+    updatedRecentlySearch.clear();
+
+    final updatedUser = originUser.copyWith(
+      recentlySearch: updatedRecentlySearch,
+    );
+
+    // UI 즉각 반영 (Optimistic Update)
+    state = AsyncData(updatedUser);
+
+    // DB 동기화 (Atomic Update)
+    final userRepo = ref.read(userRepositoryProvider);
+    final Result<void, Failure> result;
+
+    result = await userRepo.clearRecentlySearch(originUser.uid);
+
+    // DB 업데이트 실패 시 이전 상태로 롤백
+    if (result is Error<void, Failure>) {
+      state = AsyncData(originUser);
+    }
+  }
 }
 
 // @override

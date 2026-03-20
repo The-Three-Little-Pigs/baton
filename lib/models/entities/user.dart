@@ -1,4 +1,12 @@
 class User {
+  final String uid; // 유저 아이디
+  final String nickname; // 유저 닉네임
+  final String? profileUrl; // 유저 프로필 이미지
+  final double score; // 유저 매너 온도
+  final Set<String> favorites; // 유저 찜 목록
+  final Set<String> blockedUsers; // 유저 차단 목록
+  final Set<String> recentlySearch;
+  final DateTime? deletedAt;
   final String uid;
   final String nickname;
   final String? profileUrl;
@@ -15,6 +23,8 @@ class User {
     required this.score,
     required this.favorites,
     required this.blockedUsers,
+    required this.recentlySearch,
+    this.deletedAt,
     required this.blockedBy,
     this.isDeleted = false,
   });
@@ -25,8 +35,9 @@ class User {
     String? profileUrl,
     double? score,
     Set<String>? favorites,
-    List<String>? blockedUsers,
-    List<String>? blockedBy,
+    Set<String>? blockedUsers,
+    Set<String>? recentlySearch,
+    DateTime? deletedAt,
     bool? isDeleted,
   }) {
     return User(
@@ -36,7 +47,8 @@ class User {
       score: score ?? this.score,
       favorites: favorites ?? this.favorites,
       blockedUsers: blockedUsers ?? this.blockedUsers,
-      blockedBy: blockedBy ?? this.blockedBy,
+      recentlySearch: recentlySearch ?? this.recentlySearch,
+      deletedAt: deletedAt ?? this.deletedAt,
       isDeleted: isDeleted ?? this.isDeleted,
     );
   }
@@ -47,8 +59,10 @@ class User {
     'profileUrl': profileUrl,
     'score': score,
     'favorites': favorites.toSet(),
+    'blockedUsers': blockedUsers.toSet(),
+    'recentlySearch': recentlySearch,
+    'deletedAt': deletedAt,
     'blockedUsers': blockedUsers,
-    'blockedBy': blockedBy,
     'isDeleted': isDeleted,
   };
 
@@ -59,8 +73,11 @@ class User {
       profileUrl: json['profileUrl'] ?? '',
       score: (json['score'] ?? 36.5).toDouble(),
       favorites: Set<String>.from(json['favorites'] ?? []),
-      blockedUsers: List<String>.from(json['blockedUsers'] ?? []),
-      blockedBy: List<String>.from(json['blockedBy'] ?? []),
+      blockedUsers: Set<String>.from(json['blockedUsers'] ?? []),
+      recentlySearch: Set<String>.from(json['recentlySearch'] ?? []),
+      deletedAt: json['deletedAt'] == null
+          ? null
+          : DateTime.parse(json['deletedAt']),
       isDeleted: json['isDeleted'] ?? json['is_deleted'] ?? false,
     );
   }
