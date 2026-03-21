@@ -11,6 +11,7 @@ import 'package:baton/views/like/like_page.dart';
 import 'package:baton/views/login/login_page.dart';
 import 'package:baton/views/product_detail/product_detail_page.dart';
 import 'package:baton/views/search/search_page.dart';
+import 'package:baton/views/search_result/search_result_page.dart';
 import 'package:baton/views/sign_up/sign_up_page.dart';
 import 'package:baton/views/sign_up_profile_page/widgets/sign_up_profile_page.dart';
 import 'package:baton/views/purchase_history/purchase_history_page.dart';
@@ -140,6 +141,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/search',
         name: 'search',
         builder: (context, state) => const SearchPage(),
+      ),
+      GoRoute(
+        path: '/searchResult/:keyword',
+        name: 'searchResult',
+        builder: (context, state) {
+          final keyword = state.pathParameters['keyword'] ?? '';
+          return SearchResultPage(keyword: keyword);
+        },
       ),
     ],
 

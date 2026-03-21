@@ -10,16 +10,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class HomeTap extends ConsumerWidget {
+class HomeTap extends ConsumerStatefulWidget {
   const HomeTap({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeTap> createState() => _HomeTapState();
+}
+
+class _HomeTapState extends ConsumerState<HomeTap> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final postAsyncValue = ref.watch(homeTapViewModelProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: HomeLogo(),
+        title: HomeLogo(
+          onTap: _scrollToTop,
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -72,7 +103,7 @@ class HomeTap extends ConsumerWidget {
                         data: (homeTapState) {
                           final posts = homeTapState.posts;
                           if (posts.isEmpty) {
-                            return Center(child: const NoProduct());
+                            return const Center(child: NoProduct());
                           }
                           return NotificationListener<ScrollNotification>(
                             onNotification: (notification) {
@@ -85,13 +116,14 @@ class HomeTap extends ConsumerWidget {
                               return false;
                             },
                             child: GridView.builder(
+                              controller: _scrollController,
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
-                                    childAspectRatio: 0.7,
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing: 20,
-                                    crossAxisSpacing: 20,
-                                  ),
+                                childAspectRatio: 0.7,
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 20,
+                                crossAxisSpacing: 20,
+                              ),
                               itemBuilder: (context, index) {
                                 return ProductItem(post: posts[index]);
                               },
@@ -111,7 +143,7 @@ class HomeTap extends ConsumerWidget {
                                         .read(homeTapViewModelProvider.notifier)
                                         .refresh();
                                   },
-                                  child: Text("재시도"),
+                                  child: const Text("재시도"),
                                 ),
                               ],
                             ),

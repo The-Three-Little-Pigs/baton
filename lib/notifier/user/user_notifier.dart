@@ -17,6 +17,16 @@ class UserNotifier extends _$UserNotifier {
     if (firebaseUser == null) return Stream.value(null);
 
     final userRepo = ref.read(userRepositoryProvider);
+
+    // 최초 1회만 FCM 토큰 업데이트 수행
+    // (이후 토큰 갱신은 FirebaseMessaging.instance.onTokenRefresh 등에서 별도 처리 권장)
+    Future.microtask(() {
+      NotificationService().updateFCMToken(
+        firebaseUser.uid,
+        userRepository: userRepo,
+      );
+    });
+
     // ⭐️ 실시간 감시 시작 (Stream)
     return userRepo.watchUserData(firebaseUser.uid).map((result) {
       final user = switch (result) {
@@ -27,14 +37,6 @@ class UserNotifier extends _$UserNotifier {
       // 🔥 [Soft Delete] 이미 탈퇴 처리된 유저라면 null 반환 (미가입 상태로 취급)
       if (user != null && user.deletedAt != null) {
         return null;
-      }
-
-      // 유저 데이터가 로드/업데이트될 때마다 FCM 토큰 갱신 보장
-      if (user != null) {
-        NotificationService().updateFCMToken(
-          user.uid,
-          userRepository: userRepo,
-        );
       }
 
       return user;
@@ -128,67 +130,6 @@ class UserNotifier extends _$UserNotifier {
     state = AsyncData(user);
   }
 
-  Future<void> toggleRecentlySearch(String keyword) async {
-    final originUser = state.value;
-    if (originUser == null) return;
-
-    final updatedRecentlySearch = Set<String>.from(originUser.recentlySearch);
-    final bool isAdding = !updatedRecentlySearch.contains(keyword);
-
-    if (isAdding) {
-      updatedRecentlySearch.add(keyword);
-    } else {
-      updatedRecentlySearch.remove(keyword);
-    }
-
-    final updatedUser = originUser.copyWith(
-      recentlySearch: updatedRecentlySearch,
-    );
-
-    // UI 즉각 반영 (Optimistic Update)
-    state = AsyncData(updatedUser);
-
-    // DB 동기화 (Atomic Update)
-    final userRepo = ref.read(userRepositoryProvider);
-    final Result<void, Failure> result;
-
-    if (isAdding) {
-      result = await userRepo.addRecentlySearch(originUser.uid, keyword);
-    } else {
-      result = await userRepo.removeRecentlySearch(originUser.uid, keyword);
-    }
-
-    // DB 업데이트 실패 시 이전 상태로 롤백
-    if (result is Error<void, Failure>) {
-      state = AsyncData(originUser);
-    }
-  }
-
-  Future<void> clearRecentlySearch() async {
-    final originUser = state.value;
-    if (originUser == null) return;
-
-    final updatedRecentlySearch = Set<String>.from(originUser.recentlySearch);
-    updatedRecentlySearch.clear();
-
-    final updatedUser = originUser.copyWith(
-      recentlySearch: updatedRecentlySearch,
-    );
-
-    // UI 즉각 반영 (Optimistic Update)
-    state = AsyncData(updatedUser);
-
-    // DB 동기화 (Atomic Update)
-    final userRepo = ref.read(userRepositoryProvider);
-    final Result<void, Failure> result;
-
-    result = await userRepo.clearRecentlySearch(originUser.uid);
-
-    // DB 업데이트 실패 시 이전 상태로 롤백
-    if (result is Error<void, Failure>) {
-      state = AsyncData(originUser);
-    }
-  }
 }
 
 // @override

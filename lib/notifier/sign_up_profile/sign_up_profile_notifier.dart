@@ -70,7 +70,6 @@ class SignUpProfile extends _$SignUpProfile {
         score: 36.5,
         favorites: {},
         
-        recentlySearch: {},
         deletedAt: null,
         
       );

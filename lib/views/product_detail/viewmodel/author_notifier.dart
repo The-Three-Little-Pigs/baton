@@ -23,7 +23,6 @@ class AuthorNotifier extends _$AuthorNotifier {
               score: 0,
               favorites: {},
               
-              recentlySearch: {},
               deletedAt: null,
             ),
       Error() => User(
@@ -33,7 +32,6 @@ class AuthorNotifier extends _$AuthorNotifier {
         score: 0,
         favorites: {},
         
-        recentlySearch: {},
         deletedAt: null,
       ),
     };

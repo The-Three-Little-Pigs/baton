@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'search_field_notifier.dart';
+part of 'recently_search_notifier.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,52 +9,52 @@ part of 'search_field_notifier.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(SearchFieldNotifier)
-final searchFieldProvider = SearchFieldNotifierProvider._();
+@ProviderFor(RecentlySearchActions)
+final recentlySearchActionsProvider = RecentlySearchActionsProvider._();
 
-final class SearchFieldNotifierProvider
-    extends $NotifierProvider<SearchFieldNotifier, String> {
-  SearchFieldNotifierProvider._()
+final class RecentlySearchActionsProvider
+    extends $NotifierProvider<RecentlySearchActions, void> {
+  RecentlySearchActionsProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'searchFieldProvider',
+        name: r'recentlySearchActionsProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$searchFieldNotifierHash();
+  String debugGetCreateSourceHash() => _$recentlySearchActionsHash();
 
   @$internal
   @override
-  SearchFieldNotifier create() => SearchFieldNotifier();
+  RecentlySearchActions create() => RecentlySearchActions();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(String value) {
+  Override overrideWithValue(void value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<String>(value),
+      providerOverride: $SyncValueProvider<void>(value),
     );
   }
 }
 
-String _$searchFieldNotifierHash() =>
-    r'79cb7b862aebe58d2a5d960da1988591094d0892';
+String _$recentlySearchActionsHash() =>
+    r'e1452e1f6e442f715fdf081e0fdae3e483f6e6c4';
 
-abstract class _$SearchFieldNotifier extends $Notifier<String> {
-  String build();
+abstract class _$RecentlySearchActions extends $Notifier<void> {
+  void build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<String, String>;
+    final ref = this.ref as $Ref<void, void>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<String, String>,
-              String,
+              AnyNotifier<void, void>,
+              void,
               Object?,
               Object?
             >;
