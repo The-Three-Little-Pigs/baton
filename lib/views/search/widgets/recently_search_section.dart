@@ -53,6 +53,7 @@ class RecentlySearchSection extends ConsumerWidget {
                 return RecentlySearchItem(
                   label: history.query,
                   onSearch: () {
+                    ref.read(searchFieldProvider.notifier).updateText(history.query);
                     ref
                         .read(searchFieldProvider.notifier)
                         .recordSearch(history.query);

@@ -99,6 +99,7 @@ class HotKeywordSection extends ConsumerWidget {
 
   void _performSearch(BuildContext context, WidgetRef ref, String keyword) {
     if (keyword.isNotEmpty) {
+      ref.read(searchFieldProvider.notifier).updateText(keyword);
       ref.read(searchFieldProvider.notifier).recordSearch(keyword);
       context.pushNamed('searchResult', pathParameters: {'keyword': keyword});
     }

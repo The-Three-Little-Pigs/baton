@@ -45,10 +45,27 @@ class Post {
       chatCount: json['chat_count'] as int,
       category: Category.values.firstWhere((e) => e.label == json['category']),
       authorId: json['author_id'] as String,
-      createdAt: (json['created_at'] as Timestamp).toDate(),
+      createdAt: _parseDateTime(json['created_at']),
       status: ProductStatus.values.firstWhere((e) => e.label == json['status']),
       viewCount: json['view_count'] as int? ?? 0,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value is Timestamp) {
+      return value.toDate();
+    } else if (value is int) {
+      // Algolia는 초(seconds) 또는 밀리초(milliseconds) 단위로 저장할 수 있습니다.
+      // 10자리 이하면 초 단위로 판단합니다.
+      if (value < 10000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(value * 1000);
+      } else {
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+    } else if (value is String) {
+      return DateTime.parse(value);
+    }
+    return DateTime.now();
   }
 
   Map<String, dynamic> toJson() {

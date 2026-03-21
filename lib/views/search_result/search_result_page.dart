@@ -1,4 +1,5 @@
 import 'package:baton/views/_tap/home/widgets/no_product.dart';
+import 'package:baton/views/search/viewmodel/search_field_notifier.dart';
 import 'package:baton/views/search_result/viewmodel/search_result_viewmodel.dart';
 import 'package:baton/views/search_result/widgets/select_button.dart';
 import 'package:baton/views/widgets/product_item.dart';
@@ -13,7 +14,15 @@ class SearchResultPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final searchResultAsyncValue = ref.watch(searchResultViewModelProvider(keyword));
+    // 페이지 진입 시 검색 필드 텍스트 동기화
+    Future.microtask(() {
+      if (ref.read(searchFieldProvider) != keyword) {
+        ref.read(searchFieldProvider.notifier).updateText(keyword);
+      }
+    });
+
+    final searchResultAsyncValue =
+        ref.watch(searchResultViewModelProvider(keyword));
 
     return Scaffold(
       appBar: AppBar(

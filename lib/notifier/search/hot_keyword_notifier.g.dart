@@ -46,4 +46,4 @@ final class HotKeywordProvider
   }
 }
 
-String _$hotKeywordHash() => r'4258e232a3993201ba90a4f8164d24c92653ef3c';
+String _$hotKeywordHash() => r'711fc36d7d2827c728d7cd911df94ff55e816f29';

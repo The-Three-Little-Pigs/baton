@@ -3,12 +3,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class SearchField extends ConsumerWidget {
+class SearchField extends ConsumerStatefulWidget {
   const SearchField({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SearchField> createState() => _SearchFieldState();
+}
+
+class _SearchFieldState extends ConsumerState<SearchField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: ref.read(searchFieldProvider));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 프로바이더 상태 변화 감시 및 컨트롤러 텍스트 업데이트
+    ref.listen<String>(searchFieldProvider, (previous, next) {
+      if (_controller.text != next) {
+        _controller.text = next;
+      }
+    });
+
     return TextField(
+      controller: _controller,
+      onChanged: (value) {
+        ref.read(searchFieldProvider.notifier).updateText(value);
+      },
       onSubmitted: (value) {
         final keyword = value.trim();
         if (keyword.isNotEmpty) {
@@ -29,9 +59,28 @@ class SearchField extends ConsumerWidget {
           borderRadius: BorderRadius.circular(99),
           borderSide: const BorderSide(color: Colors.black),
         ),
-        suffixIcon: IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () {},
+        suffixIcon: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_controller.text.isNotEmpty)
+              IconButton(
+                icon: const Icon(Icons.cancel, color: Color(0xFFB3B3B3), size: 18),
+                onPressed: () {
+                  _controller.clear();
+                  ref.read(searchFieldProvider.notifier).clear();
+                },
+              ),
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                final keyword = _controller.text.trim();
+                if (keyword.isNotEmpty) {
+                  ref.read(searchFieldProvider.notifier).recordSearch(keyword);
+                  context.pushNamed('searchResult', pathParameters: {'keyword': keyword});
+                }
+              },
+            ),
+          ],
         ),
         suffixIconColor: const Color(0xFF1A1A1A),
         hintText: "검색어를 입력해주세요.",
