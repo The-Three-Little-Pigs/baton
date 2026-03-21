@@ -18,7 +18,9 @@ class SearchRepositoryImpl implements SearchRepository {
           .get();
 
       final keywords = snapshot.docs.map((doc) {
-        return Keyword.fromJson(doc.data());
+        final data = doc.data();
+        data['keyword'] = data['keyword'] ?? doc.id;
+        return Keyword.fromJson(data);
       }).toList();
 
       return Success(keywords);
@@ -40,6 +42,7 @@ class SearchRepositoryImpl implements SearchRepository {
       // 1. 키워드 검색량 증가 (set with merge를 통해 get 없이 1번의 쿼리로 처리)
       final keywordRef = firestore.collection('keywords').doc(keyword);
       batch.set(keywordRef, {
+        'keyword': keyword,
         'count': FieldValue.increment(1),
       }, SetOptions(merge: true));
 

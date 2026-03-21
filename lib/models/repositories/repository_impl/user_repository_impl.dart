@@ -223,7 +223,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<Result<void, Failure>> clearRecentlySearch(String uid) async {
     try {
       await _firestore.collection(_collectionPath).doc(uid).update({
-        'recentlySearch': FieldValue.arrayRemove([]),
+        'recentlySearch': [],
       });
       return const Success(null);
     } on FirebaseException catch (e) {

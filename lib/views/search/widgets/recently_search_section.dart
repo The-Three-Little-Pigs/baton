@@ -1,7 +1,9 @@
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/search/viewmodel/search_field_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 class RecentlySearchSection extends ConsumerWidget {
   const RecentlySearchSection({super.key});
@@ -26,7 +28,7 @@ class RecentlySearchSection extends ConsumerWidget {
                 onTap: () {
                   ref.read(userProvider.notifier).clearRecentlySearch();
                 },
-                child: Text(
+                child: const Text(
                   "전체 삭제",
                   style: TextStyle(
                     fontSize: 14,
@@ -37,7 +39,7 @@ class RecentlySearchSection extends ConsumerWidget {
               ),
           ],
         ),
-        ListView.builder(
+        ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: recentList?.length ?? 0,
@@ -46,10 +48,20 @@ class RecentlySearchSection extends ConsumerWidget {
 
             return RecentlySearchItem(
               term: term,
-              onTap: (term) {
+              onSearch: (term) {
+                ref.read(searchFieldProvider.notifier).recordSearch(term);
+                context.pushNamed(
+                  'searchResult',
+                  pathParameters: {'keyword': term},
+                );
+              },
+              onDelete: (term) {
                 ref.read(userProvider.notifier).toggleRecentlySearch(term);
               },
             );
+          },
+          separatorBuilder: (context, index) {
+            return const SizedBox(height: 20);
           },
         ),
       ],
@@ -61,29 +73,38 @@ class RecentlySearchItem extends StatelessWidget {
   const RecentlySearchItem({
     super.key,
     required this.term,
-    required this.onTap,
+    required this.onSearch,
+    required this.onDelete,
   });
 
   final String term;
-  final void Function(String) onTap;
+  final void Function(String) onSearch;
+  final void Function(String) onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      spacing: 8,
-      children: [
-        SvgPicture.asset(
-          'assets/icons/nest_clock_farsight_analog.svg',
-          width: 24,
-          height: 24,
-        ),
-        Text(term, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
-        Spacer(),
-        GestureDetector(
-          onTap: () => onTap(term),
-          child: Icon(Icons.close, color: Color(0xFFB3B3B3), size: 18),
-        ),
-      ],
+    return GestureDetector(
+      onTap: () => onSearch(term),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        spacing: 8,
+        children: [
+          SvgPicture.asset(
+            'assets/icons/nest_clock_farsight_analog.svg',
+            width: 24,
+            height: 24,
+          ),
+          Text(
+            term,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: () => onDelete(term),
+            child: const Icon(Icons.close, color: Color(0xFFB3B3B3), size: 18),
+          ),
+        ],
+      ),
     );
   }
 }

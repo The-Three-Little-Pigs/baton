@@ -18,8 +18,8 @@ class HotKeywordNotifier extends _$HotKeywordNotifier {
   Future<List<Keyword>> _fetchAndSortKeywords() async {
     final result = await ref.read(searchRepositoryProvider).getHotKeywords();
     switch (result) {
-      case Success(value: final keywords):
-        final sortedKeywords = List<Keyword>.from(keywords)
+      case Success(:final value):
+        final sortedKeywords = List<Keyword>.from(value)
           ..sort((a, b) {
             if (a.count == b.count) {
               return a.keyword.compareTo(b.keyword);
@@ -28,8 +28,8 @@ class HotKeywordNotifier extends _$HotKeywordNotifier {
           });
 
         return sortedKeywords.take(10).toList();
-      case Error(failure: final failure):
-        throw failure;
+      case Error(:final failure):
+        throw Exception(failure.message);
     }
   }
 }

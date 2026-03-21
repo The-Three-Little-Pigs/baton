@@ -47,8 +47,8 @@ class User {
     'nickname': nickname,
     'profileUrl': profileUrl,
     'score': score,
-    'favorites': favorites.toSet(),    
-    'recentlySearch': recentlySearch,
+    'favorites': favorites.toList(),    
+    'recentlySearch': recentlySearch.toList(),
     'deletedAt': deletedAt,
    
     

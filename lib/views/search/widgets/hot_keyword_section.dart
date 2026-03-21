@@ -1,7 +1,9 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/views/search/viewmodel/hot_keyword_notifier.dart';
+import 'package:baton/views/search/viewmodel/search_field_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class HotKeywordSection extends ConsumerWidget {
   const HotKeywordSection({super.key});
@@ -45,6 +47,13 @@ class HotKeywordSection extends ConsumerWidget {
                       (index) => SearchTerm(
                         label: leftKeywords[index].keyword,
                         idx: index + 1,
+                        onTap: () {
+                          _performSearch(
+                            context,
+                            ref,
+                            leftKeywords[index].keyword,
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -58,6 +67,13 @@ class HotKeywordSection extends ConsumerWidget {
                       (index) => SearchTerm(
                         label: rightKeywords[index].keyword,
                         idx: index + 6,
+                        onTap: () {
+                          _performSearch(
+                            context,
+                            ref,
+                            rightKeywords[index].keyword,
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -80,30 +96,46 @@ class HotKeywordSection extends ConsumerWidget {
       ],
     );
   }
+
+  void _performSearch(BuildContext context, WidgetRef ref, String keyword) {
+    if (keyword.isNotEmpty) {
+      ref.read(searchFieldProvider.notifier).recordSearch(keyword);
+      context.pushNamed('searchResult', pathParameters: {'keyword': keyword});
+    }
+  }
 }
 
 class SearchTerm extends StatelessWidget {
-  const SearchTerm({super.key, required this.label, required this.idx});
+  const SearchTerm({
+    super.key,
+    required this.label,
+    required this.idx,
+    required this.onTap,
+  });
 
   final String label;
   final int idx;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      spacing: 8,
-      children: [
-        Text(
-          idx.toString(),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: idx <= 3 ? AppColors.primary : Colors.black,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        spacing: 8,
+        children: [
+          Text(
+            idx.toString(),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: idx <= 3 ? AppColors.primary : Colors.black,
+            ),
           ),
-        ),
-
-        Text(label),
-      ],
+          Text(label),
+        ],
+      ),
     );
   }
 }
