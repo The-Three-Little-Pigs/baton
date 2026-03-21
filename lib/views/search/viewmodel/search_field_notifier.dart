@@ -26,8 +26,14 @@ class SearchFieldNotifier extends _$SearchFieldNotifier {
     if (trimmed.isEmpty) return;
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
+    final repo = ref.read(searchRepositoryProvider);
+
+    // 1. 서버 인기 검색어 집계 업데이트
     if (uid != null) {
-      ref.read(searchRepositoryProvider).updateSearchRecord(uid, trimmed);
+      repo.updateSearchRecord(uid, trimmed);
     }
+
+    // 2. 로컬 검색 기록(Drift) 저장
+    repo.addLocalSearchHistory(trimmed);
   }
 }

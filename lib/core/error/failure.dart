@@ -19,5 +19,6 @@ class AuthFailure extends Failure {
 class UnknownFailure extends Failure {
   UnknownFailure(super.message);
 }
-
-// connetivity plus
+class DatabaseFailure extends Failure {
+  DatabaseFailure(super.message);
+}
