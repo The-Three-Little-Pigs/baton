@@ -2,9 +2,8 @@ import 'package:baton/views/_tap/home/viewmodel/filter_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/home_tap_viewmodel.dart';
 import 'package:baton/views/_tap/home/widgets/category_chips.dart';
 import 'package:baton/views/_tap/home/widgets/category_select_button.dart';
-import 'package:baton/views/_tap/home/widgets/no_product.dart';
 import 'package:baton/views/widgets/home_logo.dart';
-import 'package:baton/views/widgets/product_item.dart';
+import 'package:baton/views/widgets/product_grid_view.dart';
 import 'package:baton/views/widgets/top_modal_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -91,70 +90,33 @@ class _HomeTapState extends ConsumerState<HomeTap> {
               child: Stack(
                 children: [
                   // 1. 메인 본문 레이어 (포스트 리스트)
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      await ref
+                  postAsyncValue.when(
+                    data: (homeTapState) => ProductGridView(
+                      posts: homeTapState.posts,
+                      onRefresh: () =>
+                          ref.read(homeTapViewModelProvider.notifier).refresh(),
+                      onReachBottom: () => ref
                           .read(homeTapViewModelProvider.notifier)
-                          .refresh();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: postAsyncValue.when(
-                        data: (homeTapState) {
-                          final posts = homeTapState.posts;
-                          if (posts.isEmpty) {
-                            return const Center(child: NoProduct());
-                          }
-                          return NotificationListener<ScrollNotification>(
-                            onNotification: (notification) {
-                              if (notification.metrics.pixels >=
-                                  notification.metrics.maxScrollExtent * 0.8) {
-                                ref
-                                    .read(homeTapViewModelProvider.notifier)
-                                    .fetchPosts();
-                              }
-                              return false;
-                            },
-                            child: GridView.builder(
-                              controller: _scrollController,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                childAspectRatio: 0.7,
-                                crossAxisCount: 2,
-                                mainAxisSpacing: 20,
-                                crossAxisSpacing: 20,
-                              ),
-                              itemBuilder: (context, index) {
-                                return ProductItem(post: posts[index]);
-                              },
-                              itemCount: posts.length,
-                            ),
-                          );
-                        },
-                        error: (error, stackTrace) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(error.toString()),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    ref
-                                        .read(homeTapViewModelProvider.notifier)
-                                        .refresh();
-                                  },
-                                  child: const Text("재시도"),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        loading: () {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        },
+                          .fetchPosts(),
+                      controller: _scrollController,
+                    ),
+                    error: (error, stackTrace) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(error.toString()),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () => ref
+                                .read(homeTapViewModelProvider.notifier)
+                                .refresh(),
+                            child: const Text("재시도"),
+                          ),
+                        ],
                       ),
+                    ),
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(),
                     ),
                   ),
 
