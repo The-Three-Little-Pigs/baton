@@ -42,7 +42,8 @@ class ProductGridView extends StatelessWidget {
     // 그리드뷰 본문
     Widget gridView = GridView.builder(
       controller: controller,
-      padding: padding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+      padding:
+          padding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         childAspectRatio: 0.7,
         crossAxisCount: 2,
@@ -70,9 +71,6 @@ class ProductGridView extends StatelessWidget {
     }
 
     // 새로고침 처리
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: gridView,
-    );
+    return RefreshIndicator(onRefresh: onRefresh, child: gridView);
   }
 }
