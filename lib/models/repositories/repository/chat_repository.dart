@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/models/entities/appointment_data.dart';
 import 'package:baton/models/entities/chat_room.dart';
 import 'package:baton/models/entities/message.dart';
+import 'package:baton/models/enum/appointment_status.dart';
+import 'package:baton/models/enum/product_status.dart';
 
 abstract class ChatRepository {
   /// 채팅방 목록 실시간 구독
@@ -39,8 +42,33 @@ abstract class ChatRepository {
   Future<Result<bool, Failure>> leaveRoom(String roomId, String myUserId);
 
   /// 시스템 메시지 전송
-  Future<Result<void, Failure>> sendSystemMessage(
-    String roomId,
-    String content,
-  );
+  // Future<Result<void, Failure>> sendSystemMessage(
+  //   String roomId,
+  //   String content,
+  // );
+  // 약속 메세지 전송
+  Future<Result<void, Failure>> sendAppointmentMessage({
+    required String roomId,
+    required String myUserId,
+    required String targetUserId,
+    required AppointmentData data,
+    required bool hasRoom,
+  });
+
+  // 약속 상태 업데이트
+  Future<Result<void, Failure>> updateAppointmentStatus({
+    required String roomId,
+    required String messageId,
+    required AppointmentStatus newStatus,
+  });
+
+  Future<Result<void, Failure>> updatePostStatus({
+    required String postId,
+    required ProductStatus newStatus,
+  });
+  Future<Result<void, Failure>> confirmTransactionManually({
+    required String roomId,
+    required String postId,
+    required String myUserId,
+  });
 }
