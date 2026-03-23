@@ -163,10 +163,19 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
     switch (result) {
       case Success():
         // 2. 취소되었으니 특정 상품(Post)을 다시 판매중으로 롤백
-        await repository.updatePostStatus(
+        if (postId.isEmpty) {
+          debugPrint('postId is empty');
+          return;
+        }
+        final postResult = await repository.updatePostStatus(
           postId: postId,
           newStatus: ProductStatus.available,
         );
+        if (postResult case Error(:final failure)) {
+          debugPrint(failure.message);
+        } else {
+          debugPrint('Post status updated successfully');
+        }
         break;
       case Error(:final failure):
         debugPrint(failure.message);

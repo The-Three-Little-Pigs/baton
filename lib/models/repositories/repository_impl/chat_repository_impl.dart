@@ -299,12 +299,16 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       final chatroomDocRef = _firestore.collection(_collectionPath).doc(roomId);
       final messageDocRef = chatroomDocRef.collection('messages').doc();
+
+      // 🔥 [핵심 버그 수정] Firestore에서 자동 생성된 문서 ID를 데이터에 채워줍니다.
+      final actualData = data.copyWith(appointmentId: messageDocRef.id);
+
       final batch = _firestore.batch();
       batch.set(messageDocRef, {
         'id': messageDocRef.id,
         'roomId': roomId,
         'senderId': myUserId,
-        'content': jsonEncode(data.toJson()),
+        'content': jsonEncode(actualData.toJson()),
         'type': 'appointment',
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -313,9 +317,10 @@ class ChatRepositoryImpl implements ChatRepository {
         'updatedAt': FieldValue.serverTimestamp(),
         'unreadCounts.$targetUserId': FieldValue.increment(1),
         'unreadCounts.$myUserId': 0,
-        'appointmentStatus': data.status.label,
-        'appointmentDateTime': Timestamp.fromDate(data.dateTime),
-        'activeAppointmentId': data.appointmentId,
+        'appointmentStatus': actualData.status.label,
+        'appointmentDateTime': Timestamp.fromDate(actualData.dateTime),
+        'activeAppointmentId':
+            actualData.appointmentId, // 이제 빈 문자열이 아니라 진짜 ID가 들어갑니다!
       };
       // 방이 처음 생길 때의 초기 데이터 포함( 생략 가능하나 안전을 위해)
       if (!hasRoom) {
@@ -392,6 +397,7 @@ class ChatRepositoryImpl implements ChatRepository {
         } else if (newStatus == AppointmentStatus.completed) {
           transaction.update(chatroomRef, {
             'appointmentStatus': AppointmentStatus.completed.label,
+            'activeAppointmentId': null,
           });
         }
       });
