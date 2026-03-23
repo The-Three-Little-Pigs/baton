@@ -48,4 +48,4 @@ final class SearchServiceProvider
   }
 }
 
-String _$searchServiceHash() => r'99929b261d5ea2679c73ec5090f3b142b293f14c';
+String _$searchServiceHash() => r'b8d5eba46dbb3698bf4b3a2828a7f05356766115';

@@ -1,3 +1,4 @@
+import 'package:baton/core/config/app_config.dart';
 import 'package:baton/core/router/go_router.dart';
 import 'package:baton/service/notification_service.dart';
 import 'package:baton/core/theme/app_theme.dart';
@@ -11,6 +12,10 @@ import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 환경 변수 초기화
+  await AppConfig.init();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -18,7 +23,7 @@ void main() async {
 
   NotificationService().initialize().catchError((e) {});
 
-  KakaoSdk.init(nativeAppKey: '7f7a429c53f5e3bf1973da1c75a934df');
+  KakaoSdk.init(nativeAppKey: AppConfig.kakaoNativeAppKey);
 
   runApp(const ProviderScope(child: BatonApp()));
 }

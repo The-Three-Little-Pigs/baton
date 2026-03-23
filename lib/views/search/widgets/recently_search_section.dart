@@ -1,58 +1,83 @@
-import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/core/di/repository/search_provider.dart';
+import 'package:baton/notifier/search/recently_search_notifier.dart';
+import 'package:baton/views/search/viewmodel/search_field_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 class RecentlySearchSection extends ConsumerWidget {
   const RecentlySearchSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final recentList = ref.watch(userProvider).value?.recentlySearch.toList();
+    final recentHistoryAsync = ref.watch(recentlySearchHistoryProvider);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 14,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return recentHistoryAsync.when(
+      data: (histories) {
+        if (histories.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 14,
           children: [
-            const Text(
-              "최근 검색",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            if (recentList?.isNotEmpty ?? false)
-              GestureDetector(
-                onTap: () {
-                  ref.read(userProvider.notifier).clearRecentlySearch();
-                },
-                child: Text(
-                  "전체 삭제",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF999999),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "최근 검색",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    ref.read(recentlySearchActionsProvider.notifier).clearAll();
+                  },
+                  child: const Text(
+                    "전체 삭제",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF999999),
+                    ),
                   ),
                 ),
-              ),
-          ],
-        ),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: recentList?.length ?? 0,
-          itemBuilder: (context, index) {
-            final term = recentList?[index] ?? "";
+              ],
+            ),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: histories.length,
+              itemBuilder: (context, index) {
+                final history = histories[index];
 
-            return RecentlySearchItem(
-              term: term,
-              onTap: (term) {
-                ref.read(userProvider.notifier).toggleRecentlySearch(term);
+                return RecentlySearchItem(
+                  label: history.query,
+                  onSearch: () {
+                    ref.read(searchFieldProvider.notifier).updateText(history.query);
+                    ref
+                        .read(searchFieldProvider.notifier)
+                        .recordSearch(history.query);
+                    context.pushNamed(
+                      'searchResult',
+                      pathParameters: {'keyword': history.query},
+                    );
+                  },
+                  onDelete: () {
+                    ref
+                        .read(recentlySearchActionsProvider.notifier)
+                        .deleteHistory(history.id);
+                  },
+                );
               },
-            );
-          },
-        ),
-      ],
+              separatorBuilder: (context, index) {
+                return const SizedBox(height: 20);
+              },
+            ),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }
@@ -60,30 +85,39 @@ class RecentlySearchSection extends ConsumerWidget {
 class RecentlySearchItem extends StatelessWidget {
   const RecentlySearchItem({
     super.key,
-    required this.term,
-    required this.onTap,
+    required this.label,
+    required this.onSearch,
+    required this.onDelete,
   });
 
-  final String term;
-  final void Function(String) onTap;
+  final String label;
+  final VoidCallback onSearch;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      spacing: 8,
-      children: [
-        SvgPicture.asset(
-          'assets/icons/nest_clock_farsight_analog.svg',
-          width: 24,
-          height: 24,
-        ),
-        Text(term, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
-        Spacer(),
-        GestureDetector(
-          onTap: () => onTap(term),
-          child: Icon(Icons.close, color: Color(0xFFB3B3B3), size: 18),
-        ),
-      ],
+    return GestureDetector(
+      onTap: onSearch,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        spacing: 8,
+        children: [
+          SvgPicture.asset(
+            'assets/icons/nest_clock_farsight_analog.svg',
+            width: 24,
+            height: 24,
+          ),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: onDelete,
+            child: const Icon(Icons.close, color: Color(0xFFB3B3B3), size: 18),
+          ),
+        ],
+      ),
     );
   }
 }

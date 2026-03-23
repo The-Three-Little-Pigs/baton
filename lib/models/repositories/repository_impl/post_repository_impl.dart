@@ -4,10 +4,15 @@ import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/category.dart';
 import 'package:baton/models/repositories/repository/post_repository.dart';
+import 'package:baton/service/algolia/algolia_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PostRepositoryImpl implements PostRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final AlgoliaService _algoliaService;
+
+  PostRepositoryImpl({required AlgoliaService algoliaService})
+    : _algoliaService = algoliaService;
 
   @override
   Future<Result<void, Failure>> createPost(Post post) async {
@@ -134,20 +139,15 @@ class PostRepositoryImpl implements PostRepository {
   @override
   Future<Result<List<Post>, Failure>> getPostBySearch(String keyword) async {
     try {
-      final snapshot = await _firestore
-          .collection('posts')
-          .where('title', arrayContains: keyword)
-          .get();
+      final hits = await _algoliaService.search(keyword);
 
-      final posts = snapshot.docs
-          .map((doc) => Post.fromJson(doc.data()))
-          .toList();
+      final posts = hits.map((hit) {
+        return Post.fromJson(hit);
+      }).toList();
 
       return Success(posts);
-    } on FirebaseException catch (e) {
-      return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
-      return Error(ServerFailure('데이터를 불러오는 중 오류가 발생했습니다: $e'));
+      return Error(ServerFailure('검색 중 오류가 발생했습니다: $e'));
     }
   }
 

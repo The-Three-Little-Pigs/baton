@@ -6,7 +6,6 @@ import 'package:baton/core/result/result.dart';
 import 'package:baton/core/utils/auth_helper.dart';
 import 'package:baton/models/repositories/repository/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart' hide User;
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -172,5 +171,3 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 }
-
-
