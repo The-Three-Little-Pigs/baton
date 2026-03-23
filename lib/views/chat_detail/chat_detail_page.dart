@@ -191,7 +191,7 @@ class ChatDetailPage extends ConsumerWidget {
           child: Column(
             children: [
               ChatProductBanner(roomId: roomId),
-              AppointmentButton(),
+              AppointmentButton(roomId: roomId),
               Divider(color: AppColors.secondary, thickness: 1),
               ChatMessageList(roomId: roomId),
               Padding(

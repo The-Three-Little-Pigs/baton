@@ -1,7 +1,11 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:baton/models/entities/appointment_data.dart';
+import 'package:baton/models/enum/appointment_status.dart';
 import 'package:baton/models/enum/message_type.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
 import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
+import 'package:baton/views/chat_detail/widgets/appointment_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -15,8 +19,13 @@ class ChatMessageList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final parts = roomId.split('_');
+    final String postId = parts.length >= 3 ? parts[2] : '';
     final uiMessagesAsync = ref.watch(chatMessageUiModelProvider(roomId));
-    final myUserId = ref.watch(userProvider).value?.uid;
+    final myUserId = ref.watch(userProvider).value?.uid ?? '';
+    final String otherUserId = (parts.length >= 2)
+        ? (parts[0] == myUserId ? parts[1] : parts[0])
+        : '';
     return Expanded(
       child: uiMessagesAsync.when(
         data: (uiMessages) {
@@ -95,17 +104,91 @@ class ChatMessageList extends ConsumerWidget {
                         ),
                       ),
                     ),
-                  _ChatBubble(
-                    content: msg.content,
-                    type: msg.type,
-                    isMyMessage: isMyMessage,
-                    isReadByTarget: isReadByTarget,
-                    createdAt: msg.createdAt,
-                    isPending: msg.isPending,
-                    bottomMargin: bottomMargin,
-                    showTime: showTime,
-                    showReadStatus: showReadStatus,
-                  ),
+                  // --- 약속하기 ---
+                  if (msg.type == MessageType.appointment)
+                    Builder(
+                      builder: (context) {
+                        final data = msg.appointmentData;
+                        if (data == null) {
+                          return const Padding(
+                            padding: EdgeInsetsGeometry.symmetric(vertical: 8),
+                            child: Text(
+                              '약속 정보를 불러올 수 없습니다.',
+                              style: TextStyle(color: Colors.red, fontSize: 14),
+                            ),
+                          );
+                        }
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: bottomMargin),
+                          child: Row(
+                            mainAxisAlignment: isMyMessage
+                                ? MainAxisAlignment.end
+                                : MainAxisAlignment.start,
+                            children: [
+                              if (!isMyMessage) const SizedBox(width: 20),
+                              AppointmentCard(
+                                data: data,
+                                isMyCard: isMyMessage,
+                                onConfirm: () {
+                                  ref
+                                      .read(chatDetailProvider(roomId).notifier)
+                                      .confirmAppointment(
+                                        roomId,
+                                        msg.id,
+                                        postId,
+                                      );
+                                },
+                                onAdjust: () async {
+                                  final result =
+                                      await AppointmentBottomSheet.showAppointmentDialog(
+                                        context,
+                                        initialDateTime: data.dateTime,
+                                      );
+                                  if (result == null) return;
+                                  final DateTime selectedDate =
+                                      result['dateTime'];
+                                  final String method = result['method'];
+                                  final appointment = AppointmentData(
+                                    appointmentId: '',
+                                    method: method,
+                                    dateTime: selectedDate,
+                                    status: AppointmentStatus.pending,
+                                    proposeBy: myUserId,
+                                    previousMessageId: msg.id,
+                                  );
+                                  final errorMessage = await ref
+                                      .read(chatDetailProvider(roomId).notifier)
+                                      .sendAppointmentMessage(
+                                        roomId,
+                                        postId,
+                                        appointment,
+                                        true,
+                                      );
+                                  if (errorMessage != null && context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(errorMessage)),
+                                    );
+                                  }
+                                },
+                              ),
+                              if (!isMyMessage) const SizedBox(width: 20),
+                            ],
+                          ),
+                        );
+                      },
+                    )
+                  else
+                    _ChatBubble(
+                      content: msg.content,
+                      type: msg.type,
+                      isMyMessage: isMyMessage,
+                      isReadByTarget: isReadByTarget,
+                      createdAt: msg.createdAt,
+                      isPending: msg.isPending,
+                      bottomMargin: bottomMargin,
+                      showTime: showTime,
+                      showReadStatus: showReadStatus,
+                    ),
                 ],
               );
             },

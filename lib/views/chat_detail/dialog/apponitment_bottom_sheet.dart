@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 
 class AppointmentBottomSheet extends StatefulWidget {
-  const AppointmentBottomSheet({super.key});
+  final DateTime? initialDateTime;
+  const AppointmentBottomSheet({super.key, this.initialDateTime});
 
   @override
   State<AppointmentBottomSheet> createState() => _AppointmentBottomSheetState();
 
   static Future<Map<String, dynamic>?> showAppointmentDialog(
-    BuildContext context,
-  ) {
+    BuildContext context, {
+    DateTime? initialDateTime,
+  }) {
     return showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AppointmentBottomSheet(),
+      builder: (context) =>
+          AppointmentBottomSheet(initialDateTime: initialDateTime),
     );
   }
 }
@@ -31,7 +34,7 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
+    final now = widget.initialDateTime ?? DateTime.now();
     _selectedMonth = now.month;
     _selectedDay = now.day;
     _selectedHour = now.hour > 12

@@ -1,11 +1,15 @@
 // lib/models/repositories/repository_impl/chat_repository_impl.dart
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/models/entities/appointment_data.dart';
 import 'package:baton/models/entities/chat_room.dart';
 import 'package:baton/models/entities/message.dart';
+import 'package:baton/models/enum/appointment_status.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/repositories/repository/chat_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -246,7 +250,8 @@ class ChatRepositoryImpl implements ChatRepository {
         await _deleteStorageFolder(roomId);
 
         // (2) 메시지 컬렉션 삭제
-        await _deleteAllMessages(roomId);
+        // TODO: 메시지 컬렉션 삭제/ 잘 작동하는지 확인 필요
+        // await _deleteAllMessages(roomId);
 
         // (3) 채팅방 문서 삭제
         await roomRef.delete();
@@ -283,32 +288,135 @@ class ChatRepositoryImpl implements ChatRepository {
     await batch.commit();
   }
 
-  // TODO: 약속하기로 활용
   @override
-  Future<Result<void, Failure>> sendSystemMessage(
-    String roomId,
-    String content,
-  ) async {
+  Future<Result<void, Failure>> sendAppointmentMessage({
+    required String roomId,
+    required String myUserId,
+    required String targetUserId,
+    required AppointmentData data,
+    required bool hasRoom,
+  }) async {
     try {
-      final roomRef = _firestore.collection(_collectionPath).doc(roomId);
-      final messageRef = roomRef.collection('messages').doc();
-      final now = FieldValue.serverTimestamp();
-      await messageRef.set({
-        'id': messageRef.id,
+      final chatroomDocRef = _firestore.collection(_collectionPath).doc(roomId);
+      final messageDocRef = chatroomDocRef.collection('messages').doc();
+      final batch = _firestore.batch();
+      batch.set(messageDocRef, {
+        'id': messageDocRef.id,
         'roomId': roomId,
-        'senderId': 'system', // ★ 시스템 메시지 식별자
-        'content': content,
-        'type': 'system', // ★ MessageType.system
-        'createdAt': now,
-        'isPending': false,
+        'senderId': myUserId,
+        'content': jsonEncode(data.toJson()),
+        'type': 'appointment',
+        'createdAt': FieldValue.serverTimestamp(),
       });
-      // 채팅방의 lastMessage도 업데이트
-      await roomRef.update({'lastMessage': content, 'updatedAt': now});
+      final updateData = {
+        'lastMessage': '약속 신청',
+        'updatedAt': FieldValue.serverTimestamp(),
+        'unreadCounts.$targetUserId': FieldValue.increment(1),
+        'unreadCounts.$myUserId': 0,
+        'appointmentStatus': data.status.label,
+        'appointmentDateTime': Timestamp.fromDate(data.dateTime),
+        'activeAppointmentId': data.appointmentId,
+      };
+      // 방이 처음 생길 때의 초기 데이터 포함( 생략 가능하나 안전을 위해)
+      if (!hasRoom) {
+        batch.set(chatroomDocRef, {
+          ...updateData,
+          'roomId': roomId,
+          'participants': [myUserId, targetUserId],
+          'lastReadAt': {
+            myUserId: FieldValue.serverTimestamp(),
+            targetUserId: Timestamp(0, 0),
+          },
+          'deletedByUids': [],
+          'unreadCounts': {myUserId: 0, targetUserId: 1},
+          'prdImageUrl': '',
+        }, SetOptions(merge: true));
+      } else {
+        batch.update(chatroomDocRef, updateData);
+      }
+
+      if (data.previousMessageId != null) {
+        final prevMsgRef = chatroomDocRef
+            .collection('messages')
+            .doc(data.previousMessageId);
+        final replaceData = data.copyWith(
+          appointmentId: data.previousMessageId,
+          status: AppointmentStatus.replaced,
+        );
+        batch.update(prevMsgRef, {'content': jsonEncode(replaceData.toJson())});
+      }
+      await batch.commit();
       return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
-      return Error(ServerFailure('시스템 메시지 전송 실패: $e'));
+      return Error(UnknownFailure('약속 전송 실패'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> updateAppointmentStatus({
+    required String roomId,
+    required String messageId,
+    required AppointmentStatus newStatus,
+  }) async {
+    try {
+      final msgRef = _firestore
+          .collection(_collectionPath)
+          .doc(roomId)
+          .collection('messages')
+          .doc(messageId);
+      await _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(msgRef);
+        if (!snapshot.exists) return;
+        final content = jsonDecode(snapshot.get('content') as String);
+        final data = AppointmentData.fromJson(content);
+        final updatedData = data.copyWith(status: newStatus);
+
+        transaction.update(msgRef, {
+          'content': jsonEncode(updatedData.toJson()),
+        });
+
+        // 채팅방 정보 업데이트 (확정/취소/완료 등 상태 변화 반영)
+        final chatroomRef = _firestore.collection(_collectionPath).doc(roomId);
+        if (newStatus == AppointmentStatus.confirmed) {
+          transaction.update(chatroomRef, {
+            'appointmentStatus': AppointmentStatus.confirmed.label,
+            'activeAppointmentId': messageId,
+          });
+        } else if (newStatus == AppointmentStatus.cancelled) {
+          transaction.update(chatroomRef, {
+            'appointmentStatus': AppointmentStatus.cancelled.label,
+            'activeAppointmentId': null, // 취소 시 활성화된 약속 ID 제거
+          });
+        } else if (newStatus == AppointmentStatus.completed) {
+          transaction.update(chatroomRef, {
+            'appointmentStatus': AppointmentStatus.completed.label,
+          });
+        }
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(UnknownFailure('약속 상태 변경 실패: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> updatePostStatus({
+    required String postId,
+    required ProductStatus newStatus,
+  }) async {
+    try {
+      await _firestore.collection('posts').doc(postId).update({
+        'status': newStatus.label,
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(UnknownFailure('게시글 상태 변경 실패: ${e.toString()}'));
     }
   }
 }

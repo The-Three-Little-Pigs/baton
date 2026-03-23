@@ -18,6 +18,9 @@ class Chatroom {
   final Map<String, dynamic> lastReadAt; // 마지막 읽은 시간
   final ChatStatus status; // 채팅방 상태(거래중, 거래완료, 거래취소)
   final List<String> deletedByUids; // 채팅방 삭제자
+  final String? appointmentStatus; // 현재 약속 상태
+  final DateTime? appointmentDateTime; // 마지막으로 확정/제안된 약속 시간
+  final String? activeAppointmentId; // 현재 활성화된 약속 ID
 
   Chatroom({
     required this.roomId,
@@ -29,22 +32,29 @@ class Chatroom {
     required this.lastReadAt,
     required this.status,
     required this.deletedByUids,
+    this.appointmentStatus,
+    this.appointmentDateTime,
+    this.activeAppointmentId,
   });
 
   factory Chatroom.fromJson(Map<String, dynamic> json) {
     return Chatroom(
-      roomId: json['roomId'] ?? '',
+      roomId: json['roomId'] as String,
       participants: List<String>.from(json['participants'] ?? []),
       unreadCounts: Map<String, int>.from(json['unreadCounts'] ?? {}),
       updatedAt: (json['updatedAt'] as Timestamp).toDate(),
-      prdImageUrl: json['prdImageUrl'] ?? '',
-      lastMessage: json['lastMessage'] ?? '',
+      prdImageUrl: json['prdImageUrl'] as String,
+      lastMessage: json['lastMessage'] as String,
       lastReadAt: Map<String, dynamic>.from(json['lastReadAt'] ?? {}),
       status: ChatStatus.values.firstWhere(
-        (e) => e.name == json['status'],
+        (e) => e.label == json['status'],
         orElse: () => ChatStatus.all,
       ),
       deletedByUids: List<String>.from(json['deletedByUids'] ?? []),
+      appointmentStatus: json['appointmentStatus'] as String?,
+      appointmentDateTime: (json['appointmentDateTime'] as Timestamp?)
+          ?.toDate(),
+      activeAppointmentId: json['activeAppointmentId'] as String?,
     );
   }
 
@@ -59,6 +69,9 @@ class Chatroom {
       'lastReadAt': lastReadAt,
       'status': status,
       'deletedByUids': deletedByUids,
+      'appointmentStatus': appointmentStatus,
+      'appointmentDateTime': appointmentDateTime,
+      'activeAppointmentId': activeAppointmentId,
     };
   }
 
@@ -72,6 +85,9 @@ class Chatroom {
     Map<String, dynamic>? lastReadAt,
     ChatStatus? status,
     List<String>? deletedByUids,
+    String? appointmentStatus,
+    DateTime? appointmentDateTime,
+    String? activeAppointmentId,
   }) {
     return Chatroom(
       roomId: roomId ?? this.roomId,
@@ -83,6 +99,9 @@ class Chatroom {
       lastReadAt: lastReadAt ?? this.lastReadAt,
       status: status ?? this.status,
       deletedByUids: deletedByUids ?? this.deletedByUids,
+      appointmentStatus: appointmentStatus ?? this.appointmentStatus,
+      appointmentDateTime: appointmentDateTime ?? this.appointmentDateTime,
+      activeAppointmentId: activeAppointmentId ?? this.activeAppointmentId,
     );
   }
 
@@ -122,10 +141,13 @@ class Chatroom {
       lastMessage: data['lastMessage']?.toString() ?? '',
       lastReadAt: parsedLastReadAt,
       status: ChatStatus.values.firstWhere(
-        (e) => e.name == data['status'],
+        (e) => e.label == data['status'],
         orElse: () => ChatStatus.all,
       ),
       deletedByUids: List<String>.from(data['deletedByUids'] ?? []),
+      appointmentStatus: data['appointmentStatus']?.toString(),
+      appointmentDateTime: _parseDate(data['appointmentDateTime']),
+      activeAppointmentId: data['activeAppointmentId']?.toString(),
     );
   }
 }

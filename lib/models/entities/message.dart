@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:baton/models/entities/appointment_data.dart';
 import 'package:baton/models/enum/message_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 DateTime _parseDate(dynamic date) {
   if (date == null) return DateTime.now();
@@ -16,6 +20,7 @@ class Message {
   final MessageType type; // 메세지 타입
   final DateTime createdAt; // 메세지 생성 시간
   final bool isPending; // 메세지 전송 상태
+  final AppointmentData? appointmentData; // 약속 데이터
 
   Message({
     required this.id,
@@ -25,20 +30,34 @@ class Message {
     required this.type,
     required this.createdAt,
     this.isPending = false,
+    this.appointmentData,
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
+    final type = MessageType.values.firstWhere(
+      (e) => e.name == json['type'] || e.label == json['type'],
+      orElse: () => MessageType.text,
+    );
+    final contentStr = json['content'] as String;
+    AppointmentData? parsedAppointmentData;
+    if (type == MessageType.appointment && contentStr.isNotEmpty) {
+      try {
+        parsedAppointmentData = AppointmentData.fromJson(
+          jsonDecode(contentStr),
+        );
+      } catch (e) {
+        debugPrint('fromJson parsing error: $e');
+      }
+    }
     return Message(
       id: json['id'] as String,
       roomId: json['roomId'] as String,
       senderId: json['senderId'] as String,
-      content: json['content'] as String,
-      type: MessageType.values.firstWhere(
-        (e) => e.name == json['type'],
-        orElse: () => MessageType.text,
-      ),
+      content: contentStr,
+      type: type,
       createdAt: _parseDate(json['createdAt']),
       isPending: json['isPending'] ?? false,
+      appointmentData: parsedAppointmentData,
     );
   }
 
@@ -48,7 +67,7 @@ class Message {
       'roomId': roomId,
       'senderId': senderId,
       'content': content,
-      'type': type.name,
+      'type': type.label,
       'createdAt': createdAt,
       'isPending': isPending,
     };
@@ -77,17 +96,30 @@ class Message {
   factory Message.fromFirestore(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     final bool isPending = doc.metadata.hasPendingWrites;
+    final type = MessageType.values.firstWhere(
+      (e) => e.name == data['type'] || e.label == data['type'],
+      orElse: () => MessageType.text,
+    );
+    final contentStr = data['content'] as String;
+    AppointmentData? parsedAppointmentData;
+    if (type == MessageType.appointment && contentStr.isNotEmpty) {
+      try {
+        parsedAppointmentData = AppointmentData.fromJson(
+          jsonDecode(contentStr),
+        );
+      } catch (e) {
+        debugPrint('fromFirestore parsing error: $e');
+      }
+    }
     return Message(
       id: data['id'] ?? '',
       roomId: data['roomId'] ?? '',
       senderId: data['senderId'] ?? '',
-      content: data['content'] ?? '',
-      type: MessageType.values.firstWhere(
-        (e) => e.name == data['type'],
-        orElse: () => MessageType.text,
-      ),
+      content: contentStr,
+      type: type,
       createdAt: _parseDate(data['createdAt']),
       isPending: isPending,
+      appointmentData: parsedAppointmentData,
     );
   }
 }

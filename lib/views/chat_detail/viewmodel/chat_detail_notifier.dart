@@ -3,9 +3,13 @@ import 'dart:io';
 
 import 'package:baton/core/di/repository/chat_provider.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/models/entities/appointment_data.dart';
 import 'package:baton/models/entities/chat_room.dart';
 import 'package:baton/models/entities/message.dart';
+import 'package:baton/models/enum/appointment_status.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'chat_detail_notifier.g.dart';
@@ -24,14 +28,14 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
 
   /// 읽음 처리 로직
   Future<void> markAsRead(String roomId) async {
-    final repository = ref.read(chatRepositoryProvider); // 액션(함수) 안에서는 read 사용
+    final repository = ref.read(chatRepositoryProvider);
 
     final result = await repository.markAsRead(roomId, _myUserId);
     switch (result) {
       case Success():
-        break; // 성공 시는 조용히 넘어감
+        break;
       case Error(:final failure):
-        print('읽음 처리 실패: ${failure.message}');
+        debugPrint('읽음 처리 실패: ${failure.message}');
     }
   }
 
@@ -79,15 +83,93 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
     };
   }
 
-  // TODO: 약속하기로 활용
-  Future<void> sendSystemMessage(String roomId, String message) async {
+  // 약속카드 전송
+  Future<String?> sendAppointmentMessage(
+    String roomId,
+    String targetUserId,
+    AppointmentData data,
+    bool hasRoom,
+  ) async {
     final repository = ref.read(chatRepositoryProvider);
-    final result = await repository.sendSystemMessage(roomId, message);
+    final result = await repository.sendAppointmentMessage(
+      roomId: roomId,
+      myUserId: _myUserId,
+      targetUserId: targetUserId,
+      data: data,
+      hasRoom: hasRoom,
+    );
+    return switch (result) {
+      Success() => null,
+      Error(:final failure) => failure.message,
+    };
+  }
+
+  Future<String?> updateAppointmentStatus(
+    String roomId,
+    String messageId,
+    AppointmentStatus newStatus,
+  ) async {
+    final repository = ref.read(chatRepositoryProvider);
+    final result = await repository.updateAppointmentStatus(
+      roomId: roomId,
+      messageId: messageId,
+      newStatus: newStatus,
+    );
+    return switch (result) {
+      Success() => null,
+      Error(:final failure) => failure.message,
+    };
+  }
+
+  Future<String?> confirmAppointment(
+    String roomId,
+    String messageId,
+    String postId,
+  ) async {
+    final repository = ref.read(chatRepositoryProvider);
+    final updateResult = await repository.updateAppointmentStatus(
+      roomId: roomId,
+      messageId: messageId,
+      newStatus: AppointmentStatus.confirmed,
+    );
+    if (updateResult case Error(:final failure)) {
+      return failure.message;
+    }
+    final postResult = await repository.updatePostStatus(
+      postId: postId,
+      newStatus: ProductStatus.reserved,
+    );
+    return switch (postResult) {
+      Success() => null,
+      Error(:final failure) => failure.message,
+    };
+  }
+
+  Future<void> cancelAppointment(
+    String roomId,
+    String messageId,
+    String postId,
+  ) async {
+    final repository = ref.read(chatRepositoryProvider);
+
+    // 1. 상태를 취소로 변경
+    final result = await repository.updateAppointmentStatus(
+      roomId: roomId,
+      messageId: messageId,
+      newStatus: AppointmentStatus.cancelled,
+    );
+
+    // switch 문을 사용하여 Result 처리
     switch (result) {
       case Success():
+        // 2. 취소되었으니 특정 상품(Post)을 다시 판매중으로 롤백
+        await repository.updatePostStatus(
+          postId: postId,
+          newStatus: ProductStatus.available,
+        );
         break;
       case Error(:final failure):
-        print('시스템 메시지 전송 실패: ${failure.message}');
+        debugPrint(failure.message);
     }
   }
 }
@@ -115,12 +197,8 @@ AsyncValue<List<ChatMessageUiModel>> chatMessageUiModel(
   final myUserId = ref.watch(userProvider).value?.uid ?? '';
 
   // Debugging logs to track exactly why it might be stuck in loading
-  print(
-    'chatMessageUiModelProvider ($roomId): messagesAsync=$messagesAsync, chatRoomAsync=$chatRoomAsync',
-  );
 
   return messagesAsync.whenData((messages) {
-    print('messages count: ${messages.length}');
     final chatroom = chatRoomAsync.value;
     final targetUserId =
         chatroom?.participants.firstWhere(
