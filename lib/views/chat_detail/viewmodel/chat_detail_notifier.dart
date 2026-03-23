@@ -216,6 +216,37 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
         debugPrint(failure.message);
     }
   }
+
+  // [추가] UI에서 '거래 확정하기' 버튼을 누르면 이 함수를 호출합니다!
+  Future<void> confirmTransactionManually(String roomId, String postId) async {
+    final repository = ref.read(chatRepositoryProvider);
+    final result = await repository.confirmTransactionManually(
+      roomId: roomId,
+      postId: postId,
+      myUserId: _myUserId,
+    );
+    switch (result) {
+      case Success():
+        // 쌍방 확정이 이뤄져서 상품이 '판매완료'로 바뀌었을 때를 대비해 즉각적인 UI 반영(낙관적 업데이트)
+        if (postId.isNotEmpty) {
+          final postNotifier = ref.read(
+            productDetailPageViewModelProvider(postId).notifier,
+          );
+          final currentPost = postNotifier.state.value;
+          if (currentPost != null) {
+            postNotifier.state = AsyncData(
+              currentPost.copyWith(status: ProductStatus.sold),
+            );
+          } else {
+            ref.invalidate(productDetailPageViewModelProvider(postId));
+          }
+        }
+        debugPrint('✅ 수동 확정 버튼 클릭 처리 완료');
+        break;
+      case Error(:final failure):
+        debugPrint('거래 확정 실패: ${failure.message}');
+    }
+  }
 }
 
 @riverpod

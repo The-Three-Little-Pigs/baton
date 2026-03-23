@@ -66,6 +66,7 @@ class ChatDetailPage extends ConsumerWidget {
         });
       }
     }
+    // 약속 상태 변경 감지
     ref.listen(chatRoomStreamProvider(roomId), (previous, next) {
       final prevStatus = previous?.value?.appointmentStatus;
       final nextStatus = next.value?.appointmentStatus;

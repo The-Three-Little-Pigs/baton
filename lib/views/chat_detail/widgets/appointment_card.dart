@@ -9,6 +9,9 @@ class AppointmentCard extends StatelessWidget {
   final bool isMyCard;
   final VoidCallback onConfirm;
   final VoidCallback onAdjust;
+  final VoidCallback? onCancel;
+  final VoidCallback? onComplete;
+  final bool hasConfirmed;
 
   const AppointmentCard({
     super.key,
@@ -16,6 +19,9 @@ class AppointmentCard extends StatelessWidget {
     required this.isMyCard,
     required this.onConfirm,
     required this.onAdjust,
+    this.onCancel,
+    this.onComplete,
+    this.hasConfirmed = false,
   });
 
   @override
@@ -100,6 +106,60 @@ class AppointmentCard extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+              ],
+              if (data.status == AppointmentStatus.confirmed) ...[
+                const SizedBox(height: 16),
+                const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                const SizedBox(height: 12),
+                Builder(
+                  builder: (context) {
+                    // 시간에 따른 상태 변화 렌더링
+                    final isTimePassed = data.dateTime.isBefore(DateTime.now());
+                    if (isTimePassed) {
+                      if (hasConfirmed) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            '상대방의 🤝거래 확정을 기다리는 중입니다...',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      } else {
+                        return ElevatedButton(
+                          onPressed: onComplete, // 누르면 뷰모델 찌름
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            '✅ 거래 확정하기',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        );
+                      }
+                    } else {
+                      // 아직 시간이 안 지났다면 '약속 취소' 노출
+                      return OutlinedButton(
+                        onPressed: onCancel,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.redAccent,
+                          side: const BorderSide(color: Colors.redAccent),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('약속 취소'),
+                      );
+                    }
+                  },
                 ),
               ],
             ],

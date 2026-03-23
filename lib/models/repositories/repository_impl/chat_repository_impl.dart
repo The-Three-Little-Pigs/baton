@@ -13,6 +13,7 @@ import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/repositories/repository/chat_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
   final FirebaseFirestore _firestore;
@@ -423,6 +424,54 @@ class ChatRepositoryImpl implements ChatRepository {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
       return Error(UnknownFailure('게시글 상태 변경 실패: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> confirmTransactionManually({
+    required String roomId,
+    required String postId,
+    required String myUserId,
+  }) async {
+    final chatroomRef = _firestore.collection(_collectionPath).doc(roomId);
+    try {
+      _firestore.runTransaction((transaction) async {
+        final roomSnapshot = await transaction.get(chatroomRef);
+        if (!roomSnapshot.exists) return;
+        final roomData = roomSnapshot.data()!;
+        final activeAppointmentId = roomData['activeAppointmentId'] as String?;
+        final currentUids = List<String>.from(
+          roomData['confirmedCompleteUids'] ?? [],
+        );
+        if (activeAppointmentId == null) return;
+        if (currentUids.length >= 2) {
+          transaction.update(chatroomRef, {'activeAppointmentId': null});
+          final msgRef = chatroomRef
+              .collection('messages')
+              .doc(activeAppointmentId);
+          final msgSnapshot = await transaction.get(msgRef);
+          if (msgSnapshot.exists) {
+            //TODO: jsonDecode, jsonEncode 분리
+            final content = jsonDecode(msgSnapshot.get('content') as String);
+            final data = AppointmentData.fromJson(content);
+            final updatedData = data.copyWith(
+              status: AppointmentStatus.completed,
+            );
+            transaction.update(msgRef, {
+              'content': jsonEncode(updatedData.toJson()),
+            });
+          }
+          if (postId.isNotEmpty) {
+            transaction.update(_firestore.collection('posts').doc(postId), {
+              'status': ProductStatus.sold.label,
+            });
+          }
+        }
+      });
+      return const Success(null);
+    } catch (e) {
+      debugPrint('수동 거래 확정 중 에러: $e');
+      return Error(UnknownFailure('거래 확정 중 오류가 발생했습니다.'));
     }
   }
 }

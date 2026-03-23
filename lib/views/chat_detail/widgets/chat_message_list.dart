@@ -19,6 +19,8 @@ class ChatMessageList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final chatroomState = ref.watch(chatRoomStreamProvider(roomId));
+    final chatroom = chatroomState.value;
     final parts = roomId.split('_');
     final String postId = parts.length >= 3 ? parts[2] : '';
     final uiMessagesAsync = ref.watch(chatMessageUiModelProvider(roomId));
@@ -169,6 +171,28 @@ class ChatMessageList extends ConsumerWidget {
                                       SnackBar(content: Text(errorMessage)),
                                     );
                                   }
+                                },
+                                hasConfirmed:
+                                    chatroom?.confirmedCompleteUids.contains(
+                                      myUserId,
+                                    ) ??
+                                    false,
+                                onCancel: () {
+                                  ref
+                                      .read(chatDetailProvider(roomId).notifier)
+                                      .cancelAppointment(
+                                        roomId,
+                                        msg.id,
+                                        postId,
+                                      );
+                                },
+                                onComplete: () {
+                                  ref
+                                      .read(chatDetailProvider(roomId).notifier)
+                                      .confirmTransactionManually(
+                                        roomId,
+                                        postId,
+                                      );
                                 },
                               ),
                               if (!isMyMessage) const SizedBox(width: 20),

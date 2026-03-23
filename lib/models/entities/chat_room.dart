@@ -21,6 +21,7 @@ class Chatroom {
   final String? appointmentStatus; // 현재 약속 상태
   final DateTime? appointmentDateTime; // 마지막으로 확정/제안된 약속 시간
   final String? activeAppointmentId; // 현재 활성화된 약속 ID
+  final List<String> confirmedCompleteUids; // 거래확정 완료자
 
   Chatroom({
     required this.roomId,
@@ -35,6 +36,7 @@ class Chatroom {
     this.appointmentStatus,
     this.appointmentDateTime,
     this.activeAppointmentId,
+    this.confirmedCompleteUids = const [],
   });
 
   factory Chatroom.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,9 @@ class Chatroom {
       appointmentDateTime: (json['appointmentDateTime'] as Timestamp?)
           ?.toDate(),
       activeAppointmentId: json['activeAppointmentId'] as String?,
+      confirmedCompleteUids: List<String>.from(
+        json['confirmedCompleteUids'] ?? [],
+      ),
     );
   }
 
@@ -72,6 +77,7 @@ class Chatroom {
       'appointmentStatus': appointmentStatus,
       'appointmentDateTime': appointmentDateTime,
       'activeAppointmentId': activeAppointmentId,
+      'confirmedCompleteUids': confirmedCompleteUids,
     };
   }
 
@@ -88,6 +94,7 @@ class Chatroom {
     String? appointmentStatus,
     DateTime? appointmentDateTime,
     String? activeAppointmentId,
+    List<String>? confirmedCompleteUids,
   }) {
     return Chatroom(
       roomId: roomId ?? this.roomId,
@@ -102,6 +109,8 @@ class Chatroom {
       appointmentStatus: appointmentStatus ?? this.appointmentStatus,
       appointmentDateTime: appointmentDateTime ?? this.appointmentDateTime,
       activeAppointmentId: activeAppointmentId ?? this.activeAppointmentId,
+      confirmedCompleteUids:
+          confirmedCompleteUids ?? this.confirmedCompleteUids,
     );
   }
 
@@ -148,6 +157,9 @@ class Chatroom {
       appointmentStatus: data['appointmentStatus']?.toString(),
       appointmentDateTime: _parseDate(data['appointmentDateTime']),
       activeAppointmentId: data['activeAppointmentId']?.toString(),
+      confirmedCompleteUids: List<String>.from(
+        data['confirmedCompleteUids'] ?? [],
+      ),
     );
   }
 }
