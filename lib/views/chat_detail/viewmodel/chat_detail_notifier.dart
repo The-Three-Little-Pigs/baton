@@ -9,6 +9,7 @@ import 'package:baton/models/entities/message.dart';
 import 'package:baton/models/enum/appointment_status.dart';
 import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -139,10 +140,29 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
       postId: postId,
       newStatus: ProductStatus.reserved,
     );
-    return switch (postResult) {
-      Success() => null,
-      Error(:final failure) => failure.message,
-    };
+    if (postResult case Error(:final failure)) {
+      debugPrint('상품 상태 업데이트 실패: ${failure.message}');
+      return failure.message;
+    }
+
+    // 🔥 [서버 재접속 없는 즉시 렌더링 코드]
+    final postNotifier = ref.read(
+      productDetailPageViewModelProvider(postId).notifier,
+    );
+    final currentPost = postNotifier.state.value;
+
+    if (currentPost != null) {
+      // 서버에서 새로 받지 않고, 현재 화면의 객체 상태만 '예약중'으로 바꿔서 즉시 화면에 주입!
+      postNotifier.state = AsyncData(
+        currentPost.copyWith(status: ProductStatus.reserved),
+      );
+    } else {
+      // 혹시라도 메모리에 객체가 없다면 어쩔 수 없이 서버 조회
+      ref.invalidate(productDetailPageViewModelProvider(postId));
+    }
+
+    debugPrint('✅ 상품 상태가 [예약중]으로 정상 변경되었습니다!');
+    return null;
   }
 
   Future<void> cancelAppointment(
@@ -172,11 +192,26 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
           newStatus: ProductStatus.available,
         );
         if (postResult case Error(:final failure)) {
-          debugPrint(failure.message);
+          debugPrint('상품 상태 업데이트 실패: ${failure.message}');
         } else {
-          debugPrint('Post status updated successfully');
+          // 🔥 [서버 재접속 없는 즉시 렌더링 코드]
+          final postNotifier = ref.read(
+            productDetailPageViewModelProvider(postId).notifier,
+          );
+          final currentPost = postNotifier.state.value;
+
+          if (currentPost != null) {
+            // 이번엔 스무스하게 즉시 '판매중'으로 바꿔치기
+            postNotifier.state = AsyncData(
+              currentPost.copyWith(status: ProductStatus.available),
+            );
+          } else {
+            ref.invalidate(productDetailPageViewModelProvider(postId));
+          }
+          debugPrint('✅ 게시글 상태가 [판매중]으로 성공적으로 롤백되었습니다!');
         }
         break;
+
       case Error(:final failure):
         debugPrint(failure.message);
     }

@@ -1,5 +1,7 @@
 import 'package:baton/core/result/result.dart';
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:baton/models/enum/appointment_status.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/notifier/block/block_notifier.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_room_action_notifier.dart';
@@ -9,6 +11,7 @@ import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
 import 'package:baton/views/chat_detail/widgets/chat_message_list.dart';
 import 'package:baton/views/chat_detail/widgets/chat_product_banner.dart';
 import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +66,39 @@ class ChatDetailPage extends ConsumerWidget {
         });
       }
     }
+    ref.listen(chatRoomStreamProvider(roomId), (previous, next) {
+      final prevStatus = previous?.value?.appointmentStatus;
+      final nextStatus = next.value?.appointmentStatus;
+      // 약속 상태(대기->확정 등)가 변했다면?
+      if (prevStatus != nextStatus && nextStatus != null) {
+        final productId = roomId.split('_').length >= 3
+            ? roomId.split('_')[2]
+            : '';
+        if (productId.isEmpty) return;
+        final postNotifier = ref.read(
+          productDetailPageViewModelProvider(productId).notifier,
+        );
+        final currentPost = postNotifier.state.value;
+        if (currentPost != null) {
+          ProductStatus? newProductStatus;
 
+          if (nextStatus == AppointmentStatus.confirmed.label) {
+            newProductStatus = ProductStatus.reserved; // 확정되면 예약중으로
+          } else if (nextStatus == AppointmentStatus.cancelled.label) {
+            newProductStatus = ProductStatus.available; // 취소되면 판매중으로
+          } else if (nextStatus == AppointmentStatus.completed.label) {
+            newProductStatus = ProductStatus.sold; // 완료되면 판매완료로
+          }
+          // 상태가 다를 때만 0.001초만에 부드럽게 화면 바꿔치기 (상대방 폰 + 내 폰 모두 적용됨!)
+          if (newProductStatus != null &&
+              currentPost.status != newProductStatus) {
+            postNotifier.state = AsyncData(
+              currentPost.copyWith(status: newProductStatus),
+            );
+          }
+        }
+      }
+    });
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
