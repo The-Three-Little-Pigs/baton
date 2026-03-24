@@ -279,7 +279,7 @@ class AppointmentCard extends StatelessWidget {
       case AppointmentStatus.completed:
         title = '거래 확정';
         description = '거래가 확정되었습니다.';
-        barColor = Colors.green;
+        barColor = AppColors.primary;
         break;
       default:
         title = '약속 알림';

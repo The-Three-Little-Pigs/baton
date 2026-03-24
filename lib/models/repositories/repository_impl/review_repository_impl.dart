@@ -113,6 +113,7 @@ class ReviewRepositoryImpl implements ReviewRepository {
     }
   }
 
+  // TODO: 리버팟 사용해서 데이터 가져오기
   @override
   Future<Result<Chatroom?, Failure>> getChatRoomByPostId(String postId) async {
     try {
