@@ -7,7 +7,9 @@ import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:baton/views/widgets/common_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 
 class AppointmentButton extends ConsumerWidget {
   const AppointmentButton({super.key, required this.roomId});
@@ -145,7 +147,54 @@ class AppointmentButton extends ConsumerWidget {
             );
           }
           if (currentStatus == AppointmentStatus.completed) {
-            return const SizedBox.shrink();
+            final postAsync = ref.watch(
+              productDetailPageViewModelProvider(postId),
+            );
+            return postAsync.maybeWhen(
+              data: (post) {
+                return SizedBox(
+                  width: double.infinity,
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.push(
+                        '/review/write',
+                        extra: {
+                          'opponentName': room.participants.firstWhere(
+                            (id) => id != myUserId,
+                            orElse: () => '상대방',
+                          ),
+                          'receiverId': otherUserId,
+                          'postId': postId,
+                          'roomId': roomId,
+                          'productTitle': post.title,
+                          'productPrice': post.salePrice.toString(),
+                          'productImageUrl': post.imageUrls.isNotEmpty
+                              ? post.imageUrls[0]
+                              : null,
+                        },
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      '후기 작성하기',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              },
+              orElse: () => const SizedBox.shrink(),
+            );
           }
           return Material(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,

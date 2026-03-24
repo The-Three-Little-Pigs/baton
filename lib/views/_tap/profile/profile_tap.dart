@@ -1,5 +1,6 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/review/viewmodel/review_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -44,8 +45,9 @@ class ProfileTap extends ConsumerWidget {
               ],
             ),
           ),
-
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
+          const _RecentReviewsSection(),
+          const SizedBox(height: 16),
           SectionTitle(title: '거래 관리'),
           MenuListItem(icon: Icons.local_offer, content: '내 상품 관리'),
           SizedBox(height: 8),
@@ -163,9 +165,7 @@ class UserProfileCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProvider);
     return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      ),
+      decoration: BoxDecoration(color: AppColors.surfaceVariant),
       child: Padding(
         padding: const EdgeInsets.only(
           left: 30,
@@ -246,6 +246,94 @@ class UserProfileCard extends ConsumerWidget {
             Text('5.0'),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _RecentReviewsSection extends ConsumerWidget {
+  const _RecentReviewsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final myUserId = ref.watch(userProvider).value?.uid ?? '';
+    if (myUserId.isEmpty) return const SizedBox.shrink();
+
+    final reviewsAsync = ref.watch(receivedReviewsProvider(myUserId));
+
+    return reviewsAsync.when(
+      data: (reviews) {
+        if (reviews.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            child: Text(
+              '아직 받은 후기가 없어요.',
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
+          );
+        }
+
+        return SizedBox(
+          height: 120,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            scrollDirection: Axis.horizontal,
+            itemCount: reviews.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final review = reviews[index];
+              return Container(
+                height: 98,
+                width: 211,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star_rounded,
+                          color: AppColors.primary,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          review.rating.toStringAsFixed(1),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: Text(
+                        review.content ?? '(내용 없음)',
+                        style: const TextStyle(fontSize: 13),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, st) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Text('Error: $e'),
       ),
     );
   }
