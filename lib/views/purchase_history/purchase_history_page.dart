@@ -10,7 +10,8 @@ class PurchaseHistoryPage extends ConsumerStatefulWidget {
   const PurchaseHistoryPage({super.key});
 
   @override
-  ConsumerState<PurchaseHistoryPage> createState() => _PurchaseHistoryPageState();
+  ConsumerState<PurchaseHistoryPage> createState() =>
+      _PurchaseHistoryPageState();
 }
 
 class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
@@ -97,10 +98,15 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                 preferredSize: const Size.fromHeight(48),
                 child: Container(
                   color: const Color(0xFFF7F8F9),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   child: historyState.when(
                     data: (posts) {
-                      final isAllSelected = selectedIds.length == posts.length && posts.isNotEmpty;
+                      final isAllSelected =
+                          selectedIds.length == posts.length &&
+                          posts.isNotEmpty;
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -110,7 +116,9 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                               children: [
                                 Icon(
                                   Icons.check_circle,
-                                  color: isAllSelected ? AppColors.primary : const Color(0xFFD1DCE9),
+                                  color: isAllSelected
+                                      ? AppColors.primary
+                                      : const Color(0xFFD1DCE9),
                                   size: 20,
                                 ),
                                 const SizedBox(width: 8),
@@ -178,10 +186,7 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                   const SizedBox(height: 16),
                   const Text(
                     '아직 구매한 상품이 없어요',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF5E6876),
-                    ),
+                    style: TextStyle(fontSize: 14, color: Color(0xFF5E6876)),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
@@ -192,7 +197,10 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                       backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.white,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -202,7 +210,10 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                       children: [
                         Text(
                           '상품 둘러보기',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         SizedBox(width: 4),
                         Icon(Icons.chevron_right, size: 18),
@@ -236,8 +247,12 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                       child: Padding(
                         padding: const EdgeInsets.only(top: 40, right: 16),
                         child: Icon(
-                          isSelected ? Icons.check_circle : Icons.circle_outlined,
-                          color: isSelected ? AppColors.primary : const Color(0xFFD1DCE9),
+                          isSelected
+                              ? Icons.check_circle
+                              : Icons.circle_outlined,
+                          color: isSelected
+                              ? AppColors.primary
+                              : const Color(0xFFD1DCE9),
                           size: 24,
                         ),
                       ),
@@ -269,7 +284,9 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                                 borderRadius: BorderRadius.circular(12),
                                 image: post.imageUrls.isNotEmpty
                                     ? DecorationImage(
-                                        image: NetworkImage(post.imageUrls.first),
+                                        image: NetworkImage(
+                                          post.imageUrls.first,
+                                        ),
                                         fit: BoxFit.cover,
                                       )
                                     : null,
@@ -291,7 +308,8 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -307,7 +325,10 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                                       ),
                                       IconButton(
                                         onPressed: () {},
-                                        icon: const Icon(Icons.more_vert, size: 20),
+                                        icon: const Icon(
+                                          Icons.more_vert,
+                                          size: 20,
+                                        ),
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                       ),
@@ -361,10 +382,7 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
               const SizedBox(height: 16),
               const Text(
                 '아직 구매한 상품이 없어요', // 에러가 나도 유저가 원한 디자인대로 이 문구를 노출
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF5E6876),
-                ),
+                style: TextStyle(fontSize: 14, color: Color(0xFF5E6876)),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -375,7 +393,10 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.white,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -385,7 +406,10 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                   children: [
                     Text(
                       '상품 둘러보기',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(width: 4),
                     Icon(Icons.chevron_right, size: 18),
@@ -437,7 +461,9 @@ class _PurchaseHistoryPageState extends ConsumerState<PurchaseHistoryPage> {
                       child: TextButton(
                         onPressed: selectedIds.isNotEmpty
                             ? () {
-                                ref.read(purchaseHistoryProvider.notifier).deletePosts(selectedIds);
+                                ref
+                                    .read(purchaseHistoryProvider.notifier)
+                                    .deletePosts(selectedIds);
                                 _toggleEditMode();
                               }
                             : null,

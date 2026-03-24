@@ -10,6 +10,8 @@ import 'package:baton/views/chat_detail/chat_detail_page.dart';
 import 'package:baton/views/like/like_page.dart';
 import 'package:baton/views/login/login_page.dart';
 import 'package:baton/views/product_detail/product_detail_page.dart';
+import 'package:baton/views/review/review_page.dart';
+import 'package:baton/views/review_write/review_write_page.dart';
 import 'package:baton/views/search/search_page.dart';
 import 'package:baton/views/search_result/search_result_page.dart';
 import 'package:baton/views/sign_up/sign_up_page.dart';
@@ -148,6 +150,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final keyword = state.pathParameters['keyword'] ?? '';
           return SearchResultPage(keyword: keyword);
+        },
+      ),
+      GoRoute(
+        path: '/review',
+        name: 'review',
+        builder: (context, state) => const ReviewPage(),
+      ),
+      GoRoute(
+        path: '/review/write',
+        name: 'review_write',
+        builder: (context, state) {
+          final extras = state.extra as Map<String, dynamic>;
+          return ReviewWritePage(
+            opponentName: extras['opponentName'] as String,
+            receiverId: extras['receiverId'] as String,
+            postId: extras['postId'] as String,
+            roomId: extras['roomId'] as String,
+            productTitle: extras['productTitle'] as String,
+            productPrice: extras['productPrice'] as String,
+            productImageUrl: extras['productImageUrl'] as String?,
+          );
         },
       ),
     ],
