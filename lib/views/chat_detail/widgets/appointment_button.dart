@@ -49,20 +49,20 @@ class AppointmentButton extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      currentStatus == AppointmentStatus.confirmed
-                          ? '✅ ${room.appointmentDateTime != null ? DateFormat('MM/dd (E) a h:mm').format(room.appointmentDateTime!) : ''} 약속 확정'
-                          : '⏳ 상대방의 수락 확인 중',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: currentStatus == AppointmentStatus.confirmed
-                            ? Colors.green.shade700
-                            : AppColors.textTertiary,
-                      ),
-                    ),
-                  ),
+                  // Expanded(
+                  //   child: Text(
+                  //     currentStatus == AppointmentStatus.confirmed
+                  //         ? '✅ ${room.appointmentDateTime != null ? DateFormat('MM/dd (E) a h:mm').format(room.appointmentDateTime!) : ''} 약속 확정'
+                  //         : '⏳ 상대방의 수락 확인 중',
+                  //     style: TextStyle(
+                  //       fontSize: 14,
+                  //       fontWeight: FontWeight.w600,
+                  //       color: currentStatus == AppointmentStatus.confirmed
+                  //           ? Colors.green.shade700
+                  //           : AppColors.textTertiary,
+                  //     ),
+                  //   ),
+                  // ),
                   OutlinedButton(
                     // 🔥 [취소 기능 연동] 실수 방지를 위해 다이얼로그 모달 먼저 띄우기
                     onPressed: () async {
