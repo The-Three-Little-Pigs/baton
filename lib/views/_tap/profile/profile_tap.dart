@@ -23,7 +23,27 @@ class ProfileTap extends ConsumerWidget {
         children: [
           UserProfileCard(),
           SizedBox(height: 10),
-          SectionTitle(title: '후기'),
+          Padding(
+            padding: const EdgeInsets.only(right: 30),
+            child: Row(
+              children: [
+                SectionTitle(title: '후기'),
+                Spacer(),
+                GestureDetector(
+                  onTap: () {
+                    context.push('/review');
+                  },
+                  child: Text(
+                    '전체 보기',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
           SizedBox(height: 8),
           SectionTitle(title: '거래 관리'),
@@ -216,7 +236,7 @@ class UserProfileCard extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade500,
+                      color: AppColors.textTertiary,
                     ),
                   ),
                 ],
@@ -241,9 +261,13 @@ class SectionTitle extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-        child: Text(
-          title,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        child: Row(
+          children: [
+            Text(
+              title,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ],
         ),
       ),
     );
