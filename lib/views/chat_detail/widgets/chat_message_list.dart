@@ -6,6 +6,7 @@ import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
 import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:baton/views/chat_detail/widgets/appointment_card.dart';
+import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -20,6 +21,7 @@ class ChatMessageList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chatroomState = ref.watch(chatRoomStreamProvider(roomId));
+
     final chatroom = chatroomState.value;
     final parts = roomId.split('_');
     final String postId = parts.length >= 3 ? parts[2] : '';
@@ -28,6 +30,12 @@ class ChatMessageList extends ConsumerWidget {
     final String otherUserId = (parts.length >= 2)
         ? (parts[0] == myUserId ? parts[1] : parts[0])
         : '';
+    final opponentAsync = ref.watch(authorProvider(otherUserId));
+    final opponentNickname = opponentAsync.when(
+      data: (user) => user?.nickname ?? '알 수 없는 사용자', // null 체크 추가
+      loading: () => '...',
+      error: (_, __) => '알 수 없는 사용자',
+    );
     return Expanded(
       child: uiMessagesAsync.when(
         data: (uiMessages) {
@@ -131,6 +139,7 @@ class ChatMessageList extends ConsumerWidget {
                               AppointmentCard(
                                 data: data,
                                 isMyCard: isMyMessage,
+                                opponentNickname: opponentNickname,
                                 onConfirm: () {
                                   ref
                                       .read(chatDetailProvider(roomId).notifier)
@@ -285,7 +294,7 @@ class _ChatBubble extends StatelessWidget {
                       fontWeight: FontWeight.w400,
                       color: isReadByTarget
                           ? Colors.grey.shade500
-                          : Colors.black,
+                          : AppColors.primary,
                     ),
                   ),
                 if (showTime)
