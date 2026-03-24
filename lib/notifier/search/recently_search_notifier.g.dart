@@ -9,52 +9,47 @@ part of 'recently_search_notifier.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(RecentlySearchActions)
-final recentlySearchActionsProvider = RecentlySearchActionsProvider._();
+@ProviderFor(RecentlySearchNotifier)
+final recentlySearchProvider = RecentlySearchNotifierProvider._();
 
-final class RecentlySearchActionsProvider
-    extends $NotifierProvider<RecentlySearchActions, void> {
-  RecentlySearchActionsProvider._()
+final class RecentlySearchNotifierProvider
+    extends
+        $StreamNotifierProvider<RecentlySearchNotifier, List<SearchHistory>> {
+  RecentlySearchNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'recentlySearchActionsProvider',
+        name: r'recentlySearchProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$recentlySearchActionsHash();
+  String debugGetCreateSourceHash() => _$recentlySearchNotifierHash();
 
   @$internal
   @override
-  RecentlySearchActions create() => RecentlySearchActions();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(void value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<void>(value),
-    );
-  }
+  RecentlySearchNotifier create() => RecentlySearchNotifier();
 }
 
-String _$recentlySearchActionsHash() =>
-    r'e1452e1f6e442f715fdf081e0fdae3e483f6e6c4';
+String _$recentlySearchNotifierHash() =>
+    r'998d884b39663dafd5dd28b1ed7e5eefc8e626b4';
 
-abstract class _$RecentlySearchActions extends $Notifier<void> {
-  void build();
+abstract class _$RecentlySearchNotifier
+    extends $StreamNotifier<List<SearchHistory>> {
+  Stream<List<SearchHistory>> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<void, void>;
+    final ref =
+        this.ref as $Ref<AsyncValue<List<SearchHistory>>, List<SearchHistory>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<void, void>,
-              void,
+              AnyNotifier<AsyncValue<List<SearchHistory>>, List<SearchHistory>>,
+              AsyncValue<List<SearchHistory>>,
               Object?,
               Object?
             >;

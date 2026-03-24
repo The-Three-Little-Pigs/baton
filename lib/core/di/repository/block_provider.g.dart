@@ -49,4 +49,4 @@ final class BlockRepositoryProvider
   }
 }
 
-String _$blockRepositoryHash() => r'501c1897f71ebb540549e3a48d48d9ab9b7c8634';
+String _$blockRepositoryHash() => r'68713388ea7306eaea31033afb08651b66154f47';

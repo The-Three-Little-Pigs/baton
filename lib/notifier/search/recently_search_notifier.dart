@@ -1,12 +1,15 @@
 import 'package:baton/core/di/repository/search_provider.dart';
+import 'package:baton/models/entities/search_history.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'recently_search_notifier.g.dart';
 
 @riverpod
-class RecentlySearchActions extends _$RecentlySearchActions {
+class RecentlySearchNotifier extends _$RecentlySearchNotifier {
   @override
-  void build() {}
+  Stream<List<SearchHistory>> build() {
+    return ref.watch(searchRepositoryProvider).watchLocalSearchHistory();
+  }
 
   /// 검색 기록 삭제
   Future<void> deleteHistory(int id) async {

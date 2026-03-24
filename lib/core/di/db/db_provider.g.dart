@@ -21,7 +21,7 @@ final class BatonDatabaseProvider
         argument: null,
         retry: null,
         name: r'batonDatabaseProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -48,4 +48,4 @@ final class BatonDatabaseProvider
   }
 }
 
-String _$batonDatabaseHash() => r'fc9fd0843acab1d0e09990304a5fd5284018b775';
+String _$batonDatabaseHash() => r'3280b4ba2c852bd741e3135953295fb840e4b87f';

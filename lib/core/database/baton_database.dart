@@ -15,28 +15,56 @@ class SearchHistories extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
-@DriftDatabase(tables: [SearchHistories])
+/// 찜 목록 테이블 정의 (Post ID 기준)
+class Favorites extends Table {
+  TextColumn get postId => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {postId};
+}
+
+/// 차단 목록 테이블 정의 (User UID 기준)
+class Blocks extends Table {
+  TextColumn get blockedUid => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {blockedUid};
+}
+
+@DriftDatabase(tables: [SearchHistories, Favorites, Blocks])
 class BatonDatabase extends _$BatonDatabase {
   BatonDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) async {
+          await m.createAll();
+        },
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            // 버전 1에서 2로 올라갈 때 추가된 테이블 생성
+            await m.createTable(favorites);
+            await m.createTable(blocks);
+          }
+        },
+      );
+
+  // --- Search History ---
 
   /// 특정 검색어 추가 (중복 시 기존 삭제 후 최신으로 추가, 최대 10개 유지)
   Future<void> addSearchHistory(String query) {
     return transaction(() async {
-      // 1. 기존 중복 검색어 삭제 (최신화를 위해)
       await (delete(searchHistories)..where((t) => t.query.equals(query))).go();
-
-      // 2. 신규 검색어 추가
       await into(searchHistories).insert(
         SearchHistoriesCompanion.insert(query: query),
       );
-
-      // 3. 10개가 넘어가면 오래된 기록 삭제
       final allHistories = await getAllSearchHistories();
       if (allHistories.length > 10) {
-        // 10번째 이후의 데이터 삭제
         for (var i = 10; i < allHistories.length; i++) {
           await deleteSearchHistory(allHistories[i].id);
         }
@@ -44,22 +72,97 @@ class BatonDatabase extends _$BatonDatabase {
     });
   }
 
-  /// 모든 검색 기록 최신순 조회
   Future<List<SearchHistory>> getAllSearchHistories() {
-    return (select(searchHistories)..orderBy([
-          (t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc),
-        ]))
+    return (select(searchHistories)
+          ..orderBy([
+            (t) =>
+                OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc),
+          ]))
         .get();
   }
 
-  /// 특정 검색어 삭제
   Future<int> deleteSearchHistory(int id) {
     return (delete(searchHistories)..where((t) => t.id.equals(id))).go();
   }
 
-  /// 모든 검색어 삭제
   Future<int> clearAllSearchHistories() {
     return delete(searchHistories).go();
+  }
+
+  // --- Favorites ---
+
+  /// 찜 추가/해제 (Toggle)
+  Future<void> toggleFavorite(String postId) {
+    return transaction(() async {
+      final exists = await isFavorite(postId);
+      if (exists) {
+        await (delete(favorites)..where((t) => t.postId.equals(postId))).go();
+      } else {
+        await into(favorites).insert(
+          FavoritesCompanion.insert(postId: postId),
+        );
+      }
+    });
+  }
+
+  /// 찜 목록 조회용 스트림
+  Stream<List<Favorite>> watchAllFavorites() {
+    return select(favorites).watch();
+  }
+
+  /// 찜 여부 확인 (동기적 체크용)
+  Future<bool> isFavorite(String postId) async {
+    final query = select(favorites)..where((t) => t.postId.equals(postId));
+    final result = await query.getSingleOrNull();
+    return result != null;
+  }
+
+  /// 찜 삭제 (명시적)
+  Future<void> removeFavorite(String postId) {
+    return (delete(favorites)..where((t) => t.postId.equals(postId))).go();
+  }
+
+  /// 모든 찜 목록 조회
+  Future<List<Favorite>> getAllFavorites() {
+    return select(favorites).get();
+  }
+
+  // --- Blocks ---
+
+  /// 유저 차단/해제 (Toggle)
+  Future<void> toggleBlock(String blockedUid) {
+    return transaction(() async {
+      final exists = await isBlocked(blockedUid);
+      if (exists) {
+        await removeBlock(blockedUid);
+      } else {
+        await into(blocks).insert(
+          BlocksCompanion.insert(blockedUid: blockedUid),
+        );
+      }
+    });
+  }
+
+  /// 차단 목록 조회용 스트림
+  Stream<List<Block>> watchAllBlocks() {
+    return select(blocks).watch();
+  }
+
+  /// 차단 여부 확인
+  Future<bool> isBlocked(String blockedUid) async {
+    final query = select(blocks)..where((t) => t.blockedUid.equals(blockedUid));
+    final result = await query.getSingleOrNull();
+    return result != null;
+  }
+
+  /// 차단 삭제 (명시적)
+  Future<void> removeBlock(String blockedUid) {
+    return (delete(blocks)..where((t) => t.blockedUid.equals(blockedUid))).go();
+  }
+
+  /// 모든 차단 유저 목록 조회
+  Future<List<Block>> getAllBlocks() {
+    return select(blocks).get();
   }
 }
 
