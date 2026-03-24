@@ -4,6 +4,7 @@ import 'package:baton/models/enum/appointment_status.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
 import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
+import 'package:baton/views/widgets/common_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -69,27 +70,15 @@ class AppointmentButton extends ConsumerWidget {
                       if (room.activeAppointmentId != null) {
                         final shouldCancel = await showDialog<bool>(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('약속 취소'),
-                            content: const Text(
-                              '정말 약속을 취소하시겠습니까?\n취소 시 상품이 다시 판매중으로 변경됩니다.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text(
-                                  '아니오',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text(
-                                  '네, 취소합니다',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            ],
+                          builder: (context) => CommonDialog(
+                            title: '약속 취소',
+                            content:
+                                '정말 약속을 취소하시겠습니까?\n취소 시 상품이 다시 판매중으로 변경됩니다.',
+                            leftText: '아니오',
+                            rightText: '네, 취소합니다',
+                            onLeftTap: () => Navigator.pop(context, false),
+                            onRightTap: () => Navigator.pop(context, true),
+                            rightBackgroundColor: AppColors.primary,
                           ),
                         );
                         if (shouldCancel == true) {

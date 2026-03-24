@@ -1,7 +1,7 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/models/entities/appointment_data.dart';
 import 'package:baton/models/enum/appointment_status.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:baton/views/widgets/common_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -43,207 +43,198 @@ class AppointmentCard extends StatelessWidget {
           _builderStatusBadge(isInactive),
           const SizedBox(height: 12),
           Center(
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.623,
-              padding: const EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: 20,
-              ),
-              decoration: BoxDecoration(
-                color: isInactive ? Colors.grey.shade100 : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isInactive
-                      ? Colors.grey.shade300
-                      : AppColors.secondary,
-                  width: 1.5,
+            child: Opacity(
+              opacity: isInactive ? 0.5 : 1.0,
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.623,
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 20,
+                  bottom: 20,
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.local_offer,
-                        size: 12,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        data.method,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: isInactive
-                              ? Colors.grey.shade400
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                    width: 1.5,
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 12,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        DateFormat(
-                          'yyyy년 MM월 dd일 a h:mm',
-                          'ko_KR',
-                        ).format(data.dateTime),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          decoration: null,
-                          color: isInactive
-                              ? Colors.grey.shade400
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  if (data.status == AppointmentStatus.pending &&
-                      !isMyCard) ...[
-                    const SizedBox(height: 16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                     Row(
                       children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: onConfirm,
-                            style: TextButton.styleFrom(
-                              backgroundColor: AppColors.white,
-                              side: BorderSide(color: AppColors.primary),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              '약속 확정',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
+                        Icon(
+                          Icons.local_offer,
+                          size: 12,
+                          color: AppColors.primary,
                         ),
                         const SizedBox(width: 4),
-                        Expanded(
-                          child: TextButton(
-                            onPressed: onAdjust,
-                            style: TextButton.styleFrom(
-                              backgroundColor: AppColors.textDisabled,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              '날짜 조정',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
+                        Text(
+                          data.method,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                  if (data.status == AppointmentStatus.confirmed) ...[
                     const SizedBox(height: 16),
-                    const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                    const SizedBox(height: 12),
-                    Builder(
-                      builder: (context) {
-                        // 시간에 따른 상태 변화 렌더링
-                        final isTimePassed = data.dateTime.isBefore(
-                          DateTime.now(),
-                        );
-                        if (isTimePassed) {
-                          if (hasConfirmed) {
-                            return Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8),
-                              child: Text(
-                                '$opponentNickname 님의 거래 확정을 기다리는 중입니다...',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            );
-                          } else {
-                            return ElevatedButton(
-                              onPressed: onComplete, // 누르면 뷰모델 찌름
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blueAccent,
-                                foregroundColor: Colors.white,
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 12,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          DateFormat(
+                            'yyyy년 MM월 dd일 a h:mm',
+                            'ko_KR',
+                          ).format(data.dateTime),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            decoration: null,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    if (data.status == AppointmentStatus.pending &&
+                        !isMyCard) ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: onConfirm,
+                              style: TextButton.styleFrom(
+                                backgroundColor: AppColors.white,
+                                side: BorderSide(color: AppColors.primary),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                               child: const Text(
-                                '거래 확정하기',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            );
-                          }
-                        } else {
-                          // 아직 시간이 안 지났다면 '약속 취소' 노출
-                          return OutlinedButton(
-                            onPressed: () async {
-                              final confirmed = await showCupertinoDialog<bool>(
-                                context: context,
-                                builder: (dialogContext) => CupertinoAlertDialog(
-                                  title: const Text("약속 취소"),
-                                  content: const Text(
-                                    '정말로 약속을 취소하시겠습니까?\n취소된 약속은 되돌릴 수 없습니다.',
-                                  ),
-                                  actions: [
-                                    CupertinoDialogAction(
-                                      isDefaultAction: true,
-                                      child: const Text("아니오"),
-                                      onPressed: () =>
-                                          Navigator.pop(dialogContext, false),
-                                    ),
-                                    CupertinoDialogAction(
-                                      isDestructiveAction: true,
-                                      child: const Text("예"),
-                                      onPressed: () =>
-                                          Navigator.pop(dialogContext, true),
-                                    ),
-                                  ],
+                                '약속 확정',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
                                 ),
-                              );
-                              if (confirmed == true && onCancel != null) {
-                                onCancel!();
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.redAccent,
-                              side: const BorderSide(color: Colors.redAccent),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text('약속 취소'),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: TextButton(
+                              onPressed: onAdjust,
+                              style: TextButton.styleFrom(
+                                backgroundColor: AppColors.textDisabled,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                '날짜 조정',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (data.status == AppointmentStatus.confirmed) ...[
+                      const SizedBox(height: 16),
+                      const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                      const SizedBox(height: 12),
+                      Builder(
+                        builder: (context) {
+                          // 시간에 따른 상태 변화 렌더링
+                          final isTimePassed = data.dateTime.isBefore(
+                            DateTime.now(),
                           );
-                        }
-                      },
-                    ),
+                          if (isTimePassed) {
+                            if (hasConfirmed) {
+                              return Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  '$opponentNickname 님의 거래 확정을 기다리는 중입니다...',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              return ElevatedButton(
+                                onPressed: onComplete, // 누르면 뷰모델 찌름
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blueAccent,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  '거래 확정하기',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              );
+                            }
+                          } else {
+                            // 아직 시간이 안 지났다면 '약속 취소' 노출
+                            return OutlinedButton(
+                              onPressed: () async {
+                                final confirmed = await showDialog<bool>(
+                                  context: context,
+                                  builder: (dialogContext) => CommonDialog(
+                                    title: '약속 취소',
+                                    content:
+                                        '정말로 약속을 취소하시겠습니까?\n취소된 약속은 되돌릴 수 없습니다.',
+                                    leftText: '아니오',
+                                    rightText: '예, 취소합니다',
+                                    onLeftTap: () =>
+                                        Navigator.pop(dialogContext, false),
+                                    onRightTap: () =>
+                                        Navigator.pop(dialogContext, true),
+                                    rightBackgroundColor: AppColors.primary,
+                                  ),
+                                );
+                                if (confirmed == true && onCancel != null) {
+                                  onCancel!();
+                                }
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.redAccent,
+                                side: const BorderSide(color: Colors.redAccent),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text('약속 취소'),
+                            );
+                          }
+                        },
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -317,7 +308,7 @@ class AppointmentCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isInactive ? Colors.grey : Colors.black,
+                  color: Colors.black,
                 ),
               ),
             ],
@@ -332,7 +323,7 @@ class AppointmentCard extends StatelessWidget {
               : TextAlign.start, // 텍스트 정렬 방향도 맞춰줍니다.
           style: TextStyle(
             fontSize: 14,
-            color: isInactive ? Colors.grey.shade400 : Colors.grey.shade600,
+            color: Colors.grey.shade600,
             letterSpacing: -0.3,
           ),
         ),

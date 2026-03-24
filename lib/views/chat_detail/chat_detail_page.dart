@@ -12,6 +12,7 @@ import 'package:baton/views/chat_detail/widgets/chat_message_list.dart';
 import 'package:baton/views/chat_detail/widgets/chat_product_banner.dart';
 import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
+import 'package:baton/views/widgets/common_dialog.dart';
 import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -133,29 +134,19 @@ class ChatDetailPage extends ConsumerWidget {
                         iBlockedHim ? '차단 해제하기' : '신고/차단하기': () async {
                           Navigator.pop(modalContext);
                           if (!iBlockedHim) {
-                            final confirmed = await showCupertinoDialog<bool>(
+                            final confirmed = await showDialog<bool>(
                               context: context,
-                              builder: (dialogContext) => CupertinoAlertDialog(
-                                title: const Text("신고/차단하기"),
-                                content: const Text(
-                                  '신고/차단하면 상대방의 게시글을\n더 이상 볼 수 없어요.\n신고/차단하시겠습니까?',
-                                ),
-                                actions: [
-                                  CupertinoDialogAction(
-                                    isDefaultAction: true,
-                                    child: const Text("취소"),
-                                    onPressed: () {
-                                      Navigator.pop(dialogContext, false);
-                                    },
-                                  ),
-                                  CupertinoDialogAction(
-                                    isDestructiveAction: true,
-                                    child: const Text("신고/차단"),
-                                    onPressed: () {
-                                      Navigator.pop(dialogContext, true);
-                                    },
-                                  ),
-                                ],
+                              builder: (dialogContext) => CommonDialog(
+                                title: '신고/차단하기',
+                                content:
+                                    '신고/차단하면 상대방의 게시글을\n더 이상 볼 수 없어요.\n신고/차단하시겠습니까?',
+                                leftText: '취소',
+                                rightText: '신고/차단',
+                                onLeftTap: () =>
+                                    Navigator.pop(dialogContext, false),
+                                onRightTap: () =>
+                                    Navigator.pop(dialogContext, true),
+                                rightBackgroundColor: AppColors.primary,
                               ),
                             );
                             if (confirmed == true) {
@@ -174,25 +165,18 @@ class ChatDetailPage extends ConsumerWidget {
                         '채팅방 나가기': () async {
                           modalContext.pop();
 
-                          final confirmed = await showCupertinoDialog<bool>(
+                          final confirmed = await showDialog<bool>(
                             context: context,
-                            builder: (dialogContext) => CupertinoAlertDialog(
-                              title: const Text("채팅방 나가기"),
-                              content: const Text(
-                                '채팅방을 나가면 메시지를\n더 이상 볼 수 없어요',
-                              ),
-                              actions: [
-                                CupertinoDialogAction(
-                                  child: const Text("취소"),
-                                  onPressed: () =>
-                                      Navigator.pop(dialogContext, false),
-                                ),
-                                CupertinoDialogAction(
-                                  child: const Text("나가기"),
-                                  onPressed: () =>
-                                      Navigator.pop(dialogContext, true),
-                                ),
-                              ],
+                            builder: (dialogContext) => CommonDialog(
+                              title: '채팅방 나가기',
+                              content: '채팅방을 나가면 메시지를\n더 이상 볼 수 없어요',
+                              leftText: '취소',
+                              rightText: '나가기',
+                              onLeftTap: () =>
+                                  Navigator.pop(dialogContext, false),
+                              onRightTap: () =>
+                                  Navigator.pop(dialogContext, true),
+                              rightBackgroundColor: AppColors.error,
                             ),
                           );
                           if (confirmed != true) return;
