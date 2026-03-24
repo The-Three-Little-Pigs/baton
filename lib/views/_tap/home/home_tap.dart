@@ -4,6 +4,7 @@ import 'package:baton/views/_tap/home/widgets/category_chips.dart';
 import 'package:baton/views/_tap/home/widgets/category_select_button.dart';
 import 'package:baton/views/widgets/home_logo.dart';
 import 'package:baton/views/widgets/product_grid_view.dart';
+import 'package:baton/views/widgets/skeleton.dart';
 import 'package:baton/views/widgets/top_modal_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -115,8 +116,9 @@ class _HomeTapState extends ConsumerState<HomeTap> {
                         ],
                       ),
                     ),
-                    loading: () => const Center(
-                      child: CircularProgressIndicator(),
+                    loading: () => const SingleChildScrollView(
+                      physics: NeverScrollableScrollPhysics(),
+                      child: ProductGridSkeleton(),
                     ),
                   ),
 
