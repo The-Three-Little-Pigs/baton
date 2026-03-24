@@ -41,81 +41,104 @@ class AppointmentButton extends ConsumerWidget {
               currentStatus == AppointmentStatus.confirmed) {
             return Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              // padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: currentStatus == AppointmentStatus.confirmed
-                    ? Colors.green.shade50
-                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                // color: currentStatus == AppointmentStatus.confirmed
+                //     ? Colors.green.shade50
+                //     : Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  // Expanded(
-                  //   child: Text(
-                  //     currentStatus == AppointmentStatus.confirmed
-                  //         ? '✅ ${room.appointmentDateTime != null ? DateFormat('MM/dd (E) a h:mm').format(room.appointmentDateTime!) : ''} 약속 확정'
-                  //         : '⏳ 상대방의 수락 확인 중',
-                  //     style: TextStyle(
-                  //       fontSize: 14,
-                  //       fontWeight: FontWeight.w600,
-                  //       color: currentStatus == AppointmentStatus.confirmed
-                  //           ? Colors.green.shade700
-                  //           : AppColors.textTertiary,
-                  //     ),
-                  //   ),
-                  // ),
-                  OutlinedButton(
-                    // 🔥 [취소 기능 연동] 실수 방지를 위해 다이얼로그 모달 먼저 띄우기
-                    onPressed: () async {
-                      if (room.activeAppointmentId != null) {
-                        final shouldCancel = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => CommonDialog(
-                            title: '약속 취소',
-                            content:
-                                '정말 약속을 취소하시겠습니까?\n취소 시 상품이 다시 판매중으로 변경됩니다.',
-                            leftText: '아니오',
-                            rightText: '네, 취소합니다',
-                            onLeftTap: () => Navigator.pop(context, false),
-                            onRightTap: () => Navigator.pop(context, true),
-                            rightBackgroundColor: AppColors.primary,
+                  Expanded(
+                    child: Material(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                      child: InkWell(
+                        onTap: () async {
+                          if (room.activeAppointmentId != null) {
+                            final shouldCancel = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => CommonDialog(
+                                title: '약속 취소',
+                                content:
+                                    '정말 약속을 취소하시겠습니까?\n취소 시 상품이 다시 판매중으로 변경됩니다.',
+                                leftText: '아니오',
+                                rightText: '네',
+                                onLeftTap: () => Navigator.pop(context, false),
+                                onRightTap: () => Navigator.pop(context, true),
+                                rightBackgroundColor: AppColors.primary,
+                              ),
+                            );
+                            if (shouldCancel == true) {
+                              ref
+                                  .read(chatDetailProvider(roomId).notifier)
+                                  .cancelAppointment(
+                                    roomId,
+                                    room.activeAppointmentId!,
+                                    postId,
+                                  );
+                            }
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          width: double.infinity,
+                          height: 36,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
                           ),
-                        );
-                        if (shouldCancel == true) {
-                          ref
-                              .read(chatDetailProvider(roomId).notifier)
-                              .cancelAppointment(
-                                roomId,
-                                room.activeAppointmentId!,
-                                postId,
-                              );
-                        }
-                      }
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      minimumSize: const Size(0, 32),
-                    ),
-                    child: Text(
-                      '취소',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade700,
+                          child: Center(
+                            child: Text(
+                              '약속 취소',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  SizedBox(width: 8),
-                  OutlinedButton(
-                    onPressed: () =>
-                        AppointmentBottomSheet.showAppointmentDialog(
-                          context,
-                          initialDateTime: room.appointmentDateTime,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Material(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                      child: InkWell(
+                        onTap: () =>
+                            AppointmentBottomSheet.showAppointmentDialog(
+                              context,
+                              initialDateTime: room.appointmentDateTime,
+                            ),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          width: double.infinity,
+                          height: 36,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '날짜 조정',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
                         ),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      minimumSize: const Size(0, 32),
+                      ),
                     ),
-                    child: Text('조정', style: TextStyle(fontSize: 12)),
                   ),
                 ],
               ),
@@ -171,7 +194,7 @@ class AppointmentButton extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textTertiary,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),

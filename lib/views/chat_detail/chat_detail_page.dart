@@ -176,7 +176,7 @@ class ChatDetailPage extends ConsumerWidget {
                                   Navigator.pop(dialogContext, false),
                               onRightTap: () =>
                                   Navigator.pop(dialogContext, true),
-                              rightBackgroundColor: AppColors.error,
+                              rightBackgroundColor: AppColors.primary,
                             ),
                           );
                           if (confirmed != true) return;

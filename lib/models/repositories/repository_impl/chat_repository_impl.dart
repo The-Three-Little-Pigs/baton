@@ -314,7 +314,7 @@ class ChatRepositoryImpl implements ChatRepository {
         'createdAt': FieldValue.serverTimestamp(),
       });
       final updateData = {
-        'lastMessage': '약속 신청',
+        'lastMessage': '약속',
         'updatedAt': FieldValue.serverTimestamp(),
         'unreadCounts.$targetUserId': FieldValue.increment(1),
         'unreadCounts.$myUserId': 0,
