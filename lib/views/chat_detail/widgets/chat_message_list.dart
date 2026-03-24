@@ -294,7 +294,7 @@ class _ChatBubble extends StatelessWidget {
                       fontWeight: FontWeight.w400,
                       color: isReadByTarget
                           ? Colors.grey.shade500
-                          : Colors.black,
+                          : AppColors.primary,
                     ),
                   ),
                 if (showTime)

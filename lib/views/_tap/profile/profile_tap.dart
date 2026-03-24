@@ -22,6 +22,9 @@ class ProfileTap extends ConsumerWidget {
       body: ListView(
         children: [
           UserProfileCard(),
+          SizedBox(height: 10),
+          SectionTitle(title: '후기'),
+
           SizedBox(height: 8),
           SectionTitle(title: '거래 관리'),
           MenuListItem(icon: Icons.local_offer, content: '내 상품 관리'),
@@ -48,6 +51,18 @@ class ProfileTap extends ConsumerWidget {
             icon: Icons.favorite,
             content: '관심 상품',
             routePath: '/like',
+          ),
+          SizedBox(height: 8),
+          MenuListItem(
+            svgPath: 'assets/icons/blok_person_icon.svg',
+            content: '차단 관리',
+            routePath: '/',
+          ),
+          SizedBox(height: 8),
+          MenuListItem(
+            svgPath: 'assets/icons/block_product_icon.svg',
+            content: '가린 상품 관리',
+            routePath: '/',
           ),
 
           /// 로그아웃 및 탈퇴 버튼
@@ -129,9 +144,7 @@ class UserProfileCard extends ConsumerWidget {
     final userAsync = ref.watch(userProvider);
     return Container(
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.secondary, width: 1),
-        ),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
       ),
       child: Padding(
         padding: const EdgeInsets.only(
