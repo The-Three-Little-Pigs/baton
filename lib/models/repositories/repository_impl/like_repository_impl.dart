@@ -1,3 +1,4 @@
+import 'package:baton/core/database/baton_database.dart';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
@@ -8,13 +9,33 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LikeRepositoryImpl implements LikeRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final BatonDatabase _database;
+
+  LikeRepositoryImpl({required BatonDatabase database}) : _database = database;
 
   @override
   Future<Result<void, Failure>> toggleLike(String postId, String userId) async {
+    if (postId.isEmpty || userId.isEmpty) {
+      return Error(ServerFailure('게시글 ID 또는 사용자 ID가 유효하지 않습니다. (userId: $userId, postId: $postId)'));
+    }
+
+    bool isLocalSuccess = false;
     try {
+      // 1. 로컬 DB 선반반영 (낙관적 업데이트)
+      await _database.toggleFavorite(postId);
+      isLocalSuccess = true;
+
+      // 2. 서버 반영
       final String likeDocId = '${userId}_$postId';
       final docRef = _firestore.collection('likes').doc(likeDocId);
       final postRef = _firestore.collection('posts').doc(postId);
+      
+      // 게시글 존재 여부 먼저 확인 (Batch Update 실패 방지)
+      final postDoc = await postRef.get();
+      if (!postDoc.exists) {
+        throw FirebaseException(plugin: 'firestore', message: '해당 게시글이 존재하지 않습니다. (ID: $postId)');
+      }
+
       final likeDoc = await docRef.get();
       final batch = _firestore.batch();
 
@@ -29,9 +50,16 @@ class LikeRepositoryImpl implements LikeRepository {
       await batch.commit();
       return Success(null);
     } on FirebaseException catch (e) {
+      // 실패 시 로컬 원복 (다시 토글하여 원래대로 되돌림)
+      if (isLocalSuccess) {
+        await _database.toggleFavorite(postId).catchError((_) {});
+      }
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
-      return Error(ServerFailure('관심상품 처리 중 알수 없는 오류가 발생했습니다:$e'));
+      if (isLocalSuccess) {
+        await _database.toggleFavorite(postId).catchError((_) {});
+      }
+      return Error(ServerFailure('관심상품 처리 중 알수 없는 오류가 발생했습니다: $e'));
     }
   }
 
@@ -46,7 +74,9 @@ class LikeRepositoryImpl implements LikeRepository {
       final postIds = likeSnapshot.docs
           .map((doc) => doc['post_id'] as String)
           .toList();
+
       if (postIds.isEmpty) return Success([]);
+
       List<Post> likedPosts = [];
       for (var i = 0; i < postIds.length; i += 10) {
         int endIndex = i + 10;

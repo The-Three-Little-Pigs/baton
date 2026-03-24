@@ -11,7 +11,7 @@ class RecentlySearchSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final recentHistoryAsync = ref.watch(recentlySearchHistoryProvider);
+    final recentHistoryAsync = ref.watch(recentlySearchProvider);
 
     return recentHistoryAsync.when(
       data: (histories) {
@@ -30,7 +30,7 @@ class RecentlySearchSection extends ConsumerWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    ref.read(recentlySearchActionsProvider.notifier).clearAll();
+                    ref.read(recentlySearchProvider.notifier).clearAll();
                   },
                   child: const Text(
                     "전체 삭제",
@@ -53,7 +53,9 @@ class RecentlySearchSection extends ConsumerWidget {
                 return RecentlySearchItem(
                   label: history.query,
                   onSearch: () {
-                    ref.read(searchFieldProvider.notifier).updateText(history.query);
+                    ref
+                        .read(searchFieldProvider.notifier)
+                        .updateText(history.query);
                     ref
                         .read(searchFieldProvider.notifier)
                         .recordSearch(history.query);
@@ -64,7 +66,7 @@ class RecentlySearchSection extends ConsumerWidget {
                   },
                   onDelete: () {
                     ref
-                        .read(recentlySearchActionsProvider.notifier)
+                        .read(recentlySearchProvider.notifier)
                         .deleteHistory(history.id);
                   },
                 );

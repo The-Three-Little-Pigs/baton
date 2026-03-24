@@ -48,7 +48,7 @@ final class LikeRepositoryProvider
   }
 }
 
-String _$likeRepositoryHash() => r'4150e60c30a7c07c5629cbc40535781d505930ab';
+String _$likeRepositoryHash() => r'1cc54e32fadcd565eed067fc3fa3c9012379e3b7';
 
 @ProviderFor(LikeNotifier)
 final likeProvider = LikeNotifierProvider._();
@@ -74,7 +74,7 @@ final class LikeNotifierProvider
   LikeNotifier create() => LikeNotifier();
 }
 
-String _$likeNotifierHash() => r'902577600714db71e9656f17da054c4d353c4ec2';
+String _$likeNotifierHash() => r'c3854936ea0d810322c9adfebd03740639efa2d2';
 
 abstract class _$LikeNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();

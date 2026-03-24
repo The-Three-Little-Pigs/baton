@@ -15,8 +15,3 @@ SearchRepository searchRepository(Ref ref) {
   );
 }
 
-/// 로컬 검색 기록 스트림 프로바이더
-@riverpod
-Stream<List<SearchHistory>> recentlySearchHistory(Ref ref) {
-  return ref.watch(searchRepositoryProvider).watchLocalSearchHistory();
-}

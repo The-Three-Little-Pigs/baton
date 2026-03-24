@@ -41,7 +41,7 @@ final class BlockNotifierProvider
   }
 }
 
-String _$blockNotifierHash() => r'0c0e1ceeb2514402ef19a87e6a4d5ca8c6d07306';
+String _$blockNotifierHash() => r'3fd2fce2a4298a0cbb3ae58e9dae4445f667d0ca';
 
 abstract class _$BlockNotifier extends $Notifier<BlockState> {
   BlockState build();
