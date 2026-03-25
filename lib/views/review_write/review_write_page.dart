@@ -258,60 +258,56 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                   const SizedBox(height: 20),
 
                   // 5. 작성 완료 버튼
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: (state.canSubmit && !state.isLoading)
-                          ? () async {
-                              final error = await notifier.submitReview(
-                                receiverId: widget.receiverId,
-                                postId: widget.postId,
-                                roomId: widget.roomId,
-                              );
-                              if (error == null) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('후기가 등록되었습니다!'),
-                                    ),
-                                  );
-                                  context.pop();
-                                }
-                              } else {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(error)),
-                                  );
-                                }
-                              }
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        disabledBackgroundColor: AppColors.primary.withOpacity(
-                          0.3,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: state.isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              '작성 완료',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
-                  ),
                 ],
               ),
             ),
+      bottomNavigationBar: SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: ElevatedButton(
+          onPressed: (state.canSubmit && !state.isLoading)
+              ? () async {
+                  final error = await notifier.submitReview(
+                    receiverId: widget.receiverId,
+                    postId: widget.postId,
+                    roomId: widget.roomId,
+                  );
+                  if (error == null) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('후기가 등록되었습니다!')),
+                      );
+                      context.pop();
+                    }
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(error)));
+                    }
+                  }
+                }
+              : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            disabledBackgroundColor: AppColors.primary.withOpacity(0.3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+          ),
+          child: state.isLoading
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Text(
+                  '작성 완료',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+        ),
+      ),
     );
   }
 }

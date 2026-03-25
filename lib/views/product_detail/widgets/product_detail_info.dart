@@ -1,9 +1,11 @@
 import 'package:baton/core/theme/app_tokens/app_spacing.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:flutter/material.dart';
 
 class ProductDetailInfo extends StatelessWidget {
   const ProductDetailInfo({
     super.key,
+    required this.productStatus,
     required this.title,
     required this.purchasePrice,
     required this.salePrice,
@@ -15,6 +17,7 @@ class ProductDetailInfo extends StatelessWidget {
     required this.viewCount,
   });
 
+  final ProductStatus productStatus;
   final String title;
   final String purchasePrice;
   final String salePrice;
@@ -33,9 +36,26 @@ class ProductDetailInfo extends StatelessWidget {
         spacing: 8,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+          Row(
+            children: [
+              if (productStatus != ProductStatus.available) ...[
+                Text(
+                  productStatus.label,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: productStatus == ProductStatus.reserved
+                        ? Colors.green
+                        : Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                SizedBox(width: 8),
+              ],
+              Text(
+                title,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
           Text(
             "구매가 : $purchasePrice",
