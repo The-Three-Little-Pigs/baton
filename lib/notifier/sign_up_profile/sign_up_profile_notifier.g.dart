@@ -41,7 +41,7 @@ final class SignUpProfileProvider
   }
 }
 
-String _$signUpProfileHash() => r'47ed3e5d4f6dce396ff2b0140244e852c1387ed4';
+String _$signUpProfileHash() => r'0423478c8aab990fdc8afa4152b1f987790b907d';
 
 abstract class _$SignUpProfile extends $Notifier<SignUpProfileState> {
   SignUpProfileState build();

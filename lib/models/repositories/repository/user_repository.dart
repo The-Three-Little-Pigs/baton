@@ -19,12 +19,5 @@ abstract class UserRepository {
   Future<Result<void, Failure>> deleteUserData(String uid);
   Future<Result<void, Failure>> markUserAsDeleted(String uid);
   Future<Result<void, Failure>> withdrawAccount();
-  Future<Result<void, Failure>> addBlockedBy(
-    String targetUid,
-    String blockerUid,
-  );
-  Future<Result<void, Failure>> removeBlockedBy(
-    String targetUid,
-    String blockerUid,
-  );
+ 
 }

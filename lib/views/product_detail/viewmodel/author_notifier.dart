@@ -23,7 +23,9 @@ class AuthorNotifier extends _$AuthorNotifier {
         profileUrl: null,
         score: 5.0,
         favorites: {},
-        blockedUsers: [],
-        blockedBy: [],
-      );
+        
+        deletedAt: null,
+      ),
+    };
+  }
 }

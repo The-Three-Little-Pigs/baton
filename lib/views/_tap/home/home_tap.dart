@@ -2,26 +2,68 @@ import 'package:baton/views/_tap/home/viewmodel/filter_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/home_tap_viewmodel.dart';
 import 'package:baton/views/_tap/home/widgets/category_chips.dart';
 import 'package:baton/views/_tap/home/widgets/category_select_button.dart';
-import 'package:baton/views/_tap/home/widgets/no_product.dart';
 import 'package:baton/views/widgets/home_logo.dart';
-import 'package:baton/views/widgets/product_item.dart';
+import 'package:baton/views/widgets/product_grid_view.dart';
+import 'package:baton/views/widgets/skeleton.dart';
 import 'package:baton/views/widgets/top_modal_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class HomeTap extends ConsumerWidget {
+class HomeTap extends ConsumerStatefulWidget {
   const HomeTap({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeTap> createState() => _HomeTapState();
+}
+
+class _HomeTapState extends ConsumerState<HomeTap> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final postAsyncValue = ref.watch(homeTapViewModelProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: HomeLogo(),
+        title: HomeLogo(
+          onTap: _scrollToTop,
+        ),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
+          IconButton(
+            onPressed: () {
+              context.pushNamed('search');
+            },
+            icon: const Icon(Icons.search),
+          ),
+          IconButton(
+            onPressed: () {
+              context.pushNamed('alarm');
+            },
+            icon: const Icon(Icons.notifications),
+          ),
         ],
       ),
       body: Column(
@@ -49,69 +91,34 @@ class HomeTap extends ConsumerWidget {
               child: Stack(
                 children: [
                   // 1. 메인 본문 레이어 (포스트 리스트)
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      await ref
+                  postAsyncValue.when(
+                    data: (homeTapState) => ProductGridView(
+                      posts: homeTapState.posts,
+                      onRefresh: () =>
+                          ref.read(homeTapViewModelProvider.notifier).refresh(),
+                      onReachBottom: () => ref
                           .read(homeTapViewModelProvider.notifier)
-                          .refresh();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: postAsyncValue.when(
-                        data: (homeTapState) {
-                          final posts = homeTapState.posts;
-                          if (posts.isEmpty) {
-                            return Center(child: const NoProduct());
-                          }
-                          return NotificationListener<ScrollNotification>(
-                            onNotification: (notification) {
-                              if (notification.metrics.pixels >=
-                                  notification.metrics.maxScrollExtent * 0.8) {
-                                ref
-                                    .read(homeTapViewModelProvider.notifier)
-                                    .fetchPosts();
-                              }
-                              return false;
-                            },
-                            child: GridView.builder(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    childAspectRatio: 0.7,
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing: 20,
-                                    crossAxisSpacing: 20,
-                                  ),
-                              itemBuilder: (context, index) {
-                                return ProductItem(post: posts[index]);
-                              },
-                              itemCount: posts.length,
-                            ),
-                          );
-                        },
-                        error: (error, stackTrace) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(error.toString()),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    ref
-                                        .read(homeTapViewModelProvider.notifier)
-                                        .refresh();
-                                  },
-                                  child: Text("재시도"),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        loading: () {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        },
+                          .fetchPosts(),
+                      controller: _scrollController,
+                    ),
+                    error: (error, stackTrace) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(error.toString()),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () => ref
+                                .read(homeTapViewModelProvider.notifier)
+                                .refresh(),
+                            child: const Text("재시도"),
+                          ),
+                        ],
                       ),
+                    ),
+                    loading: () => const SingleChildScrollView(
+                      physics: NeverScrollableScrollPhysics(),
+                      child: ProductGridSkeleton(),
                     ),
                   ),
 

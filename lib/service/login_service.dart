@@ -46,8 +46,8 @@ class LoginService {
             profileUrl: firebaseUser.photoURL ?? '',
             score: 5.0, // 기본 점수 설정 (5.0으로 변경)
             favorites: {}, // 초기값 빈 리스트
-            blockedUsers: [], // 초기값 빈 리스트
-            blockedBy: [], // 초기값 빈 리스트
+             // 초기값 빈 리스트
+            deletedAt: null,
           );
           return Success(NewUser(tempUser));
         }

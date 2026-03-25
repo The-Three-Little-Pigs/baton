@@ -1,14 +1,19 @@
 import 'package:baton/core/result/result.dart';
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:baton/models/enum/appointment_status.dart';
+import 'package:baton/models/enum/product_status.dart';
+import 'package:baton/notifier/block/block_notifier.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_room_action_notifier.dart';
-import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
 import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
 import 'package:baton/views/chat_detail/widgets/chat_message_list.dart';
 import 'package:baton/views/chat_detail/widgets/chat_product_banner.dart';
+import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
+import 'package:baton/views/widgets/common_dialog.dart';
 import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -41,9 +46,9 @@ class ChatDetailPage extends ConsumerWidget {
       loading: () => '...',
       error: (_, __) => '알 수 없는 사용자',
     );
-
-    final bool iBlockedHim = myUser?.blockedUsers.contains(otherUid) ?? false;
-    final bool heBlockedMe = myUser?.blockedBy.contains(otherUid) ?? false;
+    final blockState = ref.watch(blockProvider);
+    final bool iBlockedHim = blockState.isBlockedByMe(otherUid);
+    final bool heBlockedMe = blockState.isBlockedMe(otherUid);
     final bool isExited = chatroom?.deletedByUids.contains(otherUid) ?? false;
     final bool isInteractionBlocked = iBlockedHim || heBlockedMe || isExited;
 
@@ -63,7 +68,40 @@ class ChatDetailPage extends ConsumerWidget {
         });
       }
     }
+    // 약속 상태 변경 감지
+    ref.listen(chatRoomStreamProvider(roomId), (previous, next) {
+      final prevStatus = previous?.value?.appointmentStatus;
+      final nextStatus = next.value?.appointmentStatus;
+      // 약속 상태(대기->확정 등)가 변했다면?
+      if (prevStatus != nextStatus && nextStatus != null) {
+        final productId = roomId.split('_').length >= 3
+            ? roomId.split('_')[2]
+            : '';
+        if (productId.isEmpty) return;
+        final postNotifier = ref.read(
+          productDetailPageViewModelProvider(productId).notifier,
+        );
+        final currentPost = postNotifier.state.value;
+        if (currentPost != null) {
+          ProductStatus? newProductStatus;
 
+          if (nextStatus == AppointmentStatus.confirmed.label) {
+            newProductStatus = ProductStatus.reserved; // 확정되면 예약중으로
+          } else if (nextStatus == AppointmentStatus.cancelled.label) {
+            newProductStatus = ProductStatus.available; // 취소되면 판매중으로
+          } else if (nextStatus == AppointmentStatus.completed.label) {
+            newProductStatus = ProductStatus.sold; // 완료되면 판매완료로
+          }
+          // 상태가 다를 때만 0.001초만에 부드럽게 화면 바꿔치기 (상대방 폰 + 내 폰 모두 적용됨!)
+          if (newProductStatus != null &&
+              currentPost.status != newProductStatus) {
+            postNotifier.state = AsyncData(
+              currentPost.copyWith(status: newProductStatus),
+            );
+          }
+        }
+      }
+    });
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -97,40 +135,30 @@ class ChatDetailPage extends ConsumerWidget {
                         iBlockedHim ? '차단 해제하기' : '신고/차단하기': () async {
                           Navigator.pop(modalContext);
                           if (!iBlockedHim) {
-                            final confirmed = await showCupertinoDialog<bool>(
+                            final confirmed = await showDialog<bool>(
                               context: context,
-                              builder: (dialogContext) => CupertinoAlertDialog(
-                                title: const Text("신고/차단하기"),
-                                content: const Text(
-                                  '신고/차단하면 상대방의 게시글을\n더 이상 볼 수 없어요.\n신고/차단하시겠습니까?',
-                                ),
-                                actions: [
-                                  CupertinoDialogAction(
-                                    isDefaultAction: true,
-                                    child: const Text("취소"),
-                                    onPressed: () {
-                                      Navigator.pop(dialogContext, false);
-                                    },
-                                  ),
-                                  CupertinoDialogAction(
-                                    isDestructiveAction: true,
-                                    child: const Text("신고/차단"),
-                                    onPressed: () {
-                                      Navigator.pop(dialogContext, true);
-                                    },
-                                  ),
-                                ],
+                              builder: (dialogContext) => CommonDialog(
+                                title: '신고/차단하기',
+                                content:
+                                    '신고/차단하면 상대방의 게시글을\n더 이상 볼 수 없어요.\n신고/차단하시겠습니까?',
+                                leftText: '취소',
+                                rightText: '신고/차단',
+                                onLeftTap: () =>
+                                    Navigator.pop(dialogContext, false),
+                                onRightTap: () =>
+                                    Navigator.pop(dialogContext, true),
+                                rightBackgroundColor: AppColors.primary,
                               ),
                             );
                             if (confirmed == true) {
                               await ref
-                                  .read(userProvider.notifier)
-                                  .toggleBlockUser(otherUid);
+                                  .read(blockProvider.notifier)
+                                  .toggleBlock(otherUid);
                             }
                           } else {
                             await ref
-                                .read(userProvider.notifier)
-                                .toggleBlockUser(otherUid);
+                                .read(blockProvider.notifier)
+                                .toggleBlock(otherUid);
                           }
                         },
                       },
@@ -138,25 +166,18 @@ class ChatDetailPage extends ConsumerWidget {
                         '채팅방 나가기': () async {
                           modalContext.pop();
 
-                          final confirmed = await showCupertinoDialog<bool>(
+                          final confirmed = await showDialog<bool>(
                             context: context,
-                            builder: (dialogContext) => CupertinoAlertDialog(
-                              title: const Text("채팅방 나가기"),
-                              content: const Text(
-                                '채팅방을 나가면 메시지를\n더 이상 볼 수 없어요',
-                              ),
-                              actions: [
-                                CupertinoDialogAction(
-                                  child: const Text("취소"),
-                                  onPressed: () =>
-                                      Navigator.pop(dialogContext, false),
-                                ),
-                                CupertinoDialogAction(
-                                  child: const Text("나가기"),
-                                  onPressed: () =>
-                                      Navigator.pop(dialogContext, true),
-                                ),
-                              ],
+                            builder: (dialogContext) => CommonDialog(
+                              title: '채팅방 나가기',
+                              content: '채팅방을 나가면 메시지를\n더 이상 볼 수 없어요',
+                              leftText: '취소',
+                              rightText: '나가기',
+                              onLeftTap: () =>
+                                  Navigator.pop(dialogContext, false),
+                              onRightTap: () =>
+                                  Navigator.pop(dialogContext, true),
+                              rightBackgroundColor: AppColors.primary,
                             ),
                           );
                           if (confirmed != true) return;
@@ -187,24 +208,26 @@ class ChatDetailPage extends ConsumerWidget {
             ),
           ],
         ),
-        body: Column(
-          children: [
-            ChatProductBanner(roomId: roomId),
-            AppointmentButton(),
-            Divider(color: AppColors.secondary, thickness: 1),
-            ChatMessageList(roomId: roomId),
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 10,
-                right: 10,
-                bottom: 30,
-                top: 10,
+        body: SafeArea(
+          child: Column(
+            children: [
+              ChatProductBanner(roomId: roomId),
+              AppointmentButton(roomId: roomId),
+              Divider(color: AppColors.secondary, thickness: 1),
+              ChatMessageList(roomId: roomId),
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 10,
+                  right: 10,
+                  bottom: 10,
+                  top: 10,
+                ),
+                child: isInteractionBlocked
+                    ? _BlockedInputPlaceholder(message: blockedMessage)
+                    : ChatInputField(roomId: roomId),
               ),
-              child: isInteractionBlocked
-                  ? _BlockedInputPlaceholder(message: blockedMessage)
-                  : ChatInputField(roomId: roomId),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
