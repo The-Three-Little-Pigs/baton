@@ -63,6 +63,7 @@ class ProductDetailPage extends ConsumerWidget {
                   Padding(
                     padding: EdgeInsets.all(20),
                     child: ProductDetailInfo(
+                      productStatus: post.status,
                       title: post.title,
                       purchasePrice: post.purchasePrice == null
                           ? "0원"
@@ -180,7 +181,9 @@ class MoreVerButton extends ConsumerWidget {
                                     .toggleBlockUser(post.authorId);
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('신고 및 차단이 완료되었습니다.')),
+                                    const SnackBar(
+                                      content: Text('신고 및 차단이 완료되었습니다.'),
+                                    ),
                                   );
                                 }
                               },
