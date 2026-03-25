@@ -1,3 +1,4 @@
+import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/core/theme/app_tokens/app_spacing.dart';
 import 'package:baton/models/enum/product_status.dart';
 import 'package:flutter/material.dart';
@@ -92,14 +93,32 @@ class ProductDetailInfo extends StatelessWidget {
           Row(
             spacing: 4,
             children: [
-              Icon(Icons.favorite, size: 16),
-              Text("$likeCount", style: TextStyle(fontWeight: FontWeight.w400)),
+              Icon(Icons.favorite, size: 16, color: AppColors.secondary),
+              Text(
+                "$likeCount",
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.secondary,
+                ),
+              ),
               AppSpacing.w8,
-              Icon(Icons.chat_bubble, size: 16),
-              Text("$chatCount", style: TextStyle(fontWeight: FontWeight.w400)),
+              Icon(Icons.chat_bubble, size: 16, color: AppColors.secondary),
+              Text(
+                "$chatCount",
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.secondary,
+                ),
+              ),
               AppSpacing.w8,
-              Icon(Icons.visibility, size: 16),
-              Text("$viewCount", style: TextStyle(fontWeight: FontWeight.w400)),
+              Icon(Icons.visibility, size: 16, color: AppColors.secondary),
+              Text(
+                "$viewCount",
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.secondary,
+                ),
+              ),
             ],
           ),
         ],

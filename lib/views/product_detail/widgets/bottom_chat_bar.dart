@@ -1,5 +1,7 @@
 import 'package:baton/core/result/result.dart';
+import 'package:baton/notifier/like/like_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_room_action_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:baton/views/widgets/complete_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,10 +18,24 @@ class BottomChatBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isLiked = ref
+        .watch(likeProvider)
+        .maybeWhen(
+          data: (list) =>
+              list.any((p) => p.postId == productId), // productId는 생성자로 받음
+          orElse: () => false,
+        );
     return Row(
       spacing: 4,
       children: [
-        _FavoriteButton(),
+        _FavoriteButton(
+          isLiked: isLiked,
+          onTap: () {
+            ref
+                .read(productDetailPageViewModelProvider(productId).notifier)
+                .toggleLike();
+          },
+        ),
         Expanded(
           child: CompleteButton(
             label: "채팅하기",
@@ -51,6 +67,10 @@ class BottomChatBar extends ConsumerWidget {
 }
 
 class _FavoriteButton extends StatelessWidget {
+  final bool isLiked;
+  final VoidCallback onTap;
+  const _FavoriteButton({required this.isLiked, required this.onTap});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -62,9 +82,12 @@ class _FavoriteButton extends StatelessWidget {
         dimension: 54,
         child: Padding(
           padding: const EdgeInsets.all(15),
-          child: Icon(
-            Icons.favorite,
-            color: Theme.of(context).colorScheme.primary,
+          child: GestureDetector(
+            onTap: onTap,
+            child: Icon(
+              isLiked ? Icons.favorite : Icons.favorite_border,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
         ),
       ),
