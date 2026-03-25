@@ -214,10 +214,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             return null;
           }
 
-          // 로그인 페이지('/')에 있다면 -> 신규 가입 페이지로 자동 이동 (복구)
-          if (location == '/') return '/signUp';
+          // [변경] 유저 정보가 정말로 '없을' 때(가입 안 함)만 signUp으로 보냅니다.
+          if (location == '/') {
+            return '/signUp';
+          }
 
-          // 그 외 보호된 페이지(예: /home) 접근 시 로그인 페이지('/')로 유도
           return '/';
         }
 

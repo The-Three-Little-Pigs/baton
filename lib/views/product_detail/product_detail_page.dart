@@ -157,7 +157,37 @@ class MoreVerButton extends ConsumerWidget {
                       );
                       break;
                     case PostActionType.report:
-                      // TODO: 신고하기 로직 실행
+                      // 신고/차단 팝업 띄우기
+                      showCupertinoDialog(
+                        context: context,
+                        builder: (dialogContext) => CupertinoAlertDialog(
+                          title: const Text("신고/차단하기"),
+                          content: const Text(
+                            '상대방을 신고/차단하시겠습니까?\n차단 시 점수가 감점되며 더 이상 게시글이 보이지 않습니다.',
+                          ),
+                          actions: [
+                            CupertinoDialogAction(
+                              child: const Text("취소"),
+                              onPressed: () => Navigator.pop(dialogContext),
+                            ),
+                            CupertinoDialogAction(
+                              isDestructiveAction: true,
+                              child: const Text("신고/차단"),
+                              onPressed: () async {
+                                Navigator.pop(dialogContext);
+                                await ref
+                                    .read(userProvider.notifier)
+                                    .toggleBlockUser(post.authorId);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('신고 및 차단이 완료되었습니다.')),
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      );
                       break;
                     case PostActionType.delete:
                       showCupertinoDialog(

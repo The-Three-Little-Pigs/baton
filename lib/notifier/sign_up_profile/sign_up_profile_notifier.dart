@@ -67,7 +67,7 @@ class SignUpProfile extends _$SignUpProfile {
         uid: uid,
         nickname: nickname,
         profileUrl: profileUrl,
-        score: 36.5,
+        score: 5.0,
         favorites: {},
         
         deletedAt: null,

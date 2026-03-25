@@ -184,4 +184,46 @@ class UserRepositoryImpl implements UserRepository {
       return Error(ServerFailure('회원 탈퇴 처리 중 오류가 발생했습니다.'));
     }
   }
+
+  @override
+  Future<Result<void, Failure>> addBlockedBy(
+    String targetUid,
+    String blockerUid,
+  ) async {
+    try {
+      final docRef = _firestore.collection(_collectionPath).doc(targetUid);
+      final doc = await docRef.get();
+
+      if (!doc.exists) return Error(ServerFailure('사용자 정보를 찾을 수 없습니다.'));
+
+      final data = doc.data();
+      final double currentScore = (data?['score'] ?? 5.0).toDouble();
+      
+      // 🔥 점수 계산: 2.0씩 차감하되, 최저 2.0점 유지
+      final double newScore = (currentScore - 2.0).clamp(2.0, 5.0);
+
+      await docRef.update({
+        'blockedBy': FieldValue.arrayUnion([blockerUid]),
+        'score': newScore,
+      });
+      return const Success(null);
+    } catch (e) {
+      return Error(ServerFailure('차단 처리 및 감점 실패: $e'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> removeBlockedBy(
+    String targetUid,
+    String blockerUid,
+  ) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(targetUid).update({
+        'blockedBy': FieldValue.arrayRemove([blockerUid]),
+      });
+      return const Success(null);
+    } catch (e) {
+      return Error(ServerFailure('차단 해제 실패: $e'));
+    }
+  }
 }

@@ -4,6 +4,7 @@ import 'package:baton/models/enum/appointment_status.dart';
 import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/notifier/block/block_notifier.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:baton/views/_tap/chat/viewmodel/chat_room_action_notifier.dart';
 import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:baton/views/chat_detail/widgets/appointment_button.dart';

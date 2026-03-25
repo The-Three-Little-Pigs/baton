@@ -44,7 +44,7 @@ class LoginService {
             uid: firebaseUser.uid,
             nickname: '', // [수정] 신규 유저는 항상 닉네임을 비워두어 가입 프로세스를 유도합니다.
             profileUrl: firebaseUser.photoURL ?? '',
-            score: 36.5, // 기본 매너 온도 설정
+            score: 5.0, // 기본 점수 설정 (5.0으로 변경)
             favorites: {}, // 초기값 빈 리스트
              // 초기값 빈 리스트
             deletedAt: null,

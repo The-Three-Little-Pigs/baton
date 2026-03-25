@@ -54,12 +54,11 @@ class User {
       uid: json['uid'] ?? '',
       nickname: json['nickname'] ?? '',
       profileUrl: json['profileUrl'] ?? '',
-      score: (json['score'] ?? 36.5).toDouble(),
-      favorites: Set<String>.from(json['favorites'] ?? []),      
-      deletedAt: json['deletedAt'] == null
-          ? null
-          : DateTime.parse(json['deletedAt']),
-      
+      score: (json['score'] ?? 5.0).toDouble(),
+      favorites: Set<String>.from(json['favorites'] ?? []),
+      blockedUsers: List<String>.from(json['blockedUsers'] ?? []),
+      blockedBy: List<String>.from(json['blockedBy'] ?? []),
+      isDeleted: json['isDeleted'] ?? json['is_deleted'] ?? false,
     );
   }
 }
