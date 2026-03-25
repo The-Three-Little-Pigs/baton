@@ -1,4 +1,3 @@
-import 'package:baton/views/search/viewmodel/search_field_notifier.dart';
 import 'package:baton/views/search_result/viewmodel/search_result_viewmodel.dart';
 import 'package:baton/views/search_result/widgets/select_button.dart';
 import 'package:baton/views/widgets/product_grid_view.dart';
@@ -13,8 +12,9 @@ class SearchResultPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final searchResultAsyncValue =
-        ref.watch(searchResultViewModelProvider(keyword));
+    final searchResultAsyncValue = ref.watch(
+      searchResultViewModelProvider(keyword),
+    );
 
     return Scaffold(
       appBar: AppBar(

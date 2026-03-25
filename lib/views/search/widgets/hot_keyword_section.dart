@@ -1,6 +1,6 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/notifier/search/hot_keyword_notifier.dart';
-import 'package:baton/views/search/viewmodel/search_field_notifier.dart';
+import 'package:baton/notifier/search/search_field_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

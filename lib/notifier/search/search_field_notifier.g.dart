@@ -42,7 +42,7 @@ final class SearchFieldNotifierProvider
 }
 
 String _$searchFieldNotifierHash() =>
-    r'3df0717eb3c7d26b4be2aadbb8c66ad44945a19e';
+    r'9bf2bcf530869e8b523beed1fc17b387e7c0be34';
 
 abstract class _$SearchFieldNotifier extends $Notifier<SearchFieldState> {
   SearchFieldState build();
