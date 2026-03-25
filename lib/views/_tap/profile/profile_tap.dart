@@ -210,7 +210,14 @@ class UserProfileCard extends ConsumerWidget {
               ),
             ),
             Icon(Icons.star_rounded, color: AppColors.primary, size: 24),
-            Text('5.0'),
+            userAsync.when(
+              data: (user) => Text(
+                user?.score.toStringAsFixed(1) ?? '5.0',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              loading: () => const Text('5.0'),
+              error: (_, _) => const Text('5.0'),
+            ),
           ],
         ),
       ),

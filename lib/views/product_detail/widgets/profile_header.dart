@@ -1,3 +1,4 @@
+import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/core/theme/app_tokens/app_spacing.dart';
 import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,12 @@ class ProfileHeader extends ConsumerWidget {
               ],
             ),
             const Spacer(),
-            // user - score
+            Icon(Icons.star_rounded, color: AppColors.primary, size: 20),
+            const SizedBox(width: 4),
+            Text(
+              author.score.toStringAsFixed(1),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
           ],
         );
       },

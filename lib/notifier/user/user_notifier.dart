@@ -1,8 +1,9 @@
 import 'package:baton/core/di/repository/auth_provider.dart';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
-import 'package:baton/models/entities/user.dart' as entity;
 import 'package:baton/core/di/repository/user_provider.dart';
+import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
+import 'package:baton/models/entities/user.dart' as entity;
 import 'package:baton/service/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -75,19 +76,23 @@ class UserNotifier extends _$UserNotifier {
       return;
     }
 
-    // 2. 소셜 및 Auth 계정 삭제
-    final authResult = await ref.read(authRepositoryProvider).deleteAccount();
+    // 2. 소셜 및 Auth 계정 삭제 (실패하더라도 로그아웃은 진행하여 세션 종료)
+    try {
+      final authResult = await ref.read(authRepositoryProvider).deleteAccount();
+      
+      // 결과와 관계없이 로그아웃을 먼저 진행 (안전한 내비게이션을 위해)
+      await FirebaseAuth.instance.signOut();
+      ref.invalidateSelf();
 
-    switch (authResult) {
-      case Success():
-        // 🔥 즉시 로그아웃 처리하여 라우터가 로그인 페이지로 인식하게 함
-        await FirebaseAuth.instance.signOut();
-        ref.invalidateSelf();
+      if (authResult is Success) {
         onSuccess();
-        break;
-      case Error(:final failure):
-        onError(failure.message);
-        break;
+      } else if (authResult is Error<void, Failure>) {
+        onError(authResult.failure.message);
+      }
+    } catch (e) {
+      await FirebaseAuth.instance.signOut();
+      ref.invalidateSelf();
+      onError("탈퇴 처리 중 오류가 발생했습니다: $e");
     }
   }
 
@@ -147,11 +152,14 @@ class UserNotifier extends _$UserNotifier {
     // DB 업데이트 (내 문서)
     await userRepo.updateUserData(updatedUser);
 
-    // 상대방의 blockedBy 필드 업데이트 (상호 필터링을 위함)
+    // 상대방의 blockedBy 필드 업데이트 (상호 필터링 및 점수 감점)
     if (isBlocking) {
       await userRepo.addBlockedBy(otherUid, currentUser.uid);
+      // 🔥 상대방 정보 캐시 무효화 (점수 변화 즉시 반영)
+      ref.invalidate(authorProvider(otherUid));
     } else {
       await userRepo.removeBlockedBy(otherUid, currentUser.uid);
+      ref.invalidate(authorProvider(otherUid));
     }
   }
 
