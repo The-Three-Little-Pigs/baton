@@ -9,6 +9,15 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'user_notifier.g.dart';
+ 
+@Riverpod(keepAlive: true)
+class AuthTransition extends _$AuthTransition {
+  @override
+  bool build() => false;
+
+  void start() => state = true;
+  void end() => state = false;
+}
 
 @Riverpod(keepAlive: true)
 class UserNotifier extends _$UserNotifier {
@@ -36,7 +45,7 @@ class UserNotifier extends _$UserNotifier {
       };
 
       // 🔥 [Soft Delete] 이미 탈퇴 처리된 유저라면 null 반환 (미가입 상태로 취급)
-      if (user != null && user.deletedAt != null) {
+      if (user != null && (user.isDeleted || user.deletedAt != null)) {
         return null;
       }
 
@@ -63,6 +72,9 @@ class UserNotifier extends _$UserNotifier {
 
     final userRepo = ref.read(userRepositoryProvider);
 
+    // 🔥 탈퇴 프로세스 시작 (라우터 고정)
+    ref.read(authTransitionProvider.notifier).start();
+
     // [보안] 탈퇴 전 FCM 토큰 삭제
     await NotificationService().deleteFCMToken(
       currentUser.uid,
@@ -74,6 +86,7 @@ class UserNotifier extends _$UserNotifier {
     final result = await userRepo.markUserAsDeleted(currentUser.uid);
 
     if (result is Error<void, Failure>) {
+      ref.read(authTransitionProvider.notifier).end();
       onError(result.failure.message);
       return;
     }
@@ -95,21 +108,29 @@ class UserNotifier extends _$UserNotifier {
       await FirebaseAuth.instance.signOut();
       ref.invalidateSelf();
       onError("탈퇴 처리 중 오류가 발생했습니다: $e");
+    } finally {
+      // 🔥 전환 완료
+      ref.read(authTransitionProvider.notifier).end();
     }
   }
 
   /// 로그아웃 시 알림 정리
   Future<void> signOut() async {
-    final currentUser = state.value;
-    if (currentUser != null) {
-      final userRepo = ref.read(userRepositoryProvider);
-      await NotificationService().deleteFCMToken(
-        currentUser.uid,
-        userRepository: userRepo,
-      );
+    ref.read(authTransitionProvider.notifier).start();
+    try {
+      final currentUser = state.value;
+      if (currentUser != null) {
+        final userRepo = ref.read(userRepositoryProvider);
+        await NotificationService().deleteFCMToken(
+          currentUser.uid,
+          userRepository: userRepo,
+        );
+      }
+      await ref.read(authRepositoryProvider).signOut();
+      ref.invalidateSelf();
+    } finally {
+      ref.read(authTransitionProvider.notifier).end();
     }
-    await ref.read(authRepositoryProvider).signOut();
-    ref.invalidateSelf();
   }
 
   /// 즐겨찾기 토글 (추가/제거)

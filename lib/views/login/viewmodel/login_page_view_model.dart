@@ -17,26 +17,31 @@ class LoginPageViewModel extends _$LoginPageViewModel {
 
   Future<void> login(SocialType type) async {
     state = AsyncLoading();
+    ref.read(authTransitionProvider.notifier).start();
 
-    final result = switch (type) {
-      SocialType.kakao =>
-        await ref.read(loginServiceProvider).signInWithKakao(),
-      SocialType.apple =>
-        await ref.read(loginServiceProvider).signInWithApple(),
-      SocialType.google =>
-        await ref.read(loginServiceProvider).signInWithGoogle(),
-    };
-    print("result : $result");
+    try {
+      final result = switch (type) {
+        SocialType.kakao =>
+          await ref.read(loginServiceProvider).signInWithKakao(),
+        SocialType.apple =>
+          await ref.read(loginServiceProvider).signInWithApple(),
+        SocialType.google =>
+          await ref.read(loginServiceProvider).signInWithGoogle(),
+      };
+      print("result : $result");
 
-    switch (result) {
-      case Success(value: final status):
-        // [추가] 로그인 성공 시 전역 유저 정보를 초기화하여 최신 정보를 가져오도록 유도
-        ref.invalidate(userProvider);
-        state = AsyncData(status);
-      case Error(failure: final failure):
-        print(failure.message);
-        state = AsyncError(failure.message, StackTrace.current);
-        throw failure.message;
+      switch (result) {
+        case Success(value: final status):
+          // [추가] 로그인 성공 시 전역 유저 정보를 초기화하여 최신 정보를 가져오도록 유도
+          ref.invalidate(userProvider);
+          state = AsyncData(status);
+        case Error(failure: final failure):
+          print(failure.message);
+          state = AsyncError(failure.message, StackTrace.current);
+          throw failure.message;
+      }
+    } finally {
+      ref.read(authTransitionProvider.notifier).end();
     }
   }
 }
