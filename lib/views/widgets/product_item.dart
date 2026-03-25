@@ -13,8 +13,10 @@ import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ProductItem extends ConsumerWidget {
   const ProductItem({super.key, required this.post});
@@ -61,7 +63,21 @@ class _ItemImage extends ConsumerWidget {
             fit: StackFit.expand,
             children: [
               post.imageUrls.isNotEmpty
-                  ? Image.network(post.imageUrls.first, fit: BoxFit.cover)
+                  ? CachedNetworkImage(
+                      imageUrl: post.imageUrls.first,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          color: Colors.white,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.error_outline, color: Colors.grey),
+                      ),
+                    )
                   : SvgPicture.asset(
                       'assets/images/empty_image_160.svg',
                       fit: BoxFit.cover,

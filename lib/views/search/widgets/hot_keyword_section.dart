@@ -1,6 +1,6 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/notifier/search/hot_keyword_notifier.dart';
-import 'package:baton/views/search/viewmodel/search_field_notifier.dart';
+import 'package:baton/notifier/search/search_field_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -97,11 +97,17 @@ class HotKeywordSection extends ConsumerWidget {
     );
   }
 
-  void _performSearch(BuildContext context, WidgetRef ref, String keyword) {
+  Future<void> _performSearch(BuildContext context, WidgetRef ref, String keyword) async {
     if (keyword.isNotEmpty) {
-      ref.read(searchFieldProvider.notifier).updateText(keyword);
-      ref.read(searchFieldProvider.notifier).recordSearch(keyword);
-      context.pushNamed('searchResult', pathParameters: {'keyword': keyword});
+      final notifier = ref.read(searchFieldProvider.notifier);
+      if (notifier.allowSearch(keyword)) {
+        notifier.updateText(keyword);
+        notifier.recordSearch(keyword);
+        await context.pushNamed('searchResult', pathParameters: {'keyword': keyword});
+      if (context.mounted) {
+        notifier.clear();
+      }
+      }
     }
   }
 }

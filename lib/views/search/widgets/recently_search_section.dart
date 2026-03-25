@@ -1,6 +1,5 @@
-import 'package:baton/core/di/repository/search_provider.dart';
 import 'package:baton/notifier/search/recently_search_notifier.dart';
-import 'package:baton/views/search/viewmodel/search_field_notifier.dart';
+import 'package:baton/notifier/search/search_field_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -52,17 +51,19 @@ class RecentlySearchSection extends ConsumerWidget {
 
                 return RecentlySearchItem(
                   label: history.query,
-                  onSearch: () {
-                    ref
-                        .read(searchFieldProvider.notifier)
-                        .updateText(history.query);
-                    ref
-                        .read(searchFieldProvider.notifier)
-                        .recordSearch(history.query);
-                    context.pushNamed(
-                      'searchResult',
-                      pathParameters: {'keyword': history.query},
-                    );
+                  onSearch: () async {
+                    final notifier = ref.read(searchFieldProvider.notifier);
+                    if (notifier.allowSearch(history.query)) {
+                      notifier.updateText(history.query);
+                      notifier.recordSearch(history.query);
+                      await context.pushNamed(
+                        'searchResult',
+                        pathParameters: {'keyword': history.query},
+                      );
+                      if (context.mounted) {
+                        notifier.clear();
+                      }
+                    }
                   },
                   onDelete: () {
                     ref
