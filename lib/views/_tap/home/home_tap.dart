@@ -48,9 +48,7 @@ class _HomeTapState extends ConsumerState<HomeTap> {
 
     return Scaffold(
       appBar: AppBar(
-        title: HomeLogo(
-          onTap: _scrollToTop,
-        ),
+        title: HomeLogo(onTap: _scrollToTop),
         actions: [
           IconButton(
             onPressed: () {

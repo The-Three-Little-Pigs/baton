@@ -1,3 +1,4 @@
+import 'package:baton/models/entities/search_field_state.dart';
 import 'package:baton/views/search/viewmodel/search_field_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +17,9 @@ class _SearchFieldState extends ConsumerState<SearchField> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: ref.read(searchFieldProvider));
+    _controller = TextEditingController(
+      text: ref.read(searchFieldProvider).query,
+    );
   }
 
   @override
@@ -28,9 +31,9 @@ class _SearchFieldState extends ConsumerState<SearchField> {
   @override
   Widget build(BuildContext context) {
     // 프로바이더 상태 변화 감시 및 컨트롤러 텍스트 업데이트
-    ref.listen<String>(searchFieldProvider, (previous, next) {
-      if (_controller.text != next) {
-        _controller.text = next;
+    ref.listen<SearchFieldState>(searchFieldProvider, (previous, next) {
+      if (_controller.text != next.query) {
+        _controller.text = next.query;
       }
     });
 
@@ -39,14 +42,20 @@ class _SearchFieldState extends ConsumerState<SearchField> {
       onChanged: (value) {
         ref.read(searchFieldProvider.notifier).updateText(value);
       },
-      onSubmitted: (value) {
+      onSubmitted: (value) async {
         final keyword = value.trim();
         if (keyword.isNotEmpty) {
-          ref.read(searchFieldProvider.notifier).recordSearch(keyword);
-          context.pushNamed(
-            'searchResult',
-            pathParameters: {'keyword': keyword},
-          );
+          final notifier = ref.read(searchFieldProvider.notifier);
+          if (notifier.allowSearch(keyword)) {
+            notifier.recordSearch(keyword);
+            await context.pushNamed(
+              'searchResult',
+              pathParameters: {'keyword': keyword},
+            );
+            if (context.mounted) {
+              notifier.clear();
+            }
+          }
         }
       },
       decoration: InputDecoration(
@@ -64,7 +73,11 @@ class _SearchFieldState extends ConsumerState<SearchField> {
           children: [
             if (_controller.text.isNotEmpty)
               IconButton(
-                icon: const Icon(Icons.cancel, color: Color(0xFFB3B3B3), size: 18),
+                icon: const Icon(
+                  Icons.cancel,
+                  color: Color(0xFFB3B3B3),
+                  size: 18,
+                ),
                 onPressed: () {
                   _controller.clear();
                   ref.read(searchFieldProvider.notifier).clear();
@@ -72,11 +85,20 @@ class _SearchFieldState extends ConsumerState<SearchField> {
               ),
             IconButton(
               icon: const Icon(Icons.search),
-              onPressed: () {
-                final keyword = _controller.text.trim();
-                if (keyword.isNotEmpty) {
-                  ref.read(searchFieldProvider.notifier).recordSearch(keyword);
-                  context.pushNamed('searchResult', pathParameters: {'keyword': keyword});
+              onPressed: () async {
+                if (_controller.text.isNotEmpty) {
+                  final keyword = _controller.text.trim();
+                  final notifier = ref.read(searchFieldProvider.notifier);
+                  if (notifier.allowSearch(keyword)) {
+                    notifier.recordSearch(keyword);
+                    await context.pushNamed(
+                      'searchResult',
+                      pathParameters: {'keyword': keyword},
+                    );
+                    if (context.mounted) {
+                      notifier.clear();
+                    }
+                  }
                 }
               },
             ),

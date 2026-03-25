@@ -13,7 +13,7 @@ part of 'search_field_notifier.dart';
 final searchFieldProvider = SearchFieldNotifierProvider._();
 
 final class SearchFieldNotifierProvider
-    extends $NotifierProvider<SearchFieldNotifier, String> {
+    extends $NotifierProvider<SearchFieldNotifier, SearchFieldState> {
   SearchFieldNotifierProvider._()
     : super(
         from: null,
@@ -33,28 +33,28 @@ final class SearchFieldNotifierProvider
   SearchFieldNotifier create() => SearchFieldNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(String value) {
+  Override overrideWithValue(SearchFieldState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<String>(value),
+      providerOverride: $SyncValueProvider<SearchFieldState>(value),
     );
   }
 }
 
 String _$searchFieldNotifierHash() =>
-    r'79cb7b862aebe58d2a5d960da1988591094d0892';
+    r'3df0717eb3c7d26b4be2aadbb8c66ad44945a19e';
 
-abstract class _$SearchFieldNotifier extends $Notifier<String> {
-  String build();
+abstract class _$SearchFieldNotifier extends $Notifier<SearchFieldState> {
+  SearchFieldState build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<String, String>;
+    final ref = this.ref as $Ref<SearchFieldState, SearchFieldState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<String, String>,
-              String,
+              AnyNotifier<SearchFieldState, SearchFieldState>,
+              SearchFieldState,
               Object?,
               Object?
             >;
