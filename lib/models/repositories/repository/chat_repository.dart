@@ -65,6 +65,7 @@ abstract class ChatRepository {
   Future<Result<void, Failure>> updatePostStatus({
     required String postId,
     required ProductStatus newStatus,
+    String? buyerId,
   });
   Future<Result<void, Failure>> confirmTransactionManually({
     required String roomId,

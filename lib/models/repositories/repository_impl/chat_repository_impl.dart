@@ -414,11 +414,21 @@ class ChatRepositoryImpl implements ChatRepository {
   Future<Result<void, Failure>> updatePostStatus({
     required String postId,
     required ProductStatus newStatus,
+    String? buyerId,
   }) async {
     try {
-      await _firestore.collection('posts').doc(postId).update({
-        'status': newStatus.label,
-      });
+      final Map<String, dynamic> updateData = {'status': newStatus.label};
+
+      // 💡 예약/판매 시점에 구매자 정보를 함께 업데이트
+      if (buyerId != null) {
+        updateData['buyer_id'] = buyerId;
+      } else {
+        // buyerId가 null이면 Firestore 필드를 명시적으로 삭제합니다.
+        // if (buyerId != null) 블록 밖에 두면 취소 시에도 동작합니다.
+        updateData['buyer_id'] = FieldValue.delete();
+      }
+
+      await _firestore.collection('posts').doc(postId).update(updateData);
       return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
@@ -442,10 +452,17 @@ class ChatRepositoryImpl implements ChatRepository {
         // ==========================================
         final roomSnapshot = await transaction.get(chatroomRef);
         if (!roomSnapshot.exists) return;
-
         final roomData = roomSnapshot.data()!;
+
         final activeAppointmentId = roomData['activeAppointmentId'] as String?;
         if (activeAppointmentId == null) return;
+
+        final postRef = _firestore.collection('posts').doc(postId);
+        final postSnapshot = await transaction.get(postRef);
+        if (!postSnapshot.exists) return;
+        final postData = postSnapshot.data()!;
+        final String authorId =
+            postData['author_id'] ?? postData['authorId'] ?? "";
 
         final msgRef = chatroomRef
             .collection('messages')
@@ -467,6 +484,7 @@ class ChatRepositoryImpl implements ChatRepository {
 
         if (currentUids.length >= 2) {
           // 채팅방(chatroomRef) 한 번에 업데이트
+
           transaction.update(chatroomRef, {
             'confirmedCompleteUids': currentUids,
             'activeAppointmentId': null,
@@ -487,8 +505,16 @@ class ChatRepositoryImpl implements ChatRepository {
 
           // 게시글(postRef) 업데이트
           if (postId.isNotEmpty) {
+            final participants = List<String>.from(
+              roomData['participants'] ?? [],
+            );
+            final buyerId = participants.firstWhere(
+              (id) => id != authorId,
+              orElse: () => "",
+            );
             transaction.update(_firestore.collection('posts').doc(postId), {
               'status': ProductStatus.sold.label,
+              'buyer_id': buyerId,
             });
           }
         } else {

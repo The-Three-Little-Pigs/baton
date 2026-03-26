@@ -128,6 +128,11 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
     String postId,
   ) async {
     final repository = ref.read(chatRepositoryProvider);
+    final chatroom = ref.read(chatRoomStreamProvider(roomId)).value;
+    final buyerId = chatroom?.participants.firstWhere(
+      (id) => id != _myUserId,
+      orElse: () => '',
+    );
     final updateResult = await repository.updateAppointmentStatus(
       roomId: roomId,
       messageId: messageId,
@@ -139,6 +144,7 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
     final postResult = await repository.updatePostStatus(
       postId: postId,
       newStatus: ProductStatus.reserved,
+      buyerId: buyerId,
     );
     if (postResult case Error(:final failure)) {
       debugPrint('상품 상태 업데이트 실패: ${failure.message}');
@@ -154,7 +160,7 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
     if (currentPost != null) {
       // 서버에서 새로 받지 않고, 현재 화면의 객체 상태만 '예약중'으로 바꿔서 즉시 화면에 주입!
       postNotifier.state = AsyncData(
-        currentPost.copyWith(status: ProductStatus.reserved),
+        currentPost.copyWith(status: ProductStatus.reserved, buyerId: buyerId),
       );
     } else {
       // 혹시라도 메모리에 객체가 없다면 어쩔 수 없이 서버 조회
@@ -190,6 +196,7 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
         final postResult = await repository.updatePostStatus(
           postId: postId,
           newStatus: ProductStatus.available,
+          buyerId: null,
         );
         if (postResult case Error(:final failure)) {
           debugPrint('상품 상태 업데이트 실패: ${failure.message}');
@@ -203,7 +210,10 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
           if (currentPost != null) {
             // 이번엔 스무스하게 즉시 '판매중'으로 바꿔치기
             postNotifier.state = AsyncData(
-              currentPost.copyWith(status: ProductStatus.available),
+              currentPost.copyWith(
+                status: ProductStatus.available,
+                buyerId: null,
+              ),
             );
           } else {
             ref.invalidate(productDetailPageViewModelProvider(postId));
@@ -234,8 +244,17 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
           );
           final currentPost = postNotifier.state.value;
           if (currentPost != null) {
+            final chatroom = ref.read(chatRoomStreamProvider(roomId)).value;
+            final buyerId = chatroom?.participants.firstWhere(
+              (id) => id != _myUserId,
+              orElse: () => '',
+            );
+
             postNotifier.state = AsyncData(
-              currentPost.copyWith(status: ProductStatus.sold),
+              currentPost.copyWith(
+                status: ProductStatus.sold,
+                buyerId: buyerId,
+              ),
             );
           } else {
             ref.invalidate(productDetailPageViewModelProvider(postId));

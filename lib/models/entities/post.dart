@@ -16,6 +16,7 @@ class Post {
   final DateTime createdAt; // 작성 시간
   final ProductStatus status; // 게시글 상태
   final int viewCount; // 🔥 추가: 조회수
+  final String? buyerId; // 구매자 아이디
 
   Post({
     required this.postId,
@@ -31,6 +32,7 @@ class Post {
     required this.createdAt,
     required this.status,
     this.viewCount = 0,
+    this.buyerId,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -48,6 +50,7 @@ class Post {
       createdAt: _parseDateTime(json['created_at']),
       status: ProductStatus.values.firstWhere((e) => e.label == json['status']),
       viewCount: json['view_count'] as int? ?? 0,
+      buyerId: json['buyer_id'] as String?,
     );
   }
 
@@ -83,6 +86,7 @@ class Post {
       'created_at': createdAt,
       'status': status.label,
       'view_count': viewCount,
+      'buyer_id': buyerId,
     };
   }
 
@@ -100,6 +104,8 @@ class Post {
     DateTime? createdAt,
     ProductStatus? status,
     int? viewCount,
+    String? buyerId,
+    bool clearBuyerId = false, // 💡 buyerId를 명시적으로 null로 지우기 위한 플래그
   }) {
     return Post(
       postId: postId ?? this.postId,
@@ -115,6 +121,7 @@ class Post {
       createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
       viewCount: viewCount ?? this.viewCount,
+      buyerId: clearBuyerId ? null : (buyerId ?? this.buyerId),
     );
   }
 }
