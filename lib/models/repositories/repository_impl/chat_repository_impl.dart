@@ -485,6 +485,7 @@ class ChatRepositoryImpl implements ChatRepository {
             'confirmedCompleteUids': currentUids,
             'activeAppointmentId': null,
             'appointmentStatus': AppointmentStatus.completed.label,
+            'confirmedAt': FieldValue.serverTimestamp(),
           });
 
           // 메시지(msgRef) 업데이트
