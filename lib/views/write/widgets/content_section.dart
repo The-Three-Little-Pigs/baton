@@ -1,6 +1,7 @@
 import 'package:baton/views/widgets/input_field.dart';
 import 'package:baton/views/widgets/sub_title.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:baton/views/write/viewmodel/content_notifier.dart';
 
@@ -54,6 +55,9 @@ class _ContentSectionState extends ConsumerState<ContentSection> {
         InputField(
           controller: _controller,
           hintText: "상품에 대한 설명을 자세히 적어주세요\n(판매 금지 물품은 게시가 제한될 수 있어요.)",
+          inputFormatters: [
+            FilteringTextInputFormatter.deny(RegExp(r'^\s+')), // 맨 앞 공백 차단
+          ],
           onChanged: (value) {
             ref.read(contentProvider.notifier).setContent(value);
           },

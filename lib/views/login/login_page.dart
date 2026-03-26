@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
@@ -44,9 +45,7 @@ class LoginPage extends ConsumerWidget {
           }
         });
       },
-      onError: (error, stackTrace) => ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.toString()))),
+      onError: (error, stackTrace) => AppSnackBar.show(context, error.toString()),
     );
 
     return Scaffold(

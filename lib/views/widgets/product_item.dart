@@ -17,6 +17,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ProductItem extends ConsumerWidget {
   const ProductItem({super.key, required this.post});
@@ -69,13 +70,14 @@ class _ItemImage extends ConsumerWidget {
                       placeholder: (context, url) => Shimmer.fromColors(
                         baseColor: Colors.grey[300]!,
                         highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          color: Colors.white,
-                        ),
+                        child: Container(color: Colors.white),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[200],
-                        child: const Icon(Icons.error_outline, color: Colors.grey),
+                        child: const Icon(
+                          Icons.error_outline,
+                          color: Colors.grey,
+                        ),
                       ),
                     )
                   : SvgPicture.asset(
@@ -104,7 +106,7 @@ class _ItemImage extends ConsumerWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: colors.surface.withOpacity(0.9),
+                          color: colors.surface.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -208,14 +210,9 @@ class _ItemInfo extends ConsumerWidget {
 
                                             switch (result) {
                                               case Success():
-                                                ScaffoldMessenger.of(
+                                                AppSnackBar.show(
                                                   context,
-                                                ).showSnackBar(
-                                                  const SnackBar(
-                                                    content: Text(
-                                                      '게시글이 삭제되었습니다.',
-                                                    ),
-                                                  ),
+                                                  '게시글이 삭제되었습니다.',
                                                 );
                                                 ref
                                                     .read(
@@ -225,14 +222,9 @@ class _ItemInfo extends ConsumerWidget {
                                                     .refresh();
                                                 break;
                                               case Error(failure: final f):
-                                                ScaffoldMessenger.of(
+                                                AppSnackBar.show(
                                                   context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      '삭제 실패: ${f.message}',
-                                                    ),
-                                                  ),
+                                                  '삭제 실패: ${f.message}',
                                                 );
                                                 break;
                                             }

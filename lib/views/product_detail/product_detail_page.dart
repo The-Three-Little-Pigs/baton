@@ -3,6 +3,7 @@ import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/core/utils/format_currency.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/post_action_type.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/mapper/format_time_mapper.dart';
 import 'package:baton/notifier/post/product_item_notifier.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
@@ -17,6 +18,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ProductDetailPage extends ConsumerWidget {
   const ProductDetailPage({super.key, required this.postId});
@@ -37,9 +39,6 @@ class ProductDetailPage extends ConsumerWidget {
           slivers: [
             post.imageUrls.isEmpty
                 ? SliverAppBar(actions: [MoreVerButton(post: post)])
-                // ? SliverAppBar(
-                //     actions: [MoreVerButton(authorId: post.authorId)],
-                //   )
                 : SliverAppBar(
                     expandedHeight: 300,
                     pinned: true,
@@ -103,17 +102,21 @@ class ProductDetailPage extends ConsumerWidget {
       ),
       bottomNavigationBar: postAsync.when(
         // 1. 성공 시: 데이터(post)가 완벽히 보장되므로 강제 추출(!) 없이 안전하게 호출
-        data: (post) => post.authorId == ref.read(userProvider).value?.uid
-            ? const SizedBox.shrink()
-            : SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: BottomChatBar(
-                    productId: postId,
-                    authorId: post.authorId, // ⭐️ post 객체에서 바로 꺼냄 (null 걱정 제로!)
-                  ),
-                ),
-              ),
+        data: (post) {
+          final isMyPost = post.authorId == ref.read(userProvider).value?.uid;
+          final isAvailable = post.status == ProductStatus.available;
+
+          if (isMyPost || !isAvailable) {
+            return const SizedBox.shrink();
+          }
+
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: BottomChatBar(post: post),
+            ),
+          );
+        },
         // 2. 로딩 중이거나 에러 날 때는 바텀 바를 그리지 않음 (SizedBox.shrink)
         loading: () => const SizedBox.shrink(),
         error: (error, stackTrace) => const SizedBox.shrink(),
@@ -180,10 +183,9 @@ class MoreVerButton extends ConsumerWidget {
                                     .read(userProvider.notifier)
                                     .toggleBlockUser(post.authorId);
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('신고 및 차단이 완료되었습니다.'),
-                                    ),
+                                  AppSnackBar.show(
+                                    context,
+                                    '신고 및 차단이 완료되었습니다.',
                                   );
                                 }
                               },
@@ -218,12 +220,9 @@ class MoreVerButton extends ConsumerWidget {
 
                                   switch (result) {
                                     case Success():
-                                      ScaffoldMessenger.of(
+                                      AppSnackBar.show(
                                         context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('게시글이 삭제되었습니다.'),
-                                        ),
+                                        '게시글이 삭제되었습니다.',
                                       );
                                       ref
                                           .read(
@@ -234,12 +233,9 @@ class MoreVerButton extends ConsumerWidget {
                                           .deletePost();
                                       break;
                                     case Error(failure: final f):
-                                      ScaffoldMessenger.of(
+                                      AppSnackBar.show(
                                         context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text('삭제 실패: ${f.message}'),
-                                        ),
+                                        '삭제 실패: ${f.message}',
                                       );
                                       break;
                                   }

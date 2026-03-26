@@ -1,5 +1,4 @@
 import 'package:baton/core/di/db/db_provider.dart';
-import 'package:baton/models/entities/search_history.dart';
 import 'package:baton/models/repositories/repository/search_repository.dart';
 import 'package:baton/models/repositories/repository_impl/search_repository_impl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,4 +13,3 @@ SearchRepository searchRepository(Ref ref) {
     database: ref.watch(batonDatabaseProvider),
   );
 }
-

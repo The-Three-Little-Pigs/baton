@@ -8,15 +8,17 @@ import 'package:baton/views/widgets/complete_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
+
+import 'package:baton/models/entities/post.dart';
+import 'package:baton/notifier/like/like_notifier.dart';
 
 class BottomChatBar extends ConsumerWidget {
   const BottomChatBar({
     super.key,
-    required this.productId,
-    required this.authorId,
+    required this.post,
   });
-  final String productId;
-  final String authorId;
+  final Post post;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

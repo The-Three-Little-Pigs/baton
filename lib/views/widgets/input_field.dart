@@ -14,6 +14,7 @@ class InputField extends StatelessWidget {
     this.border,
     this.isPriceSection,
     this.controller,
+    this.inputFormatters,
   });
 
   final String hintText;
@@ -25,6 +26,7 @@ class InputField extends StatelessWidget {
   final InputBorder? border;
   final bool? isPriceSection;
   final TextEditingController? controller;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +38,11 @@ class InputField extends StatelessWidget {
       maxLength: maxLength,
       maxLines: maxLines,
       inputFormatters: isPriceSection == true
-          ? [FilteringTextInputFormatter.digitsOnly]
-          : null,
+          ? [
+              FilteringTextInputFormatter.digitsOnly,
+              if (inputFormatters != null) ...inputFormatters!,
+            ]
+          : inputFormatters,
       decoration: InputDecoration(
         counterText: "",
         contentPadding:

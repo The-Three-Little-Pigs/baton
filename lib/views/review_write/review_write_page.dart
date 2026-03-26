@@ -8,6 +8,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ReviewWritePage extends ConsumerStatefulWidget {
   final String opponentName;
@@ -243,6 +244,39 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                             fontWeight: FontWeight.w500,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 20),
+
+                  // 5. 작성 완료 버튼
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: (state.canSubmit && !state.isLoading)
+                          ? () async {
+                              final error = await notifier.submitReview(
+                                receiverId: widget.receiverId,
+                                postId: widget.postId,
+                                roomId: widget.roomId,
+                              );
+                              if (error == null) {
+                                if (context.mounted) {
+                                  AppSnackBar.show(context, '후기가 등록되었습니다!');
+                                  context.pop();
+                                }
+                              } else {
+                                if (context.mounted) {
+                                  AppSnackBar.show(context, error);
+                                }
+                              }
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        disabledBackgroundColor: AppColors.primary.withOpacity(
+                          0.3,
                         ),
                         const SizedBox(height: 20),
                         RatingBar.builder(

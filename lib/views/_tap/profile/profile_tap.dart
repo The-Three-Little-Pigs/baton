@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ProfileTap extends ConsumerWidget {
   const ProfileTap({super.key});
@@ -132,9 +133,7 @@ class ProfileTap extends ConsumerWidget {
                           },
                           onError: (message) {
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('탈퇴 실패: $message')),
-                              );
+                              AppSnackBar.show(context, '탈퇴 실패: $message');
                             }
                           },
                         );

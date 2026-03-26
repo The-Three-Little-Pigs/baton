@@ -7,6 +7,7 @@ import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ChatInputField extends ConsumerStatefulWidget {
   final String roomId; // 부모로부터 방 ID를 받습니다.
@@ -89,9 +90,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
     }
 
     if (targetUserId.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('에러: 대화 상대를 찾을 수 없습니다.')));
+      AppSnackBar.show(context, '에러: 대화 상대를 찾을 수 없습니다.');
       print(
         '디버그: widget.roomId=${widget.roomId}, myUserId=$myUserId, targetUserId가 빈칸입니다. 파싱 실패.',
       );
@@ -126,9 +125,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
         });
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('이미지 전송에 실패했습니다.')));
+          AppSnackBar.show(context, '이미지 전송에 실패했습니다.');
         }
       } finally {
         if (mounted) {
@@ -158,9 +155,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
         print('메시지 전송 에러: $e');
         print(st);
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('메시지 전송 실패: $e')));
+          AppSnackBar.show(context, '메시지 전송 실패: $e');
         }
       }
     }

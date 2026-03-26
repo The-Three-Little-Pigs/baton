@@ -1,6 +1,13 @@
 import 'package:baton/models/enum/category.dart';
 
 class WriteValidation {
+  static String? validateImage(List<String> images) {
+    if (images.isEmpty) {
+      return '이미지를 1장 이상 등록해 주세요.';
+    }
+    return null;
+  }
+
   static String? validateTitle(String? value) {
     if (value == null || value.trim().isEmpty) {
       return '제목을 입력해 주세요.';

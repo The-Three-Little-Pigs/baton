@@ -47,7 +47,9 @@ class WritePageViewModel extends _$WritePageViewModel {
     final contentState = ref.read(contentProvider);
     final saleState = ref.read(saleProvider);
     final category = ref.read(categoryProvider);
+    final images = ref.read(imageProvider);
 
+    final imageValidate = WriteValidation.validateImage(images);
     final titleValidate = WriteValidation.validateTitle(contentState.title);
     final categoryValidate = WriteValidation.validateCategory(category);
     final contentValidate = WriteValidation.validateContent(
@@ -55,6 +57,7 @@ class WritePageViewModel extends _$WritePageViewModel {
     );
     final saleValidate = WriteValidation.validatePrice(saleState.purchasePrice);
 
+    if (imageValidate != null) return imageValidate;
     if (titleValidate != null) return titleValidate;
     if (categoryValidate != null) return categoryValidate;
     if (contentValidate != null) return contentValidate;
@@ -106,25 +109,44 @@ class WritePageViewModel extends _$WritePageViewModel {
       return "author_error";
     }
 
-    final post = Post(
-      postId: postId ?? "",
-      title: contentState.title,
-      content: contentState.content,
-      category: category!,
-      purchasePrice: saleState.purchasePrice,
-      salePrice: saleState.salePrice ?? 0,
-      likeCount: 0,
-      chatCount: 0,
-      createdAt: DateTime.now(),
-      authorId: authorResult.value!.uid,
-      status: ProductStatus.available,
-      imageUrls: imageUrls,
-      viewCount: 0, // 🔥 신규 작성 시 0으로 초기화
-    );
+    Post submittingPost;
+    if (postId != null) {
+      final existingResult = await ref.read(postRepositoryProvider).getPostById(postId!);
+      switch (existingResult) {
+        case Success(value: final existingPost):
+          submittingPost = existingPost.copyWith(
+            title: contentState.title.trim(),
+            content: contentState.content.trim(),
+            category: category!,
+            purchasePrice: saleState.purchasePrice,
+            salePrice: saleState.salePrice ?? 0,
+            imageUrls: imageUrls,
+          );
+        case Error(failure: final f):
+          state = AsyncError(f, StackTrace.current);
+          return f.message;
+      }
+    } else {
+      submittingPost = Post(
+        postId: "",
+        title: contentState.title.trim(),
+        content: contentState.content.trim(),
+        category: category!,
+        purchasePrice: saleState.purchasePrice,
+        salePrice: saleState.salePrice ?? 0,
+        likeCount: 0,
+        chatCount: 0,
+        createdAt: DateTime.now(),
+        authorId: authorResult.value!.uid,
+        status: ProductStatus.available,
+        imageUrls: imageUrls,
+        viewCount: 0, 
+      );
+    }
 
     final result = (postId != null)
-        ? await ref.read(postRepositoryProvider).updatePost(post)
-        : await ref.read(postRepositoryProvider).createPost(post);
+        ? await ref.read(postRepositoryProvider).updatePost(submittingPost)
+        : await ref.read(postRepositoryProvider).createPost(submittingPost);
 
     switch (result) {
       case Success():

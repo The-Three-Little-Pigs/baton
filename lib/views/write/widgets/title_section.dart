@@ -1,6 +1,7 @@
 import 'package:baton/views/widgets/input_field.dart';
 import 'package:baton/views/widgets/sub_title.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:baton/views/write/viewmodel/content_notifier.dart';
 
@@ -43,6 +44,9 @@ class _TitleSectionState extends ConsumerState<TitleSection> {
           controller: _controller,
           maxLines: 1,
           hintText: "제목을 입력해주세요.",
+          inputFormatters: [
+            FilteringTextInputFormatter.deny(RegExp(r'^\s+')), // 맨 앞 공백 차단
+          ],
           onChanged: (value) {
             ref.read(contentProvider.notifier).setTitle(value);
           },
