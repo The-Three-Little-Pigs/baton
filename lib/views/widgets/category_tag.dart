@@ -22,7 +22,7 @@ class CategoryTag extends StatelessWidget {
 
     // Baton 디자인 가이드에 맞춘 색상 정의
     final primaryColor = theme.colorScheme.primary;
-    final unselectedBorderColor = const Color(0xFFE2E8F0);
+    final unselectedBorderColor = const Color(0xFFB5C1D0);
     final unselectedTextColor = const Color(0xFF64748B);
 
     return GestureDetector(
