@@ -105,7 +105,6 @@ class Post {
     ProductStatus? status,
     int? viewCount,
     String? buyerId,
-    bool clearBuyerId = false, // 💡 buyerId를 명시적으로 null로 지우기 위한 플래그
   }) {
     return Post(
       postId: postId ?? this.postId,
@@ -121,7 +120,7 @@ class Post {
       createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
       viewCount: viewCount ?? this.viewCount,
-      buyerId: clearBuyerId ? null : (buyerId ?? this.buyerId),
+      buyerId: buyerId ?? this.buyerId,
     );
   }
 }

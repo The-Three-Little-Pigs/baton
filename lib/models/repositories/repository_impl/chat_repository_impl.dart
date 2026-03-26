@@ -422,10 +422,6 @@ class ChatRepositoryImpl implements ChatRepository {
       // 💡 예약/판매 시점에 구매자 정보를 함께 업데이트
       if (buyerId != null) {
         updateData['buyer_id'] = buyerId;
-      } else {
-        // buyerId가 null이면 Firestore 필드를 명시적으로 삭제합니다.
-        // if (buyerId != null) 블록 밖에 두면 취소 시에도 동작합니다.
-        updateData['buyer_id'] = FieldValue.delete();
       }
 
       await _firestore.collection('posts').doc(postId).update(updateData);
