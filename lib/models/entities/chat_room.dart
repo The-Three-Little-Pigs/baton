@@ -22,6 +22,7 @@ class Chatroom {
   final DateTime? appointmentDateTime; // 마지막으로 확정/제안된 약속 시간
   final String? activeAppointmentId; // 현재 활성화된 약속 ID
   final List<String> confirmedCompleteUids; // 거래확정 완료자
+  final DateTime? confirmedAt; // 거래확정 시간
 
   Chatroom({
     required this.roomId,
@@ -37,6 +38,7 @@ class Chatroom {
     this.appointmentDateTime,
     this.activeAppointmentId,
     this.confirmedCompleteUids = const [],
+    this.confirmedAt,
   });
 
   factory Chatroom.fromJson(Map<String, dynamic> json) {
@@ -60,6 +62,7 @@ class Chatroom {
       confirmedCompleteUids: List<String>.from(
         json['confirmedCompleteUids'] ?? [],
       ),
+      confirmedAt: (json['confirmedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -78,6 +81,7 @@ class Chatroom {
       'appointmentDateTime': appointmentDateTime,
       'activeAppointmentId': activeAppointmentId,
       'confirmedCompleteUids': confirmedCompleteUids,
+      'confirmedAt': confirmedAt,
     };
   }
 
@@ -95,6 +99,7 @@ class Chatroom {
     DateTime? appointmentDateTime,
     String? activeAppointmentId,
     List<String>? confirmedCompleteUids,
+    DateTime? confirmedAt,
   }) {
     return Chatroom(
       roomId: roomId ?? this.roomId,
@@ -111,6 +116,7 @@ class Chatroom {
       activeAppointmentId: activeAppointmentId ?? this.activeAppointmentId,
       confirmedCompleteUids:
           confirmedCompleteUids ?? this.confirmedCompleteUids,
+      confirmedAt: confirmedAt ?? this.confirmedAt,
     );
   }
 
@@ -160,6 +166,7 @@ class Chatroom {
       confirmedCompleteUids: List<String>.from(
         data['confirmedCompleteUids'] ?? [],
       ),
+      confirmedAt: _parseDate(data['confirmedAt']),
     );
   }
 }

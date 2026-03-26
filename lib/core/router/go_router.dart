@@ -170,6 +170,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             productTitle: extras['productTitle'] as String,
             productPrice: extras['productPrice'] as String,
             productImageUrl: extras['productImageUrl'] as String?,
+            confirmedAt: extras['confirmedAt'] as DateTime?, // ✅ 추가
           );
         },
       ),
@@ -177,7 +178,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
     redirect: (context, state) {
       final isTransitioning = ref.watch(authTransitionProvider);
-      
+
       // 0. 인증 상태 전환 중(로그인/탈퇴/로그아웃 진행 중)이면 내비게이션 유보
       if (isTransitioning) {
         return null;
@@ -211,7 +212,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         // isLoading이나 isRefreshing 중에는 위에서 걸러지므로, 여기서는 hasValue를 더 엄격하게 체크합니다.
         if (userAsync.hasValue) {
           final userValue = ref.read(userProvider).value;
-          
+
           // 실시간 데이터가 null임이 완전히 확인된 경우에만 미가입 처리
           if (userValue == null) {
             // 이미 가입 관련 페이지로 가고 있다면 허용

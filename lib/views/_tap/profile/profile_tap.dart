@@ -22,6 +22,7 @@ class ProfileTap extends ConsumerWidget {
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
         actions: [Icon(Icons.more_vert, size: 24)],
+        backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       //추가하면서 일단 컬럼 리스트뷰로 바뀌났어용
       body: ListView(

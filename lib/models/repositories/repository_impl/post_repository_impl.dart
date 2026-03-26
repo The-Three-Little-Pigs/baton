@@ -163,4 +163,28 @@ class PostRepositoryImpl implements PostRepository {
       return Error(ServerFailure('조회수 업데이트 중 오류가 발생했습니다: $e'));
     }
   }
-}
+
+  @override
+  Stream<Result<Post, Failure>> watchPost(String postId) async* {
+    final snapshots = _firestore.collection('posts').doc(postId).snapshots();
+    try {
+      yield* snapshots.map((snapshot) {
+        if (!snapshot.exists || snapshot.data() == null) {
+          return Error(ServerFailure('게시글이 존재하지 않습니다.'));
+        }
+        try {
+          final post = Post.fromJson(snapshot.data()!);
+          return Success(post);
+        } catch (e) {
+          return Error(ServerFailure('데이터 파싱 오류: $e'));
+        }
+      });
+    } catch (e) {
+      if (e is FirebaseException) {
+        yield Error(FirebaseErrorMapper.toFailure(e));
+      } else {
+        yield Error(ServerFailure('알 수 없는 오류 발생: $e'));
+      }
+    }
+  }
+} // ⬅️ 이 중괄호가 파일의 가장 마지막에 있어야 합니다!

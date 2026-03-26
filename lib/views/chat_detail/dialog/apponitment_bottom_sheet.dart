@@ -87,7 +87,7 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final sheetHeight = MediaQuery.of(context).size.height * 0.7;
+    final sheetHeight = MediaQuery.of(context).size.height * 0.75;
     return SizedBox(
       height: sheetHeight,
       child: Container(
