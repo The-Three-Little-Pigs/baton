@@ -13,7 +13,7 @@ part of 'product_detail_page_view_model.dart';
 final productDetailPageViewModelProvider = ProductDetailPageViewModelFamily._();
 
 final class ProductDetailPageViewModelProvider
-    extends $AsyncNotifierProvider<ProductDetailPageViewModel, Post> {
+    extends $StreamNotifierProvider<ProductDetailPageViewModel, Post> {
   ProductDetailPageViewModelProvider._({
     required ProductDetailPageViewModelFamily super.from,
     required String super.argument,
@@ -52,7 +52,7 @@ final class ProductDetailPageViewModelProvider
 }
 
 String _$productDetailPageViewModelHash() =>
-    r'99dcbb207a602d6a2509f272cc56a67823c6d9a3';
+    r'fff8f2e38a8806ab21ca1f3e0162e7e845d2b4a5';
 
 final class ProductDetailPageViewModelFamily extends $Family
     with
@@ -60,7 +60,7 @@ final class ProductDetailPageViewModelFamily extends $Family
           ProductDetailPageViewModel,
           AsyncValue<Post>,
           Post,
-          FutureOr<Post>,
+          Stream<Post>,
           String
         > {
   ProductDetailPageViewModelFamily._()
@@ -79,11 +79,11 @@ final class ProductDetailPageViewModelFamily extends $Family
   String toString() => r'productDetailPageViewModelProvider';
 }
 
-abstract class _$ProductDetailPageViewModel extends $AsyncNotifier<Post> {
+abstract class _$ProductDetailPageViewModel extends $StreamNotifier<Post> {
   late final _$args = ref.$arg as String;
   String get postId => _$args;
 
-  FutureOr<Post> build(String postId);
+  Stream<Post> build(String postId);
   @$mustCallSuper
   @override
   void runBuild() {

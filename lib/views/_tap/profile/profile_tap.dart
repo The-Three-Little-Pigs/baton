@@ -12,13 +12,18 @@ class ProfileTap extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 💡 유저 정보 변화를 감시하여 페이지 전체가 동기화되어 리빌드되도록 함 (레이아웃 틀어짐 방지)
+    ref.watch(userProvider);
+
     return Scaffold(
+
       appBar: AppBar(
         title: Text(
           '마이페이지',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
         actions: [Icon(Icons.more_vert, size: 24)],
+        backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       //추가하면서 일단 컬럼 리스트뷰로 바뀌났어용
       body: ListView(
@@ -50,9 +55,8 @@ class ProfileTap extends ConsumerWidget {
           const _RecentReviewsSection(),
           const SizedBox(height: 16),
           SectionTitle(title: '거래 관리'),
-          MenuListItem(icon: Icons.local_offer, content: '내 상품 관리'),
-          SizedBox(height: 8),
           MenuListItem(
+
             svgPath: 'assets/icons/sales_history.svg',
             content: '판매내역',
             routePath: '/salesHistory',
@@ -373,6 +377,7 @@ class MenuListItem extends StatelessWidget {
   final String content;
   final String? svgPath;
   final String? routePath;
+
   const MenuListItem({
     super.key,
     this.icon,
@@ -385,47 +390,75 @@ class MenuListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Ink(
+      child: Container(
+        height: 64,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: InkWell(
-          onTap: () {
-            if (routePath != null) {
-              context.push(routePath!);
-            }
-          },
+
+        child: Material(
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(16),
-          child: SizedBox(
-            height: 64,
+          child: InkWell(
+            onTap: () {
+              if (routePath != null) {
+                context.push(routePath!);
+              }
+            },
+            borderRadius: BorderRadius.circular(16),
             child: Padding(
-              padding: const EdgeInsets.only(
-                left: 20,
-                right: 14,
-                top: 20,
-                bottom: 20,
-              ),
+              padding: const EdgeInsets.only(left: 20, right: 14),
+
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   if (svgPath != null)
                     SvgPicture.asset(
                       svgPath!,
                       width: 24,
                       height: 24,
-                      colorFilter: ColorFilter.mode(
+                      colorFilter: const ColorFilter.mode(
                         AppColors.primary,
                         BlendMode.srcIn,
                       ),
                     ),
                   if (icon != null)
                     Icon(icon!, color: AppColors.primary, size: 24),
-                  SizedBox(width: 12),
-                  Text(content),
-                  Spacer(),
-                  Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      content,
+                      strutStyle: const StrutStyle(
+                        fontSize: 16,
+                        forceStrutHeight: true,
+                      ),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                        leadingDistribution: TextLeadingDistribution.even,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                    color: const Color(0xFFB3B3B3),
+                  ),
+
                 ],
               ),
             ),
@@ -435,3 +468,4 @@ class MenuListItem extends StatelessWidget {
     );
   }
 }
+

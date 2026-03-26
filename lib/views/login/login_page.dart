@@ -2,9 +2,13 @@ import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/core/theme/app_tokens/app_spacing.dart';
 import 'package:baton/models/entities/login_status.dart';
 import 'package:baton/models/enum/social_type.dart';
+import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/login/viewmodel/login_page_view_model.dart';
+
 import 'package:baton/views/login/widgets/social_login_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:baton/core/utils/ui/app_snackbar.dart';
@@ -14,7 +18,20 @@ class LoginPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 💡 로그인된 상태(Firebase Auth)라면 즉시 로딩 화면을 보여주어 로그인 UI 노출을 원천 차단
+    final isFirebaseLoggedIn =
+        ref.watch(userProvider).maybeWhen(data: (user) => user != null, orElse: () => false) ||
+        FirebaseAuth.instance.currentUser != null;
+
+    if (isFirebaseLoggedIn) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     ref.listen(
+
       loginPageViewModelProvider,
       (previous, next) {
         next.whenData((status) {

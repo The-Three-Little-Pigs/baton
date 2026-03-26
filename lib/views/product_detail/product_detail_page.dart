@@ -62,6 +62,7 @@ class ProductDetailPage extends ConsumerWidget {
                   Padding(
                     padding: EdgeInsets.all(20),
                     child: ProductDetailInfo(
+                      productStatus: post.status,
                       title: post.title,
                       purchasePrice: post.purchasePrice == null
                           ? "0원"

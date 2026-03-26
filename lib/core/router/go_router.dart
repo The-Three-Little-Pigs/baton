@@ -170,12 +170,20 @@ final routerProvider = Provider<GoRouter>((ref) {
             productTitle: extras['productTitle'] as String,
             productPrice: extras['productPrice'] as String,
             productImageUrl: extras['productImageUrl'] as String?,
+            confirmedAt: extras['confirmedAt'] as DateTime?, // ✅ 추가
           );
         },
       ),
     ],
 
     redirect: (context, state) {
+      final isTransitioning = ref.watch(authTransitionProvider);
+
+      // 0. 인증 상태 전환 중(로그인/탈퇴/로그아웃 진행 중)이면 내비게이션 유보
+      if (isTransitioning) {
+        return null;
+      }
+
       final authUser = FirebaseAuth.instance.currentUser;
       final isLoggedIn = authUser != null;
       final location = state.matchedLocation;
@@ -200,29 +208,39 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 3. DB에 유저 정보(닉네임)가 없는 경우 (미가입자)
       if (nickname.isEmpty) {
-        // [중요] 만약 userProvider가 데이터를 가지고 있는데 null이라면 (로딩 완료 후에도 데이터 없음),
-        // 그때 비로소 미가입자로 판단하고 이동시킵니다.
-        // 유저 정보가 정말로 없는 것이 확실할 때만 리다이렉트
+        // [중요] 유저 데이터가 '확실히' 없는 경우(null)에만 미가입자로 판단합니다.
+        // isLoading이나 isRefreshing 중에는 위에서 걸러지므로, 여기서는 hasValue를 더 엄격하게 체크합니다.
         if (userAsync.hasValue) {
-          // 이미 가입 관련 페이지로 가고 있다면 허용
-          if (location == '/signUp' || location == '/signUpProfile') {
-            if (location == '/signUpProfile') {
-              if (state.extra == null || (state.extra as String).isEmpty) {
-                return '/signUp';
+          final userValue = ref.read(userProvider).value;
+
+          // 실시간 데이터가 null임이 완전히 확인된 경우에만 미가입 처리
+          if (userValue == null) {
+            // 이미 가입 관련 페이지로 가고 있다면 허용
+            if (location == '/signUp' || location == '/signUpProfile') {
+              if (location == '/signUpProfile') {
+                if (state.extra == null || (state.extra as String).isEmpty) {
+                  return '/signUp';
+                }
               }
+              return null;
             }
-            return null;
-          }
 
-          // [변경] 유저 정보가 정말로 '없을' 때(가입 안 함)만 signUp으로 보냅니다.
-          if (location == '/') {
-            return '/signUp';
-          }
+            // [원복] 로그인 페이지('/')에서 유저 정보가 없는 것이 확인되면 signUp으로 보냅니다.
+            if (location == '/') {
+              return '/signUp';
+            }
 
-          return '/';
+            // 가입 관련 페이지에 있는 경우는 그대로 둡니다.
+            if (location == '/signUp' || location == '/signUpProfile') {
+              return null;
+            }
+
+            // 그 외의 유저 정보가 필요한 페이지에서 유저가 없으면 로그인으로 보냅니다.
+            return '/';
+          }
         }
 
-        // 아직 유저 정보 유무가 불확실하면 현재 위치 유지 (Loading 상태 등)
+        // 아직 유저 정보 유무가 불확실하면 현재 위치 유지
         return null;
       }
       // 4. 가입 완료된 유저

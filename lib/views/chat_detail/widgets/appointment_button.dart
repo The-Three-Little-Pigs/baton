@@ -4,6 +4,7 @@ import 'package:baton/models/enum/appointment_status.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
 import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/author_notifier.dart'; // ✅ 추가
 import 'package:baton/views/widgets/common_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,11 +27,18 @@ class AppointmentButton extends ConsumerWidget {
         : '';
     final postId = parts.length >= 3 ? parts[2] : '';
     final chatRoomAsync = ref.watch(chatRoomStreamProvider(roomId));
+    final otherUserAsync = ref.watch(
+      authorProvider(otherUserId),
+    ); // ✅ 상대방 유저 정보 구독
+
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 6),
       child: chatRoomAsync.when(
         data: (room) {
           if (room == null) return const SizedBox.shrink();
+          final opponentName =
+              otherUserAsync.value?.nickname ?? '상대방'; // ✅ 닉네임 추출
+
           AppointmentStatus? currentStatus;
           if (room.appointmentStatus != null) {
             currentStatus = AppointmentStatus.values.firstWhere(
@@ -156,39 +164,39 @@ class AppointmentButton extends ConsumerWidget {
                 return SizedBox(
                   width: double.infinity,
                   height: 36,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.push(
-                        '/review/write',
-                        extra: {
-                          'opponentName': room.participants.firstWhere(
-                            (id) => id != myUserId,
-                            orElse: () => '상대방',
+                  child: Material(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(8),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        context.push(
+                          '/review/write',
+                          extra: {
+                            'opponentName': opponentName, // ✅ UID 대신 닉네임 전달
+                            'receiverId': otherUserId,
+                            'postId': postId,
+                            'roomId': roomId,
+                            'productTitle': post.title,
+                            'productPrice': post.salePrice.toString(),
+                            'productImageUrl': post.imageUrls.isNotEmpty
+                                ? post.imageUrls[0]
+                                : null,
+                            'confirmedAt': room.confirmedAt,
+                          },
+                        );
+                      },
+                      child: Container(
+                        height: 44, // 버튼 높이 명시적 지정
+                        alignment: Alignment.center,
+                        child: const Text(
+                          '후기 작성하기',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
-                          'receiverId': otherUserId,
-                          'postId': postId,
-                          'roomId': roomId,
-                          'productTitle': post.title,
-                          'productPrice': post.salePrice.toString(),
-                          'productImageUrl': post.imageUrls.isNotEmpty
-                              ? post.imageUrls[0]
-                              : null,
-                        },
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      '후기 작성하기',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

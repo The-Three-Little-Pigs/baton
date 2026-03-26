@@ -17,4 +17,5 @@ abstract class PostRepository {
   Future<Result<Post, Failure>> getPostById(String postId);
   Future<Result<List<Post>, Failure>> getPostBySearch(String keyword);
   Future<Result<void, Failure>> incrementViewCount(String postId);
+  Stream<Result<Post, Failure>> watchPost(String postId);
 }

@@ -16,7 +16,11 @@ class LikeRepositoryImpl implements LikeRepository {
   @override
   Future<Result<void, Failure>> toggleLike(String postId, String userId) async {
     if (postId.isEmpty || userId.isEmpty) {
-      return Error(ServerFailure('게시글 ID 또는 사용자 ID가 유효하지 않습니다. (userId: $userId, postId: $postId)'));
+      return Error(
+        ServerFailure(
+          '게시글 ID 또는 사용자 ID가 유효하지 않습니다. (userId: $userId, postId: $postId)',
+        ),
+      );
     }
 
     bool isLocalSuccess = false;
@@ -29,11 +33,14 @@ class LikeRepositoryImpl implements LikeRepository {
       final String likeDocId = '${userId}_$postId';
       final docRef = _firestore.collection('likes').doc(likeDocId);
       final postRef = _firestore.collection('posts').doc(postId);
-      
+
       // 게시글 존재 여부 먼저 확인 (Batch Update 실패 방지)
       final postDoc = await postRef.get();
       if (!postDoc.exists) {
-        throw FirebaseException(plugin: 'firestore', message: '해당 게시글이 존재하지 않습니다. (ID: $postId)');
+        throw FirebaseException(
+          plugin: 'firestore',
+          message: '해당 게시글이 존재하지 않습니다. (ID: $postId)',
+        );
       }
 
       final likeDoc = await docRef.get();

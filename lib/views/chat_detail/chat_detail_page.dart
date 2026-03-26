@@ -11,7 +11,6 @@ import 'package:baton/views/chat_detail/widgets/appointment_button.dart';
 import 'package:baton/views/chat_detail/widgets/chat_input_field.dart';
 import 'package:baton/views/chat_detail/widgets/chat_message_list.dart';
 import 'package:baton/views/chat_detail/widgets/chat_product_banner.dart';
-import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:baton/views/widgets/common_dialog.dart';
 import 'package:baton/views/widgets/cupertino_modal_pop_up.dart';
@@ -212,7 +211,10 @@ class ChatDetailPage extends ConsumerWidget {
             children: [
               ChatProductBanner(roomId: roomId),
               AppointmentButton(roomId: roomId),
-              Divider(color: AppColors.secondary, thickness: 1),
+              Divider(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                thickness: 1,
+              ),
               ChatMessageList(roomId: roomId),
               Padding(
                 padding: const EdgeInsets.only(
