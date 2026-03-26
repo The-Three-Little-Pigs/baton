@@ -113,7 +113,7 @@ class ProductDetailPage extends ConsumerWidget {
           return SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(20),
-              child: BottomChatBar(post: post),
+              child: BottomChatBar(post: post, productId: postId),
             ),
           );
         },

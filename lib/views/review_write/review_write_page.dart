@@ -244,131 +244,95 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                             fontWeight: FontWeight.w500,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
-                        ],
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-
-                  // 5. 작성 완료 버튼
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: (state.canSubmit && !state.isLoading)
-                          ? () async {
-                              final error = await notifier.submitReview(
-                                receiverId: widget.receiverId,
-                                postId: widget.postId,
-                                roomId: widget.roomId,
-                              );
-                              if (error == null) {
-                                if (context.mounted) {
-                                  AppSnackBar.show(context, '후기가 등록되었습니다!');
-                                  context.pop();
-                                }
-                              } else {
-                                if (context.mounted) {
-                                  AppSnackBar.show(context, error);
-                                }
-                              }
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        disabledBackgroundColor: AppColors.primary.withOpacity(
-                          0.3,
                         ),
-                        const SizedBox(height: 20),
-                        RatingBar.builder(
-                          initialRating: 2.5,
-                          unratedColor: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerHighest,
-                          minRating: 0,
-                          direction: Axis.horizontal,
-                          allowHalfRating: true,
-                          itemCount: 5,
-                          itemPadding: const EdgeInsets.symmetric(
-                            horizontal: 4.0,
-                          ),
-                          itemBuilder: (context, _) => const Icon(
-                            Icons.star_rounded,
-                            color: AppColors.primary,
-                          ),
-                          onRatingUpdate: _isAlreadyWritten
-                              ? (_) {}
-                              : (rating) => notifier.updateRating(rating),
-                          ignoreGestures: _isAlreadyWritten,
-                        ),
-                        const SizedBox(height: 40),
-
-                        // 후기 입력 타이틀
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '거래 후기',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                            Text(
-                              '(${state.content.length}/1000)',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          enabled: !_isAlreadyWritten,
-                          maxLines: 5,
-                          maxLength: 1000,
-                          decoration: InputDecoration(
-                            hintText: _isAlreadyWritten
-                                ? ''
-                                : '거래 후기를 자유롭게 남겨주세요.\n(욕설, 비방, 허위 정보는 등록이 제한될 수 있어요)',
-                            hintStyle: TextStyle(
-                              color: Colors.grey.shade400,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            counterText: '',
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest,
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          onChanged: (val) => notifier.updateContent(val),
-                        ),
-
-                        // 별점 안내 문구
                       ],
                     ),
                   ),
 
-                  // 5. 작성 완료 버튼
-                  SizedBox(height: 12),
+                  const SizedBox(height: 20),
+                  RatingBar.builder(
+                    initialRating: 2.5,
+                    unratedColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                    minRating: 0,
+                    direction: Axis.horizontal,
+                    allowHalfRating: true,
+                    itemCount: 5,
+                    itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    itemBuilder: (context, _) => const Icon(
+                      Icons.star_rounded,
+                      color: AppColors.primary,
+                    ),
+                    onRatingUpdate: _isAlreadyWritten
+                        ? (_) {}
+                        : (rating) => notifier.updateRating(rating),
+                    ignoreGestures: _isAlreadyWritten,
+                  ),
+                  const SizedBox(height: 40),
+
+                  // 후기 입력 타이틀
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '거래 후기',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      Text(
+                        '(${state.content.length}/1000)',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    enabled: !_isAlreadyWritten,
+                    maxLines: 5,
+                    maxLength: 1000,
+                    decoration: InputDecoration(
+                      hintText: _isAlreadyWritten
+                          ? ''
+                          : '거래 후기를 자유롭게 남겨주세요.\n(욕설, 비방, 허위 정보는 등록이 제한될 수 있어요)',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      counterText: '',
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
+                          width: 1,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    onChanged: (val) => notifier.updateContent(val),
+                  ),
+
+                  // 별점 안내 문구
                 ],
               ),
             ),
+
       bottomNavigationBar: Padding(
         padding: EdgeInsets.only(
           left: 16,

@@ -14,11 +14,9 @@ import 'package:baton/models/entities/post.dart';
 import 'package:baton/notifier/like/like_notifier.dart';
 
 class BottomChatBar extends ConsumerWidget {
-  const BottomChatBar({
-    super.key,
-    required this.post,
-  });
+  const BottomChatBar({super.key, required this.post, required this.productId});
   final Post post;
+  final String productId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -63,7 +61,7 @@ class BottomChatBar extends ConsumerWidget {
                         final result = ref
                             .read(chatRoomActionProvider.notifier)
                             .joinRoom(
-                              targetUserId: authorId,
+                              targetUserId: post.authorId,
                               productId: productId,
                             );
 
