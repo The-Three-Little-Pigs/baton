@@ -18,6 +18,7 @@ class ProfileTap extends ConsumerWidget {
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
         actions: [Icon(Icons.more_vert, size: 24)],
+        backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       //추가하면서 일단 컬럼 리스트뷰로 바뀌났어용
       body: ListView(
@@ -49,8 +50,6 @@ class ProfileTap extends ConsumerWidget {
           const _RecentReviewsSection(),
           const SizedBox(height: 16),
           SectionTitle(title: '거래 관리'),
-          MenuListItem(icon: Icons.local_offer, content: '내 상품 관리'),
-          SizedBox(height: 8),
           MenuListItem(
             svgPath: 'assets/icons/sales_history.svg',
             content: '판매내역',
