@@ -10,19 +10,19 @@ part 'product_detail_page_view_model.g.dart';
 @riverpod
 class ProductDetailPageViewModel extends _$ProductDetailPageViewModel {
   @override
-  Future<Post> build(String postId) async {
+  Stream<Post> build(String postId) {
     final repo = ref.read(postRepositoryProvider);
-
-    // 🔥 상세 페이지 진입 시 조회수 1 증가 (Fire and forget 또는 간단히 대기)
-    // 에러가 나더라도 무시하거나 로그만 남김 (사용자 경험에 치명적이지 않음)
-    await repo.incrementViewCount(postId);
-
-    final result = await repo.getPostById(postId);
-
-    return switch (result) {
-      Success(value: final post) => post,
-      Error(failure: final failure) => throw failure.message,
-    };
+    // 1. 상세 페이지 진입 시 조회수 1 증가 (이 메서드는 처음 watch될 때 한 번만 실행됩니다)
+    repo.incrementViewCount(postId);
+    // 2. 실시간 스트림 구독 및 Result 패턴 매핑
+    return repo.watchPost(postId).map((result) {
+      return switch (result) {
+        // 성공 시 순수 Post 객체 반환 (AsyncValue.data가 됨)
+        Success(value: final post) => post,
+        // 실패 시 에러 throw (AsyncValue.error가 됨)
+        Error(failure: final failure) => throw failure.message,
+      };
+    });
   }
 
   Future<Result<void, Failure>> deletePost() async {

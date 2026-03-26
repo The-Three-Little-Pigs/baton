@@ -128,46 +128,35 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
     String postId,
   ) async {
     final repository = ref.read(chatRepositoryProvider);
-    final chatroom = ref.read(chatRoomStreamProvider(roomId)).value;
+
+    // 1. [수정] .value 대신 .future를 사용하여 채팅방 데이터가 로드될 때까지 확실히 기다립니다.
+    // 이를 통해 buyerId가 빈 값('')으로 잘못 저장되는 현상을 원천 차단합니다.
+    final chatroom = await ref.read(chatRoomStreamProvider(roomId).future);
     final buyerId = chatroom?.participants.firstWhere(
       (id) => id != _myUserId,
       orElse: () => '',
     );
-    final updateResult = await repository.updateAppointmentStatus(
+    // [방어 로직] 구매자 ID를 특정할 수 없는 경우 진행하지 않습니다.
+    if (buyerId == null || buyerId.isEmpty) {
+      return "구매자 정보를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.";
+    }
+    // 2. 약속 상태 변경 (메시지 상태: 확정됨)
+    await repository.updateAppointmentStatus(
       roomId: roomId,
       messageId: messageId,
       newStatus: AppointmentStatus.confirmed,
     );
-    if (updateResult case Error(:final failure)) {
-      return failure.message;
-    }
-    final postResult = await repository.updatePostStatus(
+    // 3. 상품 상태 업데이트 (상품 상세 페이지 데이터 원천 변경)
+    await repository.updatePostStatus(
       postId: postId,
       newStatus: ProductStatus.reserved,
       buyerId: buyerId,
     );
-    if (postResult case Error(:final failure)) {
-      debugPrint('상품 상태 업데이트 실패: ${failure.message}');
-      return failure.message;
-    }
-
-    // 🔥 [서버 재접속 없는 즉시 렌더링 코드]
-    final postNotifier = ref.read(
-      productDetailPageViewModelProvider(postId).notifier,
-    );
-    final currentPost = postNotifier.state.value;
-
-    if (currentPost != null) {
-      // 서버에서 새로 받지 않고, 현재 화면의 객체 상태만 '예약중'으로 바꿔서 즉시 화면에 주입!
-      postNotifier.state = AsyncData(
-        currentPost.copyWith(status: ProductStatus.reserved, buyerId: buyerId),
-      );
-    } else {
-      // 혹시라도 메모리에 객체가 없다면 어쩔 수 없이 서버 조회
-      ref.invalidate(productDetailPageViewModelProvider(postId));
-    }
-
-    debugPrint('✅ 상품 상태가 [예약중]으로 정상 변경되었습니다!');
+    // 4. [구조적 개선: Stream 전환 완료]
+    // 이제 상품 상세 페이지가 해당 상품을 실시간 관찰(Stream)하고 있으므로,
+    // 명시적인 invalidate(무효화) 없이도 데이터가 서버에 반영되는 순간 화면이 바뀝니다.
+    // ref.invalidate(productDetailPageViewModelProvider(postId));
+    debugPrint('✅ 상품 상태가 [예약중]으로 변경되었습니다. (Stream을 통한 실시간 동기화 작동)');
     return null;
   }
 
@@ -189,36 +178,19 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
     switch (result) {
       case Success():
         // 2. 취소되었으니 특정 상품(Post)을 다시 판매중으로 롤백
-        if (postId.isEmpty) {
-          debugPrint('postId is empty');
-          return;
-        }
-        final postResult = await repository.updatePostStatus(
-          postId: postId,
-          newStatus: ProductStatus.available,
-          buyerId: null,
-        );
-        if (postResult case Error(:final failure)) {
-          debugPrint('상품 상태 업데이트 실패: ${failure.message}');
-        } else {
-          // 🔥 [서버 재접속 없는 즉시 렌더링 코드]
-          final postNotifier = ref.read(
-            productDetailPageViewModelProvider(postId).notifier,
+        if (postId.isNotEmpty) {
+          final postResult = await repository.updatePostStatus(
+            postId: postId,
+            newStatus: ProductStatus.available,
+            buyerId: null,
           );
-          final currentPost = postNotifier.state.value;
-
-          if (currentPost != null) {
-            // 이번엔 스무스하게 즉시 '판매중'으로 바꿔치기
-            postNotifier.state = AsyncData(
-              currentPost.copyWith(
-                status: ProductStatus.available,
-                buyerId: null,
-              ),
-            );
+          if (postResult case Error(:final failure)) {
+            debugPrint('상품 상태 업데이트 실패: ${failure.message}');
           } else {
+            // 🔥 [구조적 개선: Invalidation 전략]
             ref.invalidate(productDetailPageViewModelProvider(postId));
+            debugPrint('✅ 게시글 상태가 [판매중]으로 롤백되었으며, 프로바이더가 무효화되었습니다!');
           }
-          debugPrint('✅ 게시글 상태가 [판매중]으로 성공적으로 롤백되었습니다!');
         }
         break;
 
@@ -237,30 +209,11 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
     );
     switch (result) {
       case Success():
-        // 쌍방 확정이 이뤄져서 상품이 '판매완료'로 바뀌었을 때를 대비해 즉각적인 UI 반영(낙관적 업데이트)
+        // 🔥 [구조적 개선: Invalidation 전략]
         if (postId.isNotEmpty) {
-          final postNotifier = ref.read(
-            productDetailPageViewModelProvider(postId).notifier,
-          );
-          final currentPost = postNotifier.state.value;
-          if (currentPost != null) {
-            final chatroom = ref.read(chatRoomStreamProvider(roomId)).value;
-            final buyerId = chatroom?.participants.firstWhere(
-              (id) => id != _myUserId,
-              orElse: () => '',
-            );
-
-            postNotifier.state = AsyncData(
-              currentPost.copyWith(
-                status: ProductStatus.sold,
-                buyerId: buyerId,
-              ),
-            );
-          } else {
-            ref.invalidate(productDetailPageViewModelProvider(postId));
-          }
+          ref.invalidate(productDetailPageViewModelProvider(postId));
         }
-        debugPrint('✅ 수동 확정 버튼 클릭 처리 완료');
+        debugPrint('✅ 수동 확정 처리 완료 및 프로바이더 무효화');
         break;
       case Error(:final failure):
         debugPrint('거래 확정 실패: ${failure.message}');
