@@ -4,22 +4,24 @@ import 'package:baton/views/widgets/complete_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
+
+import 'package:baton/models/entities/post.dart';
+import 'package:baton/notifier/like/like_notifier.dart';
 
 class BottomChatBar extends ConsumerWidget {
   const BottomChatBar({
     super.key,
-    required this.productId,
-    required this.authorId,
+    required this.post,
   });
-  final String productId;
-  final String authorId;
+  final Post post;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       spacing: 4,
       children: [
-        _FavoriteButton(),
+        _FavoriteButton(post: post),
         Expanded(
           child: CompleteButton(
             label: "채팅하기",
@@ -27,7 +29,7 @@ class BottomChatBar extends ConsumerWidget {
             onPressed: () {
               final result = ref
                   .read(chatRoomActionProvider.notifier)
-                  .joinRoom(targetUserId: authorId, productId: productId);
+                  .joinRoom(targetUserId: post.authorId, productId: post.postId);
 
               switch (result) {
                 case Success(value: final roomId):
@@ -37,9 +39,7 @@ class BottomChatBar extends ConsumerWidget {
                   );
                   break;
                 case Error(failure: final failure):
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(failure.message)));
+                  AppSnackBar.show(context, failure.message);
                   break;
               }
             },
@@ -50,21 +50,33 @@ class BottomChatBar extends ConsumerWidget {
   }
 }
 
-class _FavoriteButton extends StatelessWidget {
+class _FavoriteButton extends ConsumerWidget {
+  const _FavoriteButton({required this.post});
+
+  final Post post;
+
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Theme.of(context).colorScheme.primary),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: SizedBox.square(
-        dimension: 54,
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Icon(
-            Icons.favorite,
-            color: Theme.of(context).colorScheme.primary,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final likedPosts = ref.watch(likeProvider).value ?? [];
+    final isLiked = likedPosts.any((p) => p.postId == post.postId);
+
+    return GestureDetector(
+      onTap: () {
+        ref.read(likeProvider.notifier).toggleLike(post);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Theme.of(context).colorScheme.primary),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: SizedBox.square(
+          dimension: 54,
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Icon(
+              isLiked ? Icons.favorite : Icons.favorite_border,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
         ),
       ),

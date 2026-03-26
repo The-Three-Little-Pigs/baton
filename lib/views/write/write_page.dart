@@ -48,9 +48,11 @@ class WritePage extends ConsumerWidget {
             ),
           ),
           bottomNavigationBar: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: MediaQuery.of(context).padding.bottom + 20,
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 10,
+              bottom: MediaQuery.of(context).padding.bottom + 20,
             ),
             child: BottomCompleteBar(postId: postId),
           ),
@@ -70,7 +72,7 @@ class DimBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black.withOpacity(0.5),
+      color: Colors.black.withValues(alpha: 0.5),
       child: const Center(
         child: CircularProgressIndicator(color: Colors.white),
       ),

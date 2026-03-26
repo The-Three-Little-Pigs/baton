@@ -39,7 +39,7 @@ class Post {
       title: json['title'] as String,
       purchasePrice: json['purchase_price'] as int?,
       salePrice: json['sale_price'] as int?,
-      imageUrls: List<String>.from(json['image_url'] ?? []),
+      imageUrls: List<String>.from(json['image_url']),
       content: json['content'] as String,
       likeCount: json['like_count'] as int,
       chatCount: json['chat_count'] as int,

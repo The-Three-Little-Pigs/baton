@@ -8,25 +8,33 @@ class CategorySelectButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final isSelected = ref.watch(filterProvider).isOpen;
 
-    return Container(
-      height: 34,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: ShapeDecoration(
-        color: const Color(0xFFFCFDFE),
-        shape: RoundedRectangleBorder(
-          side: BorderSide(width: 1, color: const Color(0xFFB5C1D0)),
-          borderRadius: BorderRadius.circular(999),
+    return GestureDetector(
+      onTap: () {
+        ref.read(filterProvider.notifier).toggle();
+      },
+      child: Container(
+        height: 34,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: ShapeDecoration(
+          color: isSelected
+              ? theme.colorScheme.primary
+              : const Color(0xFFFCFDFE),
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+              width: 1,
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : const Color(0xFFB5C1D0),
+            ),
+            borderRadius: BorderRadius.circular(999),
+          ),
         ),
-      ),
-      child: GestureDetector(
-        onTap: () {
-          ref.read(filterProvider.notifier).toggle();
-        },
         child: Icon(
           Icons.tune_outlined,
           size: 20,
-          color: theme.colorScheme.onSurface,
+          color: isSelected ? Colors.white : theme.colorScheme.onSurface,
         ),
       ),
     );

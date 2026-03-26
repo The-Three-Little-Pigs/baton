@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class AppointmentButton extends ConsumerWidget {
   const AppointmentButton({super.key, required this.roomId});
@@ -223,9 +224,7 @@ class AppointmentButton extends ConsumerWidget {
                       isRoomExist,
                     );
                 if (errorMessage != null && context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(errorMessage)));
+                  AppSnackBar.show(context, errorMessage);
                 }
               },
 

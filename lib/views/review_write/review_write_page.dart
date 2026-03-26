@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ReviewWritePage extends ConsumerStatefulWidget {
   final String opponentName;
@@ -271,18 +272,12 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                               );
                               if (error == null) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('후기가 등록되었습니다!'),
-                                    ),
-                                  );
+                                  AppSnackBar.show(context, '후기가 등록되었습니다!');
                                   context.pop();
                                 }
                               } else {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(error)),
-                                  );
+                                  AppSnackBar.show(context, error);
                                 }
                               }
                             }

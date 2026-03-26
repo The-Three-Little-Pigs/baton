@@ -32,6 +32,7 @@ class _ImageSectionState extends State<ImageSection> {
           bottom: 8,
           right: 24,
           child: Container(
+            alignment: Alignment.center,
             height: 22,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(

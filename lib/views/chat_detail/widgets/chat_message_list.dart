@@ -10,6 +10,7 @@ import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 final _timeFormat = DateFormat('a h:mm', 'ko_KR');
 
@@ -176,9 +177,7 @@ class ChatMessageList extends ConsumerWidget {
                                         true,
                                       );
                                   if (errorMessage != null && context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(errorMessage)),
-                                    );
+                                    AppSnackBar.show(context, errorMessage);
                                   }
                                 },
                                 hasConfirmed:

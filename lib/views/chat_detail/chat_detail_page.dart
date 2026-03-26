@@ -19,6 +19,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ChatDetailPage extends ConsumerWidget {
   const ChatDetailPage({super.key, required this.roomId});
@@ -193,9 +194,7 @@ class ChatDetailPage extends ConsumerWidget {
                             case Error(:final failure):
                               // 실패 시: 오류 메시지 스낵바
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(failure.message)),
-                                );
+                                AppSnackBar.show(context, failure.message);
                               }
                           }
                         },
