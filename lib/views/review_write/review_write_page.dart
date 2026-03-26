@@ -8,7 +8,6 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ReviewWritePage extends ConsumerStatefulWidget {
   final String opponentName;
