@@ -323,6 +323,8 @@ class ChatRepositoryImpl implements ChatRepository {
         'appointmentDateTime': Timestamp.fromDate(actualData.dateTime),
         'activeAppointmentId':
             actualData.appointmentId, // 이제 빈 문자열이 아니라 진짜 ID가 들어갑니다!
+        'confirmedCompleteUids': <String>[], // 새 약속 시 확정 상태 초기화
+        'confirmedAt': null, // 확정 시간 초기화
       };
       // 방이 처음 생길 때의 초기 데이터 포함( 생략 가능하나 안전을 위해)
       if (!hasRoom) {
@@ -396,6 +398,8 @@ class ChatRepositoryImpl implements ChatRepository {
           transaction.update(chatroomRef, {
             'appointmentStatus': AppointmentStatus.cancelled.label,
             'activeAppointmentId': null, // 취소 시 활성화된 약속 ID 제거
+            'confirmedCompleteUids': <String>[], // 취소 시 확정 상태 초기화
+            'confirmedAt': null, // 취소 시 확정 시간 초기화
           });
         } else if (newStatus == AppointmentStatus.completed) {
           transaction.update(chatroomRef, {
