@@ -89,8 +89,9 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
     String roomId,
     String targetUserId,
     AppointmentData data,
-    bool hasRoom,
-  ) async {
+    bool hasRoom, {
+    AppointmentData? previousData,
+  }) async {
     final repository = ref.read(chatRepositoryProvider);
     final result = await repository.sendAppointmentMessage(
       roomId: roomId,
@@ -98,6 +99,7 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
       targetUserId: targetUserId,
       data: data,
       hasRoom: hasRoom,
+      previousData: previousData,
     );
     return switch (result) {
       Success() => null,

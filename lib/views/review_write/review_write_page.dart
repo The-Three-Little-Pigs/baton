@@ -399,9 +399,6 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                             ),
                           );
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('후기가 등록되었습니다!')),
-                            );
                             context.pop();
                           }
                         } else {

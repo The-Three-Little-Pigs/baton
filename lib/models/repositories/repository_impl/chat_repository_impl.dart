@@ -296,6 +296,7 @@ class ChatRepositoryImpl implements ChatRepository {
     required String targetUserId,
     required AppointmentData data,
     required bool hasRoom,
+    AppointmentData? previousData,
   }) async {
     try {
       final chatroomDocRef = _firestore.collection(_collectionPath).doc(roomId);
@@ -341,12 +342,13 @@ class ChatRepositoryImpl implements ChatRepository {
         batch.update(chatroomDocRef, updateData);
       }
 
-      if (data.previousMessageId != null) {
+      if (data.previousMessageId != null && previousData != null) {
         final prevMsgRef = chatroomDocRef
             .collection('messages')
             .doc(data.previousMessageId);
-        final replaceData = data.copyWith(
-          appointmentId: data.previousMessageId,
+        // 🔥 [버그 수정] 새 약속(data)이 아닌, 기존 약속(previousData) 정보를 사용하여 상태만 변경합니다.
+        // 이렇게 해야 이전 카드의 시간/장소 정보가 보존됩니다.
+        final replaceData = previousData.copyWith(
           status: AppointmentStatus.replaced,
         );
         batch.update(prevMsgRef, {'content': jsonEncode(replaceData.toJson())});

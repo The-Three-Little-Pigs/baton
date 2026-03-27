@@ -53,6 +53,7 @@ abstract class ChatRepository {
     required String targetUserId,
     required AppointmentData data,
     required bool hasRoom,
+    AppointmentData? previousData,
   });
 
   // 약속 상태 업데이트
