@@ -1,10 +1,11 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/models/entities/appointment_data.dart';
 import 'package:baton/models/enum/appointment_status.dart';
-import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/chat_detail/viewmodel/has_written_review_provider.dart';
 import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
 import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
-import 'package:baton/views/product_detail/viewmodel/author_notifier.dart'; // ✅ 추가
+import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:baton/views/widgets/common_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -159,40 +160,59 @@ class AppointmentButton extends ConsumerWidget {
             final postAsync = ref.watch(
               productDetailPageViewModelProvider(postId),
             );
+            // 현재 사용자가 이미 후기를 작성했는지 확인
+            final hasWrittenAsync = ref.watch(
+              hasWrittenReviewProvider(roomId: roomId, writerId: myUserId),
+            );
+
             return postAsync.maybeWhen(
               data: (post) {
+                // 데이터를 가져오는 중에는 깜빡임을 방지하기 위해 빈 공간 또는 로딩 표시
+                if (hasWrittenAsync.isLoading) {
+                  return const SizedBox(height: 36);
+                }
+
+                final hasWritten = hasWrittenAsync.value ?? false;
                 return SizedBox(
                   width: double.infinity,
                   height: 36,
                   child: Material(
-                    color: AppColors.primary,
+                    color: hasWritten
+                        ? Colors.grey.shade300
+                        : AppColors.primary,
                     borderRadius: BorderRadius.circular(8),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(8),
-                      onTap: () {
-                        context.push(
-                          '/review/write',
-                          extra: {
-                            'opponentName': opponentName, // ✅ UID 대신 닉네임 전달
-                            'receiverId': otherUserId,
-                            'postId': postId,
-                            'roomId': roomId,
-                            'productTitle': post.title,
-                            'productPrice': post.salePrice.toString(),
-                            'productImageUrl': post.imageUrls.isNotEmpty
-                                ? post.imageUrls[0]
-                                : null,
-                            'confirmedAt': room.confirmedAt,
-                          },
-                        );
-                      },
+                      // 이미 작성한 경우 터치 안되게 null 처리
+                      onTap: hasWritten
+                          ? null
+                          : () {
+                              context.push(
+                                '/review/write',
+                                extra: {
+                                  'opponentName':
+                                      opponentName, // ✅ UID 대신 닉네임 전달
+                                  'receiverId': otherUserId,
+                                  'postId': postId,
+                                  'roomId': roomId,
+                                  'productTitle': post.title,
+                                  'productPrice': post.salePrice.toString(),
+                                  'productImageUrl': post.imageUrls.isNotEmpty
+                                      ? post.imageUrls[0]
+                                      : null,
+                                  'confirmedAt': room.confirmedAt,
+                                },
+                              );
+                            },
                       child: Container(
                         height: 44, // 버튼 높이 명시적 지정
                         alignment: Alignment.center,
-                        child: const Text(
-                          '후기 작성하기',
+                        child: Text(
+                          hasWritten ? '후기 작성 완료' : '후기 작성하기',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: hasWritten
+                                ? Colors.grey.shade600
+                                : Colors.white,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
