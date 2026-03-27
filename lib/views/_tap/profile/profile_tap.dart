@@ -29,7 +29,6 @@ class ProfileTap extends ConsumerWidget {
       body: ListView(
         children: [
           UserProfileCard(),
-          SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.only(right: 30),
             child: Row(
@@ -51,7 +50,7 @@ class ProfileTap extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+
           const _RecentReviewsSection(),
           const SizedBox(height: 16),
           SectionTitle(title: '거래 관리'),
@@ -167,7 +166,9 @@ class UserProfileCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProvider);
     return Container(
-      decoration: BoxDecoration(color: AppColors.surfaceVariant),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      ),
       child: Padding(
         padding: const EdgeInsets.only(
           left: 30,

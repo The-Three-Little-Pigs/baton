@@ -42,7 +42,7 @@ final class SelectedChatStatusProvider
 }
 
 String _$selectedChatStatusHash() =>
-    r'981b03ce212b898c4b3ade716d19867ef7c5d722';
+    r'0bdbb7d5a1289cd81718001bda7c3713a469ccb3';
 
 abstract class _$SelectedChatStatus extends $Notifier<ChatStatus> {
   ChatStatus build();

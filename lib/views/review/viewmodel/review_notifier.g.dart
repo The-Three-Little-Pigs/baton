@@ -17,9 +17,9 @@ final class ReceivedReviewsProvider
         $FunctionalProvider<
           AsyncValue<List<ReviewData>>,
           List<ReviewData>,
-          FutureOr<List<ReviewData>>
+          Stream<List<ReviewData>>
         >
-    with $FutureModifier<List<ReviewData>>, $FutureProvider<List<ReviewData>> {
+    with $FutureModifier<List<ReviewData>>, $StreamProvider<List<ReviewData>> {
   ReceivedReviewsProvider._({
     required ReceivedReviewsFamily super.from,
     required String super.argument,
@@ -43,12 +43,12 @@ final class ReceivedReviewsProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<ReviewData>> $createElement(
+  $StreamProviderElement<List<ReviewData>> $createElement(
     $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  ) => $StreamProviderElement(pointer);
 
   @override
-  FutureOr<List<ReviewData>> create(Ref ref) {
+  Stream<List<ReviewData>> create(Ref ref) {
     final argument = this.argument as String;
     return receivedReviews(ref, argument);
   }
@@ -64,10 +64,10 @@ final class ReceivedReviewsProvider
   }
 }
 
-String _$receivedReviewsHash() => r'1e3f2721e9924dbffe77514d740f806e83ecc0fe';
+String _$receivedReviewsHash() => r'd2fbfc69de4056d79e30c36b5945f0c764267065';
 
 final class ReceivedReviewsFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<ReviewData>>, String> {
+    with $FunctionalFamilyOverride<Stream<List<ReviewData>>, String> {
   ReceivedReviewsFamily._()
     : super(
         retry: null,
@@ -92,9 +92,9 @@ final class SentReviewsProvider
         $FunctionalProvider<
           AsyncValue<List<ReviewData>>,
           List<ReviewData>,
-          FutureOr<List<ReviewData>>
+          Stream<List<ReviewData>>
         >
-    with $FutureModifier<List<ReviewData>>, $FutureProvider<List<ReviewData>> {
+    with $FutureModifier<List<ReviewData>>, $StreamProvider<List<ReviewData>> {
   SentReviewsProvider._({
     required SentReviewsFamily super.from,
     required String super.argument,
@@ -118,12 +118,12 @@ final class SentReviewsProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<ReviewData>> $createElement(
+  $StreamProviderElement<List<ReviewData>> $createElement(
     $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  ) => $StreamProviderElement(pointer);
 
   @override
-  FutureOr<List<ReviewData>> create(Ref ref) {
+  Stream<List<ReviewData>> create(Ref ref) {
     final argument = this.argument as String;
     return sentReviews(ref, argument);
   }
@@ -139,10 +139,10 @@ final class SentReviewsProvider
   }
 }
 
-String _$sentReviewsHash() => r'eca6631e6ee60c2b347b7647e91fa13b81c3fb2f';
+String _$sentReviewsHash() => r'd95d034596cd1c5dd467bfc9ffaa734ecd747163';
 
 final class SentReviewsFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<ReviewData>>, String> {
+    with $FunctionalFamilyOverride<Stream<List<ReviewData>>, String> {
   SentReviewsFamily._()
     : super(
         retry: null,

@@ -145,6 +145,7 @@ class _ReviewList extends ConsumerWidget {
                         fontWeight: FontWeight.w400,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      maxLines: 2,
                     ),
                     const SizedBox(height: 16),
                   ],
