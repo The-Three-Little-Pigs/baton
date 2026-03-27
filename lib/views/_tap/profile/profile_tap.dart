@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:baton/core/utils/ui/app_snackbar.dart';
+import 'package:baton/core/utils/time_helper.dart';
 
 class ProfileTap extends ConsumerWidget {
   const ProfileTap({super.key});
@@ -16,7 +17,6 @@ class ProfileTap extends ConsumerWidget {
     ref.watch(userProvider);
 
     return Scaffold(
-
       appBar: AppBar(
         title: Text(
           '마이페이지',
@@ -56,7 +56,6 @@ class ProfileTap extends ConsumerWidget {
           const SizedBox(height: 16),
           SectionTitle(title: '거래 관리'),
           MenuListItem(
-
             svgPath: 'assets/icons/sales_history.svg',
             content: '판매내역',
             routePath: '/salesHistory',
@@ -284,18 +283,20 @@ class _RecentReviewsSection extends ConsumerWidget {
         }
 
         return SizedBox(
-          height: 120,
+          height: 100,
           child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             scrollDirection: Axis.horizontal,
             itemCount: reviews.length,
             separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final review = reviews[index];
               return Container(
-                height: 98,
                 width: 211,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: Theme.of(
@@ -322,12 +323,21 @@ class _RecentReviewsSection extends ConsumerWidget {
                             fontSize: 14,
                           ),
                         ),
+                        Spacer(),
+                        Text(
+                          TimeHelper.formatTimeAgo(review.createdAt),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 13),
                     Expanded(
                       child: Text(
-                        review.content ?? '(내용 없음)',
+                        review.content ?? '',
                         style: const TextStyle(fontSize: 13),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -392,7 +402,7 @@ class MenuListItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         height: 64,
-        alignment: Alignment.center,
+        // alignment: Alignment.center,
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
@@ -458,7 +468,6 @@ class MenuListItem extends StatelessWidget {
                     size: 16,
                     color: const Color(0xFFB3B3B3),
                   ),
-
                 ],
               ),
             ),
@@ -468,4 +477,3 @@ class MenuListItem extends StatelessWidget {
     );
   }
 }
-
