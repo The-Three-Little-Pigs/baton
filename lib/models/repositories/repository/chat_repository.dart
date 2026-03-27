@@ -53,6 +53,7 @@ abstract class ChatRepository {
     required String targetUserId,
     required AppointmentData data,
     required bool hasRoom,
+    AppointmentData? previousData,
   });
 
   // 약속 상태 업데이트
@@ -72,4 +73,6 @@ abstract class ChatRepository {
     required String postId,
     required String myUserId,
   });
+
+  /// 특정 상품에 대한 채팅방 개수 실시간 구독
 }

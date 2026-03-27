@@ -175,6 +175,7 @@ class ChatMessageList extends ConsumerWidget {
                                         postId,
                                         appointment,
                                         true,
+                                        previousData: data,
                                       );
                                   if (errorMessage != null && context.mounted) {
                                     AppSnackBar.show(context, errorMessage);

@@ -187,4 +187,14 @@ class PostRepositoryImpl implements PostRepository {
       }
     }
   }
+
+  @override
+  Stream<Result<int, Failure>> watchChatCount(String postId) {
+    return _firestore.collection('posts').doc(postId).snapshots().map((
+      snapshot,
+    ) {
+      final data = snapshot.data();
+      return data?['chat_count'] ?? 0;
+    });
+  }
 } // ⬅️ 이 중괄호가 파일의 가장 마지막에 있어야 합니다!

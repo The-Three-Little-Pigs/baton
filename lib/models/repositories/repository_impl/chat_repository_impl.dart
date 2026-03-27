@@ -273,22 +273,6 @@ class ChatRepositoryImpl implements ChatRepository {
     await Future.wait(deleteTasks);
   }
 
-  // 💡 메시지 컬렉션의 모든 문서 삭제 (Batch 처리)
-  Future<void> _deleteAllMessages(String roomId) async {
-    final messagesRef = _firestore
-        .collection(_collectionPath)
-        .doc(roomId)
-        .collection('messages');
-    final snapshots = await messagesRef.get();
-
-    if (snapshots.docs.isEmpty) return;
-    final batch = _firestore.batch();
-    for (var doc in snapshots.docs) {
-      batch.delete(doc.reference);
-    }
-    await batch.commit();
-  }
-
   @override
   Future<Result<void, Failure>> sendAppointmentMessage({
     required String roomId,
@@ -296,6 +280,7 @@ class ChatRepositoryImpl implements ChatRepository {
     required String targetUserId,
     required AppointmentData data,
     required bool hasRoom,
+    AppointmentData? previousData,
   }) async {
     try {
       final chatroomDocRef = _firestore.collection(_collectionPath).doc(roomId);
@@ -322,6 +307,8 @@ class ChatRepositoryImpl implements ChatRepository {
         'appointmentDateTime': Timestamp.fromDate(actualData.dateTime),
         'activeAppointmentId':
             actualData.appointmentId, // 이제 빈 문자열이 아니라 진짜 ID가 들어갑니다!
+        'confirmedCompleteUids': <String>[], // 새 약속 시 확정 상태 초기화
+        'confirmedAt': null, // 확정 시간 초기화
       };
       // 방이 처음 생길 때의 초기 데이터 포함( 생략 가능하나 안전을 위해)
       if (!hasRoom) {
@@ -341,12 +328,13 @@ class ChatRepositoryImpl implements ChatRepository {
         batch.update(chatroomDocRef, updateData);
       }
 
-      if (data.previousMessageId != null) {
+      if (data.previousMessageId != null && previousData != null) {
         final prevMsgRef = chatroomDocRef
             .collection('messages')
             .doc(data.previousMessageId);
-        final replaceData = data.copyWith(
-          appointmentId: data.previousMessageId,
+        // 🔥 [버그 수정] 새 약속(data)이 아닌, 기존 약속(previousData) 정보를 사용하여 상태만 변경합니다.
+        // 이렇게 해야 이전 카드의 시간/장소 정보가 보존됩니다.
+        final replaceData = previousData.copyWith(
           status: AppointmentStatus.replaced,
         );
         batch.update(prevMsgRef, {'content': jsonEncode(replaceData.toJson())});
@@ -394,6 +382,8 @@ class ChatRepositoryImpl implements ChatRepository {
           transaction.update(chatroomRef, {
             'appointmentStatus': AppointmentStatus.cancelled.label,
             'activeAppointmentId': null, // 취소 시 활성화된 약속 ID 제거
+            'confirmedCompleteUids': <String>[], // 취소 시 확정 상태 초기화
+            'confirmedAt': null, // 취소 시 확정 시간 초기화
           });
         } else if (newStatus == AppointmentStatus.completed) {
           transaction.update(chatroomRef, {

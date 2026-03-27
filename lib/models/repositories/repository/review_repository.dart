@@ -16,8 +16,14 @@ abstract class ReviewRepository {
   /// 상대방이 나에게 보낸 후기 리스트 (프로필 탭 가로 스크롤용)
   Future<Result<List<ReviewData>, Failure>> getReceivedReviews(String userId);
 
+  /// 상대방이 나에게 보낸 후기 실시간 스트림
+  Stream<List<ReviewData>> watchReceivedReviews(String userId);
+
   /// 내가 다른 사람에게 보낸 후기 리스트 (보낸 후기 관리용)
   Future<Result<List<ReviewData>, Failure>> getSentReviews(String userId);
+
+  /// 내가 다른 사람에게 보낸 후기 실시간 스트림
+  Stream<List<ReviewData>> watchSentReviews(String userId);
 
   /// 특정 게시글 아이디로 연관된 채팅방 찾기 (거래 내역에서 후기 작성용)
   Future<Result<Chatroom?, Failure>> getChatRoomByPostId(String postId);

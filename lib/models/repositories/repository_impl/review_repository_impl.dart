@@ -113,6 +113,28 @@ class ReviewRepositoryImpl implements ReviewRepository {
     }
   }
 
+  @override
+  Stream<List<ReviewData>> watchReceivedReviews(String userId) {
+    return _firestore
+        .collection('reviews')
+        .where('receiverId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => ReviewData.fromFirestore(doc)).toList());
+  }
+
+  @override
+  Stream<List<ReviewData>> watchSentReviews(String userId) {
+    return _firestore
+        .collection('reviews')
+        .where('writerId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => ReviewData.fromFirestore(doc)).toList());
+  }
+
   // TODO: 리버팟 사용해서 데이터 가져오기
   @override
   Future<Result<Chatroom?, Failure>> getChatRoomByPostId(String postId) async {

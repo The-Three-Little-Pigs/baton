@@ -2,6 +2,7 @@ import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/core/di/repository/review_provider.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:baton/views/chat_detail/viewmodel/has_written_review_provider.dart';
 import 'package:baton/views/review_write/viewmodel/review_write_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -271,60 +272,66 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                   const SizedBox(height: 40),
 
                   // 후기 입력 타이틀
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '거래 후기',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Theme.of(context).colorScheme.onSurface,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 30, right: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '거래 후기',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '(${state.content.length}/1000)',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
+                        Text(
+                          '(${state.content.length}/1000)',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 10),
-                  TextField(
-                    enabled: !_isAlreadyWritten,
-                    maxLines: 5,
-                    maxLength: 1000,
-                    decoration: InputDecoration(
-                      hintText: _isAlreadyWritten
-                          ? ''
-                          : '거래 후기를 자유롭게 남겨주세요.\n(욕설, 비방, 허위 정보는 등록이 제한될 수 있어요)',
-                      hintStyle: TextStyle(
-                        color: Colors.grey.shade400,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      counterText: '',
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerHighest,
-                          width: 1,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 30, right: 30),
+                    child: TextField(
+                      enabled: !_isAlreadyWritten,
+                      maxLines: 5,
+                      maxLength: 1000,
+                      decoration: InputDecoration(
+                        hintText: _isAlreadyWritten
+                            ? ''
+                            : '거래 후기를 자유롭게 남겨주세요.\n(욕설, 비방, 허위 정보는 등록이 제한될 수 있어요)',
+                        hintStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        counterText: '',
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
+                            width: 1,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 1,
+                          ),
                         ),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
-                          width: 1,
-                        ),
-                      ),
+                      onChanged: (val) => notifier.updateContent(val),
                     ),
-                    onChanged: (val) => notifier.updateContent(val),
                   ),
 
                   // 별점 안내 문구
@@ -383,10 +390,15 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
                           roomId: widget.roomId,
                         );
                         if (error == null) {
+                          // 채팅 디테일 페이지의 버튼 상태를 즉시 갱신하기 위해 캐시 무효화
+                          final myId = ref.read(userProvider).value?.uid ?? '';
+                          ref.invalidate(
+                            hasWrittenReviewProvider(
+                              roomId: widget.roomId,
+                              writerId: myId,
+                            ),
+                          );
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('후기가 등록되었습니다!')),
-                            );
                             context.pop();
                           }
                         } else {
