@@ -1,6 +1,8 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/review/viewmodel/review_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,15 +24,19 @@ class ReviewPage extends ConsumerWidget {
           elevation: 0,
           scrolledUnderElevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: Colors.black,
+              size: 20,
+            ),
             onPressed: () => context.pop(),
           ),
-          title: const Text(
+          title: Text(
             '후기',
             style: TextStyle(
-              color: Colors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
           ),
           centerTitle: true,
@@ -38,6 +44,7 @@ class ReviewPage extends ConsumerWidget {
             labelColor: AppColors.primary,
             unselectedLabelColor: Colors.grey,
             indicatorColor: AppColors.primary,
+            indicatorSize: TabBarIndicatorSize.tab,
             tabs: [
               Tab(text: '받은 후기'),
               Tab(text: '보낸 후기'),
@@ -75,15 +82,18 @@ class _ReviewList extends ConsumerWidget {
           return Center(
             child: Text(
               isReceived ? '아직 받은 후기가 없어요.' : '아직 보낸 후기가 없어요.',
-              style: const TextStyle(color: Colors.grey),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           );
         }
 
         return ListView.separated(
           itemCount: reviews.length,
-          separatorBuilder: (context, index) =>
-              Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
+          separatorBuilder: (context, index) => Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          ),
           itemBuilder: (context, index) {
             final review = reviews[index];
             return Padding(
@@ -96,7 +106,11 @@ class _ReviewList extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.star, color: AppColors.primary, size: 22),
+                          const Icon(
+                            Icons.star,
+                            color: AppColors.primary,
+                            size: 22,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             review.rating.toStringAsFixed(1),
@@ -118,26 +132,62 @@ class _ReviewList extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   // 작성자/수신자 표시 (이름 실데이터 조회는 간단하게 생략하거나 익명 처리)
-                  Text(
-                    isReceived ? '작성자: ${review.writerId.substring(0, 4)}***' : '수신자: ${review.receiverId.substring(0, 4)}***',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade400,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  _UserNicknameText(
+                    userId: isReceived ? review.writerId : review.receiverId,
                   ),
                   const SizedBox(height: 12),
                   if (review.content != null) ...[
                     Text(
                       review.content!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
-                        height: 1.4,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w400,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(height: 16),
                   ],
+                  Container(
+                    height: 36,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        context.push('/product/${review.postId}');
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
+                          children: [
+                            Text(
+                              '거래 상품',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            _ReviewProductNameText(postId: review.postId),
+                            Spacer(),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 12,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );
@@ -146,6 +196,83 @@ class _ReviewList extends ConsumerWidget {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, st) => Center(child: Text('Error: $e')),
+    );
+  }
+}
+
+class _UserNicknameText extends ConsumerWidget {
+  final String userId;
+
+  const _UserNicknameText({required this.userId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(authorProvider(userId));
+
+    return userAsync.when(
+      data: (user) => Text(
+        user.nickname,
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey.shade400,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      loading: () => Text(
+        '...',
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey.shade400,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      error: (_, __) => Text(
+        '알 수 없음',
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey.shade400,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+}
+
+class _ReviewProductNameText extends ConsumerWidget {
+  final String postId;
+
+  const _ReviewProductNameText({required this.postId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final postAsync = ref.watch(productDetailPageViewModelProvider(postId));
+
+    return postAsync.when(
+      data: (post) => Text(
+        post.title,
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.onSurface,
+          fontWeight: FontWeight.w400,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+      loading: () => Text(
+        '...',
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.onSurface,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      error: (_, __) => Text(
+        '알 수 없는 상품',
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.onSurface,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
     );
   }
 }
