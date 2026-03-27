@@ -73,4 +73,6 @@ abstract class ChatRepository {
     required String postId,
     required String myUserId,
   });
+
+  /// 특정 상품에 대한 채팅방 개수 실시간 구독
 }

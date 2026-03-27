@@ -273,22 +273,6 @@ class ChatRepositoryImpl implements ChatRepository {
     await Future.wait(deleteTasks);
   }
 
-  // 💡 메시지 컬렉션의 모든 문서 삭제 (Batch 처리)
-  Future<void> _deleteAllMessages(String roomId) async {
-    final messagesRef = _firestore
-        .collection(_collectionPath)
-        .doc(roomId)
-        .collection('messages');
-    final snapshots = await messagesRef.get();
-
-    if (snapshots.docs.isEmpty) return;
-    final batch = _firestore.batch();
-    for (var doc in snapshots.docs) {
-      batch.delete(doc.reference);
-    }
-    await batch.commit();
-  }
-
   @override
   Future<Result<void, Failure>> sendAppointmentMessage({
     required String roomId,
