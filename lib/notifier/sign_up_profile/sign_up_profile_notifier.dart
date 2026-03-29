@@ -56,12 +56,6 @@ class SignUpProfile extends _$SignUpProfile {
         }
       }
 
-      // 2. 가입 시점에 기기 토큰 가져오기 (비어있지 않도록)
-      String fcmToken = '';
-      try {
-        fcmToken = await NotificationService().getToken() ?? '';
-      } catch (e) {}
-
       // 3. 넘겨받은 UID와 닉네임, 업로드된 이미지 URL로 'user' 엔티티 생성
       final newUser = User(
         uid: uid,

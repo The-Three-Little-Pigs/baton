@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:baton/models/entities/fcm_token.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -108,7 +109,7 @@ class NotificationService {
     }
   }
 
-  /// FCM 토큰을 가져와 Firestore에 저장하고 토큰 갱신 리스너를 등록합니다.
+  /// FCM 토큰을 가져와 Firestore 서브 컬렉션에 저장하고 토큰 갱신 리스너를 등록합니다.
   Future<void> updateFCMToken(
     String uid, {
     required dynamic userRepository,
@@ -141,26 +142,32 @@ class NotificationService {
         token = await _fcm.getToken();
       } catch (e) {
         print("⚠️ [FCM] Failed to fetch FCM token: $e");
-        print(
-          "💡 [FCM] This is normal if you are using an iOS Simulator or if Xcode capabilities are not set.",
-        );
       }
 
       if (token != null && token.isNotEmpty) {
-        // Firestore에 토큰 업데이트
-        await userRepository.updateFCMToken(uid, token);
-        print("✅ [FCM] Token Updated for $uid: $token");
-      } else {
-        print(
-          "⚠️ [FCM] Token is null or empty. Push notifications will not work on this device.",
+        final fcmTokenEntity = FCMToken(
+          token: token,
+          uid: uid,
+          os: Platform.isIOS ? 'ios' : 'android',
+          isActive: true,
         );
+
+        // Firestore 서브 컬렉션에 토큰 정보 업데이트
+        await userRepository.updateFCMToken(uid, fcmTokenEntity);
+        print("✅ [FCM] Token Updated for $uid: $token");
       }
 
       // 앱 실행 중 토큰이 바뀌는 경우 대응
       if (!_isTokenRefreshRegistered) {
         _fcm.onTokenRefresh.listen((newToken) async {
           try {
-            await userRepository.updateFCMToken(uid, newToken);
+            final fcmTokenEntity = FCMToken(
+              token: newToken,
+              uid: uid,
+              os: Platform.isIOS ? 'ios' : 'android',
+              isActive: true,
+            );
+            await userRepository.updateFCMToken(uid, fcmTokenEntity);
             print("🔄 [FCM] Token Refreshed: $newToken");
           } catch (e) {
             print("❌ [FCM] Error updating refreshed token: $e");
@@ -173,20 +180,20 @@ class NotificationService {
     }
   }
 
-  /// 로그아웃 또는 탈퇴 시 기기의 FCM 토큰을 무효화하고 DB에서 제거합니다.
+  /// 로그아웃 또는 탈퇴 시 기기의 FCM 토큰을 비활성화합니다. (상태 변경)
   Future<void> deleteFCMToken(
     String uid, {
     required dynamic userRepository,
   }) async {
     try {
-      // 1. Firestore에서 토큰 정보 제거 (빈 값으로 업데이트)
-      await userRepository.updateFCMToken(uid, '');
-
-      // 2. 기기의 FCM 토큰 완전 삭제 (다음 로그인 시 재생성됨)
-      await _fcm.deleteToken();
-      print("FCM Token Deleted for $uid");
+      final token = await _fcm.getToken();
+      if (token != null) {
+        // Firestore에서 토큰 활성화 상태를 false로 변경 (상태 기반 관리)
+        await userRepository.toggleFCMTokenStatus(uid, token, false);
+        print("FCM Token Deactivated (isActive: false) for $uid");
+      }
     } catch (e) {
-      print("FCM Token Delete Error: $e");
+      print("FCM Token Deactivate Error: $e");
     }
   }
 

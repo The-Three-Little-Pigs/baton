@@ -1,3 +1,4 @@
+import 'package:baton/notifier/alarm/alarm_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/filter_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/home_tap_viewmodel.dart';
 import 'package:baton/views/_tap/home/widgets/category_chips.dart';
@@ -60,7 +61,11 @@ class _HomeTapState extends ConsumerState<HomeTap> {
             onPressed: () {
               context.pushNamed('alarm');
             },
-            icon: const Icon(Icons.notifications),
+            icon: Badge(
+              isLabelVisible: ref.watch(unreadAlarmCountProvider) > 0,
+              label: Text(ref.watch(unreadAlarmCountProvider).toString()),
+              child: const Icon(Icons.notifications),
+            ),
           ),
         ],
       ),
