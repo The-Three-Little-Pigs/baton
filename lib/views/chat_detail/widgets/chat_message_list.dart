@@ -136,7 +136,7 @@ class ChatMessageList extends ConsumerWidget {
                                 ? MainAxisAlignment.end
                                 : MainAxisAlignment.start,
                             children: [
-                              if (!isMyMessage) const SizedBox(width: 20),
+                              if (!isMyMessage) const SizedBox(width: 26),
                               AppointmentCard(
                                 data: data,
                                 isMyCard: isMyMessage,
@@ -204,7 +204,7 @@ class ChatMessageList extends ConsumerWidget {
                                       );
                                 },
                               ),
-                              if (isMyMessage) const SizedBox(width: 20),
+                              if (isMyMessage) const SizedBox(width: 26),
                             ],
                           ),
                         );
