@@ -41,16 +41,19 @@ class Post {
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      postId: json['post_id'] as String,
-      title: json['title'] as String,
+      postId: json['post_id'] as String? ?? '',
+      title: json['title'] as String? ?? '제목 없음',
       purchasePrice: json['purchase_price'] as int?,
       salePrice: json['sale_price'] as int?,
-      imageUrls: List<String>.from(json['image_url']),
-      content: json['content'] as String,
-      likeCount: json['like_count'] as int,
-      chatCount: json['chat_count'] as int,
-      category: Category.values.firstWhere((e) => e.label == json['category']),
-      authorId: json['author_id'] as String,
+      imageUrls: List<String>.from(json['image_url'] ?? []),
+      content: json['content'] as String? ?? '',
+      likeCount: json['like_count'] as int? ?? 0,
+      chatCount: json['chat_count'] as int? ?? 0,
+      category: Category.values.firstWhere(
+        (e) => e.label == json['category'],
+        orElse: () => Category.etc,
+      ),
+      authorId: json['author_id'] as String? ?? '',
       createdAt: _parseDateTime(json['created_at']),
       status: ProductStatus.values.firstWhere(
         (e) => e.label == json['status'] || e.name == json['status'],

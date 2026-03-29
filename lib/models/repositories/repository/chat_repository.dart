@@ -75,4 +75,5 @@ abstract class ChatRepository {
   });
 
   /// 특정 상품에 대한 채팅방 개수 실시간 구독
+  Stream<int> watchChatCount(String postId);
 }

@@ -3,6 +3,7 @@ import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/notifier/like/like_notifier.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'product_detail_page_view_model.g.dart';
@@ -57,7 +58,12 @@ class ProductDetailPageViewModel extends _$ProductDetailPageViewModel {
     }
   }
 
-  void toggleChat() {
-    // 채팅 추가,삭제
+  /// ✅ [추가] 약속 상태 변경 등에 따라 UI 상태를 로컬에서 즉시 반영합니다.
+  void updateStatusLocally(ProductStatus newStatus) {
+    state.whenData((post) {
+      if (post.status != newStatus) {
+        state = AsyncData(post.copyWith(status: newStatus));
+      }
+    });
   }
 }

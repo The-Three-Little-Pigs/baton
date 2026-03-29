@@ -74,16 +74,9 @@ class ChatDetailPage extends ConsumerWidget {
       final nextStatus = next.value?.appointmentStatus;
       // 약속 상태(대기->확정 등)가 변했다면?
       if (prevStatus != nextStatus && nextStatus != null) {
-        final productId = roomId.split('_').length >= 3
-            ? roomId.split('_')[2]
-            : '';
+        final productId =
+            roomId.split('_').length >= 3 ? roomId.split('_')[2] : '';
         if (productId.isEmpty) return;
-        final postNotifier = ref.read(
-          productDetailPageViewModelProvider(productId).notifier,
-        );
-        final currentPost = postNotifier.state.value;
-        if (currentPost != null) {
-          ProductStatus? newProductStatus;
 
           if (nextStatus == AppointmentStatus.confirmed.label) {
             newProductStatus = ProductStatus.reserved; // 확정되면 거래중으로

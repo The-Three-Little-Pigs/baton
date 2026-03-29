@@ -5,6 +5,7 @@ import 'package:baton/views/_tap/chat/chat_tap.dart';
 import 'package:baton/views/_tap/home/home_tap.dart';
 import 'package:baton/views/_tap/profile/profile_tap.dart';
 import 'package:baton/views/alarm/alarm_page.dart';
+import 'package:baton/views/block_user/block_user_page.dart';
 import 'package:baton/views/chat_detail/chat_detail_page.dart';
 
 import 'package:baton/views/like/like_page.dart';
@@ -20,6 +21,7 @@ import 'package:baton/views/purchase_history/purchase_history_page.dart';
 import 'package:baton/views/sales_history/sales_history_page.dart';
 import 'package:baton/views/widgets/main_scaffold.dart';
 import 'package:baton/views/write/write_page.dart';
+import 'package:baton/core/utils/logger.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -174,33 +176,41 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+      GoRoute(
+        path: '/blockUser',
+        name: 'blockUser',
+        builder: (context, state) {
+          return const BlockUserPage();
+        },
+      ),
     ],
 
     redirect: (context, state) {
       final isTransitioning = ref.watch(authTransitionProvider);
-
+      final location = state.matchedLocation;
+      
       // 0. 인증 상태 전환 중(로그인/탈퇴/로그아웃 진행 중)이면 내비게이션 유보
       if (isTransitioning) {
+        logger.d("[Router] Transitioning... Current: $location");
         return null;
       }
 
       final authUser = FirebaseAuth.instance.currentUser;
       final isLoggedIn = authUser != null;
-      final location = state.matchedLocation;
+
+      logger.d("[Router] Redirect Check: $location, LoggedIn: $isLoggedIn, UserLoading: ${userAsync.isLoading}");
 
       // 1. 비로그인 상태
       if (!isLoggedIn) {
         // 비로그인 시에는 오직 로그인 페이지('/')만 허용합니다.
-        if (location == '/') {
-          return null;
-        }
+        if (location == '/') return null;
+        logger.i("[Router] Not logged in, redirecting to login. Original: $location");
         return '/';
       }
 
       // 2. 로그인 상태 + 유저 정보 로딩 중
-      // 가주입된 데이터가 있거나 로딩 중이 아닐 때만 아래 로직 진행
       if (userAsync.isLoading || userAsync.isRefreshing) {
-        // 가입 완료 직후라면 /home으로 가려고 할 텐데, 이때 로딩 때문에 가로막히면 안 됨
+        logger.d("[Router] User Data Loading... staying at $location");
         return null;
       }
 

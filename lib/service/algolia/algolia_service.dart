@@ -2,6 +2,7 @@
 
 import 'package:algoliasearch/algoliasearch.dart';
 import 'package:baton/core/config/algolia_config.dart';
+import 'package:baton/core/utils/logger.dart';
 
 class AlgoliaService {
   final SearchClient _client;
@@ -16,7 +17,7 @@ class AlgoliaService {
     if (AlgoliaConfig.appId.isEmpty ||
         AlgoliaConfig.apiKey.isEmpty ||
         AlgoliaConfig.appId == 'YOUR_APP_ID') {
-      print('Algolia Config is incomplete. AppID: ${AlgoliaConfig.appId}');
+      logger.w('Algolia Config is incomplete. AppID: ${AlgoliaConfig.appId}');
       return [];
     }
 
@@ -45,7 +46,7 @@ class AlgoliaService {
         return searchResponse.hits.map((hit) => hit.toJson()).toList();
       }
     } catch (e) {
-      print('Algolia Search Error: $e');
+      logger.e('Algolia Search Error: $e');
       rethrow;
     }
   }

@@ -1,3 +1,4 @@
+import 'package:baton/notifier/alarm/alarm_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/filter_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/home_tap_viewmodel.dart';
 import 'package:baton/views/_tap/home/widgets/category_chips.dart';
@@ -60,7 +61,12 @@ class _HomeTapState extends ConsumerState<HomeTap> {
             onPressed: () {
               context.pushNamed('alarm');
             },
-            icon: const Icon(Icons.notifications),
+            icon: Badge(
+              isLabelVisible: ref.watch(unreadAlarmCountProvider) > 0,
+              backgroundColor: Colors.orange,
+              smallSize: 8,
+              child: const Icon(Icons.notifications),
+            ),
           ),
         ],
       ),
@@ -127,7 +133,7 @@ class _HomeTapState extends ConsumerState<HomeTap> {
                         onTap: () {
                           ref.read(filterProvider.notifier).close();
                         },
-                        child: Container(color: Colors.black.withOpacity(0.3)),
+                        child: Container(color: Colors.black.withValues(alpha: 0.3)),
                       ),
                     ),
 

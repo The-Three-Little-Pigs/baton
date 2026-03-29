@@ -27,6 +27,7 @@ class Chatroom {
   final String? activeAppointmentId; // 현재 활성화된 약속 ID
   final List<String> confirmedCompleteUids; // 거래확정 완료자
   final DateTime? confirmedAt; // 거래확정 시간
+  final String postId; // 상품 아이디
 
   Chatroom({
     required this.roomId,
@@ -43,6 +44,7 @@ class Chatroom {
     this.activeAppointmentId,
     this.confirmedCompleteUids = const [],
     this.confirmedAt,
+    required this.postId,
   });
 
   factory Chatroom.fromJson(Map<String, dynamic> json) {
@@ -67,6 +69,7 @@ class Chatroom {
         json['confirmedCompleteUids'] ?? [],
       ),
       confirmedAt: (json['confirmedAt'] as Timestamp?)?.toDate(),
+      postId: json['postId'] as String,
     );
   }
 
@@ -86,6 +89,7 @@ class Chatroom {
       'activeAppointmentId': activeAppointmentId,
       'confirmedCompleteUids': confirmedCompleteUids,
       'confirmedAt': confirmedAt,
+      'postId': postId,
     };
   }
 
@@ -104,6 +108,7 @@ class Chatroom {
     String? activeAppointmentId,
     List<String>? confirmedCompleteUids,
     DateTime? confirmedAt,
+    String? postId,
   }) {
     return Chatroom(
       roomId: roomId ?? this.roomId,
@@ -121,6 +126,7 @@ class Chatroom {
       confirmedCompleteUids:
           confirmedCompleteUids ?? this.confirmedCompleteUids,
       confirmedAt: confirmedAt ?? this.confirmedAt,
+      postId: postId ?? this.postId,
     );
   }
 
@@ -171,6 +177,7 @@ class Chatroom {
         data['confirmedCompleteUids'] ?? [],
       ),
       confirmedAt: _parseDate(data['confirmedAt']),
+      postId: data['postId']?.toString() ?? '',
     );
   }
 }

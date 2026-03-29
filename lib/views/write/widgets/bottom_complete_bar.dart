@@ -50,6 +50,11 @@ class BottomCompleteBar extends ConsumerWidget {
 
               if (result == "success") {
                 if (context.mounted) context.pop();
+              } else if (result != null) {
+                // 에러 발생 시 사용자에게 메시지 표시
+                if (context.mounted) {
+                  AppSnackBar.show(context, result);
+                }
               }
             },
           ),

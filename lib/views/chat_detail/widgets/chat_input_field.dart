@@ -7,6 +7,7 @@ import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:baton/core/utils/logger.dart';
 import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ChatInputField extends ConsumerStatefulWidget {
@@ -91,9 +92,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
 
     if (targetUserId.isEmpty) {
       AppSnackBar.show(context, '에러: 대화 상대를 찾을 수 없습니다.');
-      print(
-        '디버그: widget.roomId=${widget.roomId}, myUserId=$myUserId, targetUserId가 빈칸입니다. 파싱 실패.',
-      );
+      logger.w('디버그: widget.roomId=${widget.roomId}, myUserId=$myUserId, targetUserId 파싱 실패.');
       return;
     }
 
@@ -152,8 +151,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
           throw Exception(errorMsg);
         }
       } catch (e, st) {
-        print('메시지 전송 에러: $e');
-        print(st);
+        logger.e('메시지 전송 에러: $e', stackTrace: st);
         if (mounted) {
           AppSnackBar.show(context, '메시지 전송 실패: $e');
         }
@@ -195,7 +193,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
                     width: 60,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Center(
