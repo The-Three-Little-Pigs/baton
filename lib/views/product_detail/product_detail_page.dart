@@ -7,6 +7,7 @@ import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/mapper/format_time_mapper.dart';
 import 'package:baton/notifier/post/product_item_notifier.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/product_chat_count_provider.dart';
 import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:baton/views/product_detail/widgets/bottom_chat_bar.dart';
 import 'package:baton/views/product_detail/widgets/image_section.dart';
@@ -32,6 +33,7 @@ class ProductDetailPage extends ConsumerWidget {
     final appColors = theme.extension<AppColorExtension>();
 
     final postAsync = ref.watch(productDetailPageViewModelProvider(postId));
+    final chatCountAsync = ref.watch(productChatCountProvider(postId));
 
     return Scaffold(
       body: postAsync.when(
@@ -74,7 +76,7 @@ class ProductDetailPage extends ConsumerWidget {
                       createdAt: formatTime(post.createdAt),
                       content: post.content,
                       likeCount: post.likeCount,
-                      chatCount: post.chatCount,
+                      chatCount: chatCountAsync.value ?? post.chatCount,
                       viewCount: post.viewCount,
                     ),
                   ),

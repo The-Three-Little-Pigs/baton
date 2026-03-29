@@ -208,6 +208,7 @@ class ChatRepositoryImpl implements ChatRepository {
     if (!hasRoom) {
       batch.set(chatroomDocRef, {
         'roomId': roomId,
+        'postId': _extractPostId(roomId),
         'lastMessage': lastMessage,
         'updatedAt': FieldValue.serverTimestamp(),
         'unreadCounts': {targetUserId: FieldValue.increment(1), myUserId: 0},
@@ -518,5 +519,19 @@ class ChatRepositoryImpl implements ChatRepository {
       debugPrint('수동 거래 확정 중 에러: $e');
       return Error(UnknownFailure('거래 확정 중 오류가 발생했습니다.'));
     }
+  }
+
+  @override
+  Stream<int> watchChatCount(String postId) {
+    return _firestore
+        .collection(_collectionPath)
+        .where('postId', isEqualTo: postId)
+        .snapshots()
+        .map((snapshot) => snapshot.size);
+  }
+
+  String _extractPostId(String roomId) {
+    final parts = roomId.split('_');
+    return parts.length >= 3 ? parts.last : '';
   }
 }
