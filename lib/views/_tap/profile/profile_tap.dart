@@ -22,7 +22,7 @@ class ProfileTap extends ConsumerWidget {
           '마이페이지',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
-        actions: [Icon(Icons.more_vert, size: 24)],
+        // actions: [Icon(Icons.more_vert, size: 24)],
         backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       //추가하면서 일단 컬럼 리스트뷰로 바뀌났어용
@@ -81,14 +81,14 @@ class ProfileTap extends ConsumerWidget {
           MenuListItem(
             svgPath: 'assets/icons/blok_person_icon.svg',
             content: '차단 관리',
-            routePath: '/',
+            routePath: '/blockUser',
           ),
           SizedBox(height: 8),
-          MenuListItem(
-            svgPath: 'assets/icons/block_product_icon.svg',
-            content: '가린 상품 관리',
-            routePath: '/',
-          ),
+          // MenuListItem(
+          //   svgPath: 'assets/icons/block_product_icon.svg',
+          //   content: '가린 상품 관리',
+          //   routePath: '/',
+          // ),
 
           /// 로그아웃 및 탈퇴 버튼
           Padding(
