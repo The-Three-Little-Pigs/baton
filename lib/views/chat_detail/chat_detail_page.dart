@@ -86,7 +86,7 @@ class ChatDetailPage extends ConsumerWidget {
           ProductStatus? newProductStatus;
 
           if (nextStatus == AppointmentStatus.confirmed.label) {
-            newProductStatus = ProductStatus.reserved; // 확정되면 예약중으로
+            newProductStatus = ProductStatus.reserved; // 확정되면 거래중으로
           } else if (nextStatus == AppointmentStatus.cancelled.label) {
             newProductStatus = ProductStatus.available; // 취소되면 판매중으로
           } else if (nextStatus == AppointmentStatus.completed.label) {

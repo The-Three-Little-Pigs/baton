@@ -377,6 +377,7 @@ class ChatRepositoryImpl implements ChatRepository {
           transaction.update(chatroomRef, {
             'appointmentStatus': AppointmentStatus.confirmed.label,
             'activeAppointmentId': messageId,
+            'appointmentDateTime': Timestamp.fromDate(data.dateTime),
           });
         } else if (newStatus == AppointmentStatus.cancelled) {
           transaction.update(chatroomRef, {

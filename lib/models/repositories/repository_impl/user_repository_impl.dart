@@ -143,7 +143,7 @@ class UserRepositoryImpl implements UserRepository {
 
       await docRef.update({
         'isDeleted': true,
-        'deleted_at': FieldValue.serverTimestamp(),
+        'deletedAt': FieldValue.serverTimestamp(),
         // 닉네임을 해방하기 위해 뒤에 타임스탬프를 붙입니다.
         'nickname': '${currentNickname}_deleted_$timestamp',
       });

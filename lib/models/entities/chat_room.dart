@@ -1,11 +1,15 @@
 import 'package:baton/models/enum/chat_status.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-DateTime _parseDate(dynamic date) {
-  if (date == null) return DateTime.now();
+DateTime? _parseDate(dynamic date) {
+  if (date == null) return null;
   if (date is Timestamp) return date.toDate();
-  if (date is String) return DateTime.tryParse(date) ?? DateTime.now();
-  return DateTime.now();
+  if (date is String) return DateTime.tryParse(date);
+  if (date is int) {
+    // milliseconds 처리
+    return DateTime.fromMillisecondsSinceEpoch(date);
+  }
+  return null;
 }
 
 class Chatroom {
@@ -151,7 +155,7 @@ class Chatroom {
       roomId: data['roomId']?.toString() ?? '',
       participants: parsedParticipants,
       unreadCounts: parsedUnreadCounts,
-      updatedAt: _parseDate(data['updatedAt']),
+      updatedAt: _parseDate(data['updatedAt']) ?? DateTime.now(),
       prdImageUrl: data['prdImageUrl']?.toString() ?? '',
       lastMessage: data['lastMessage']?.toString() ?? '',
       lastReadAt: parsedLastReadAt,

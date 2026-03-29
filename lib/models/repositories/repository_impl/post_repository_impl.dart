@@ -82,11 +82,12 @@ class PostRepositoryImpl implements PostRepository {
     try {
       final query = _firestore
           .collection('posts')
-          .where('author_id', isEqualTo: userId);
+          .where('author_id', isEqualTo: userId.trim());
 
       final snapshot = await query.get();
       final posts = snapshot.docs
           .map((doc) => Post.fromJson(doc.data()))
+          .where((post) => !post.hiddenBySeller) // 클라이언트 측 필터링 (isNotEqualTo: true 시 null 필드 누락 방지)
           .toList();
 
       // 로컬에서 최신순 정렬 (Firestore 복합 인덱스 에러 방지)
@@ -103,9 +104,22 @@ class PostRepositoryImpl implements PostRepository {
   @override
   Future<Result<List<Post>, Failure>> getPurchaseHistory(String userId) async {
     try {
-      // TODO: 추후 구매 트랜잭션 컬렉션이 구체화되면 쿼리를 변경해야 합니다.
-      // 일단은 에러가 나지 않도록 임시로 빈 리스트를 반환합니다.
-      return const Success([]);
+      final query = _firestore
+          .collection('posts')
+          .where('buyer_id', isEqualTo: userId.trim());
+
+      final snapshot = await query.get();
+      final posts = snapshot.docs
+          .map((doc) => Post.fromJson(doc.data()))
+          .where((post) => !post.hiddenByBuyer) // 클라이언트 측 필터링 (isNotEqualTo: true 시 null 필드 누락 방지)
+          .toList();
+
+      // 로컬 정렬 (최신순)
+      posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      return Success(posts);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
       return Error(ServerFailure('구매 내역을 불러오는 중 오류가 발생했습니다: $e'));
     }
@@ -196,5 +210,33 @@ class PostRepositoryImpl implements PostRepository {
       final data = snapshot.data();
       return data?['chat_count'] ?? 0;
     });
+  }
+
+  @override
+  Future<Result<void, Failure>> hidePostFromSalesHistory(String postId) async {
+    try {
+      await _firestore.collection('posts').doc(postId).update({
+        'hidden_by_seller': true,
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('판매 내역 숨김 처리 중 오류 발생: $e'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> hidePostFromPurchaseHistory(String postId) async {
+    try {
+      await _firestore.collection('posts').doc(postId).update({
+        'hidden_by_buyer': true,
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('구매 내역 숨김 처리 중 오류 발생: $e'));
+    }
   }
 } // ⬅️ 이 중괄호가 파일의 가장 마지막에 있어야 합니다!
