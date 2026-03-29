@@ -204,7 +204,7 @@ class ChatMessageList extends ConsumerWidget {
                                       );
                                 },
                               ),
-                              if (!isMyMessage) const SizedBox(width: 20),
+                              if (isMyMessage) const SizedBox(width: 20),
                             ],
                           ),
                         );

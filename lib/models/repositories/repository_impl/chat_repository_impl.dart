@@ -218,6 +218,7 @@ class ChatRepositoryImpl implements ChatRepository {
           targetUserId: Timestamp(0, 0),
         },
         'prdImageUrl': '', // 추후 상품 이미지 URL 로직 연동
+        'deletedByUids': [],
       });
     } else {
       batch.update(chatroomDocRef, {
@@ -226,6 +227,7 @@ class ChatRepositoryImpl implements ChatRepository {
         'unreadCounts.$targetUserId': FieldValue.increment(1),
         'unreadCounts.$myUserId': 0,
         'lastReadAt.$myUserId': FieldValue.serverTimestamp(),
+        'deletedByUids': FieldValue.arrayRemove([myUserId]),
       });
     }
   }
@@ -263,6 +265,21 @@ class ChatRepositoryImpl implements ChatRepository {
       return const Success(true);
     } catch (e) {
       return Error(UnknownFailure('방 나가기 처리 중 오류 발생: $e'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> joinAgainChatRoom(
+    String roomId,
+    String myUserId,
+  ) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(roomId).update({
+        'deletedByUids': FieldValue.arrayRemove([myUserId]),
+      });
+      return const Success(null);
+    } catch (e) {
+      return Error(UnknownFailure('방 재진입 실패: $e'));
     }
   }
 

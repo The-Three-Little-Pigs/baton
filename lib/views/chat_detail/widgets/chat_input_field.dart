@@ -92,7 +92,9 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
 
     if (targetUserId.isEmpty) {
       AppSnackBar.show(context, '에러: 대화 상대를 찾을 수 없습니다.');
-      logger.w('디버그: widget.roomId=${widget.roomId}, myUserId=$myUserId, targetUserId 파싱 실패.');
+      logger.w(
+        '디버그: widget.roomId=${widget.roomId}, myUserId=$myUserId, targetUserId 파싱 실패.',
+      );
       return;
     }
 
@@ -236,26 +238,31 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
 
         // 기존 텍스트 입력창 (Row)
         Container(
+          constraints: const BoxConstraints(minHeight: 44),
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.secondary),
             borderRadius: BorderRadius.circular(22), // 둥근 입력창
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end, // 여러 줄일 때 하단 맞춤
+            crossAxisAlignment: CrossAxisAlignment.center, // 여러 줄일 때 하단 맞춤
             children: [
               // 갤러리 띄우기 버튼
               Padding(
                 padding: const EdgeInsets.only(left: 4.0),
                 child: IconButton(
+                  visualDensity: VisualDensity.compact, // 💡 1. 아이콘 버튼 밀도 압축
+                  constraints: const BoxConstraints(
+                    minHeight: 32,
+                    minWidth: 32,
+                  ),
                   // 업로드 중이 아닐 때만 갤러리 열기 허용!
                   onPressed: _isUploading ? null : _pickImageOnly,
                   icon: Icon(
                     Icons.image,
-                    size: 24,
+                    size: 22,
                     color: Colors.grey.shade500,
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
                 ),
               ),
               // 텍스트 치는 영역
@@ -269,9 +276,10 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
                   minLines: 1,
                   // 무제한 줄바꿈 가능
                   decoration: const InputDecoration(
+                    isDense: true, // 💡 3. 핵심: 텍스트필드 내부 여백 압축
                     hintText: '메세지 입력',
                     hintStyle: TextStyle(color: AppColors.secondary),
-                    contentPadding: EdgeInsets.symmetric(vertical: 12), // 패딩 조절
+                    contentPadding: EdgeInsets.symmetric(vertical: 8), // 패딩 조절
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
@@ -282,19 +290,23 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
               ),
               // 🌟 전송 버튼
               Padding(
-                padding: const EdgeInsets.only(right: 4.0, bottom: 4.0),
+                padding: const EdgeInsets.only(right: 4.0),
                 child: IconButton(
+                  visualDensity: VisualDensity.compact, // 💡 왼쪽과 동일하게 압축
+                  constraints: const BoxConstraints(
+                    minHeight: 32,
+                    minWidth: 32,
+                  ), // 💡 크기 제약
                   // 텍스트나 사진이 1개라도 있고, 현재 업로드 중이 아닐 때만 전송 가동
                   onPressed: (canSend && !_isUploading) ? _sendMessage : null,
                   icon: Icon(
                     Icons.send,
-                    size: 24,
+                    size: 22,
                     color: (canSend && !_isUploading)
                         ? AppColors.primary
                         : Colors.grey.shade500, // 활성화 시 파란색
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
                 ),
               ),
             ],

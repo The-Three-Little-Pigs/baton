@@ -33,7 +33,10 @@ class AppointmentCard extends StatelessWidget {
         data.status == AppointmentStatus.replaced ||
         data.status == AppointmentStatus.cancelled;
     return Padding(
-      padding: EdgeInsetsGeometry.symmetric(vertical: 8, horizontal: 20),
+      padding: const EdgeInsets.only(
+        top: 8,
+        bottom: 8,
+      ), // 💡 horizontal: 20 제거 (ChatMessageList와 일치)
       child: Column(
         crossAxisAlignment: isMyCard
             ? CrossAxisAlignment.end
