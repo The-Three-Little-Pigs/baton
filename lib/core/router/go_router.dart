@@ -5,6 +5,7 @@ import 'package:baton/views/_tap/chat/chat_tap.dart';
 import 'package:baton/views/_tap/home/home_tap.dart';
 import 'package:baton/views/_tap/profile/profile_tap.dart';
 import 'package:baton/views/alarm/alarm_page.dart';
+import 'package:baton/views/block_user/block_user_page.dart';
 import 'package:baton/views/chat_detail/chat_detail_page.dart';
 
 import 'package:baton/views/like/like_page.dart';
@@ -173,6 +174,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             productImageUrl: extras['productImageUrl'] as String?,
             confirmedAt: extras['confirmedAt'] as DateTime?, // ✅ 추가
           );
+        },
+      ),
+      GoRoute(
+        path: '/blockUser',
+        name: 'blockUser',
+        builder: (context, state) {
+          return const BlockUserPage();
         },
       ),
     ],
