@@ -32,7 +32,6 @@ class AppointmentCard extends StatelessWidget {
     final isInactive =
         data.status == AppointmentStatus.replaced ||
         data.status == AppointmentStatus.cancelled;
-    final isCancelled = data.status == AppointmentStatus.cancelled;
     return Padding(
       padding: EdgeInsetsGeometry.symmetric(vertical: 8, horizontal: 20),
       child: Column(

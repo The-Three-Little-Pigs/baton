@@ -55,10 +55,10 @@ class LikeRepositoryImpl implements LikeRepository {
         batch.set(docRef, like.toJson());
         batch.update(postRef, {'like_count': FieldValue.increment(1)});
 
-        // --- Alarm 생성 연동 ---
         final postData = postDoc.data()!;
         final String authorId = postData['author_id'];
 
+        // --- Alarm 생성 연동 ---
         // 본인 게시글에 찜한 경우에는 알림을 보내지 않음
         if (userId != authorId) {
           // 찜한 사람의 닉네임 가져오기
@@ -77,6 +77,7 @@ class LikeRepositoryImpl implements LikeRepository {
             imageUrl: firstImage,
             authorId: userId,
             receiverId: authorId,
+            postId: postId, // 연관 게시물 아이디 추가
             createdAt: DateTime.now(),
             isRead: false,
           );

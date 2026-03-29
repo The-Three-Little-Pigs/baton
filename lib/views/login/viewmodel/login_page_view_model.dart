@@ -4,6 +4,7 @@ import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/login_status.dart';
 import 'package:baton/models/enum/social_type.dart';
+import 'package:baton/core/utils/logger.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'login_page_view_model.g.dart';
@@ -28,7 +29,7 @@ class LoginPageViewModel extends _$LoginPageViewModel {
         SocialType.google =>
           await ref.read(loginServiceProvider).signInWithGoogle(),
       };
-      print("result : $result");
+      logger.d("result : $result");
 
       switch (result) {
         case Success(value: final status):
@@ -36,7 +37,7 @@ class LoginPageViewModel extends _$LoginPageViewModel {
           ref.invalidate(userProvider);
           state = AsyncData(status);
         case Error(failure: final failure):
-          print(failure.message);
+          logger.e(failure.message);
           state = AsyncError(failure.message, StackTrace.current);
           throw failure.message;
       }

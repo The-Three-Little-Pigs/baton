@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:baton/core/utils/logger.dart';
 import 'package:baton/models/entities/fcm_token.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -38,22 +39,27 @@ class NotificationService {
 
   /// 알림 서비스 초기화 및 권한 요청을 수행합니다.
   Future<void> initialize() async {
-    print("ℹ️ [FCM] NotificationService Initializing...");
+    logger.i("[FCM] NotificationService Initializing...");
     NotificationSettings settings = await _fcm.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
+    logger.d("[FCM] requestPermission response received.");
 
-    print("ℹ️ [FCM] AuthorizationStatus: ${settings.authorizationStatus}");
+    logger.i("[FCM] AuthorizationStatus: ${settings.authorizationStatus}");
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      logger.d("[FCM] Setting up platform configs...");
       await _setupPlatformConfigs(); // 플랫폼별 전용 설정
+      logger.d("[FCM] Platform configs setup complete.");
       _configureListeners(); // 메시지 수신 감시
+      logger.d("[FCM] Handling initial message...");
       await _handleInitialMessage(); // 종료 상태에서 알림으로 진입한 경우 처리
-      print("✅ [FCM] Initialization Complete.");
+      logger.d("[FCM] Initial message handled.");
+      logger.i("[FCM] Initialization Complete.");
     } else {
-      print("⚠️ [FCM] User declined or has not yet granted permission.");
+      logger.w("[FCM] User declined or has not yet granted permission.");
     }
   }
 
@@ -61,7 +67,7 @@ class NotificationService {
   Future<void> _handleInitialMessage() async {
     RemoteMessage? initialMessage = await _fcm.getInitialMessage();
     if (initialMessage != null) {
-      print("ℹ️ [FCM] App opened from terminated state via notification.");
+      logger.i("[FCM] App opened from terminated state via notification.");
       // 약간의 지연을 주어 라우터가 완전히 준비된 후 이동하도록 함
       Future.delayed(const Duration(milliseconds: 500), () {
         _handleMessageNavigation(initialMessage);
@@ -78,7 +84,7 @@ class NotificationService {
   /// Android 채널 설정 및 iOS 포그라운드 알림 옵션 등 플랫폼별 초기 설정을 진행합니다.
   Future<void> _setupPlatformConfigs() async {
     if (Platform.isAndroid) {
-      print("ℹ️ [FCM] Configuring Android channel...");
+      logger.i("[FCM] Configuring Android channel...");
       const channel = AndroidNotificationChannel(
         'baton_main_channel',
         'Baton 주요 알림',
@@ -97,15 +103,15 @@ class NotificationService {
             AndroidFlutterLocalNotificationsPlugin
           >()
           ?.createNotificationChannel(channel);
-      print("✅ [FCM] Android channel configured.");
+      logger.i("[FCM] Android channel configured.");
     } else if (Platform.isIOS) {
-      print("ℹ️ [FCM] Configuring iOS foreground options...");
+      logger.i("[FCM] Configuring iOS foreground options...");
       await _fcm.setForegroundNotificationPresentationOptions(
         alert: true,
         badge: true,
         sound: true,
       );
-      print("✅ [FCM] iOS foreground options configured.");
+      logger.i("[FCM] iOS foreground options configured.");
     }
   }
 
@@ -119,18 +125,18 @@ class NotificationService {
 
       // iOS의 경우 APNs 토큰이 준비될 때까지 최대 10초간 대기합니다. (실제 기기 필수)
       if (Platform.isIOS) {
-        print("ℹ️ [FCM] iOS detected. Waiting for APNs token...");
+        logger.i("[FCM] iOS detected. Waiting for APNs token...");
         int retryCount = 0;
         while (retryCount < 10) {
           try {
             final apnsToken = await _fcm.getAPNSToken();
             if (apnsToken != null) {
-              print("✅ [FCM] APNs Token acquired.");
+              logger.i("[FCM] APNs Token acquired.");
               break;
             }
           } catch (e) {
-            print(
-              "⏳ [FCM] Waiting for APNs token... (retry ${retryCount + 1}/10)",
+            logger.v(
+              "[FCM] Waiting for APNs token... (retry ${retryCount + 1}/10)",
             );
           }
           await Future.delayed(const Duration(seconds: 1));
@@ -141,7 +147,7 @@ class NotificationService {
       try {
         token = await _fcm.getToken();
       } catch (e) {
-        print("⚠️ [FCM] Failed to fetch FCM token: $e");
+        logger.w("[FCM] Failed to fetch FCM token: $e");
       }
 
       if (token != null && token.isNotEmpty) {
@@ -154,7 +160,7 @@ class NotificationService {
 
         // Firestore 서브 컬렉션에 토큰 정보 업데이트
         await userRepository.updateFCMToken(uid, fcmTokenEntity);
-        print("✅ [FCM] Token Updated for $uid: $token");
+        logger.i("[FCM] Token Updated for $uid: $token");
       }
 
       // 앱 실행 중 토큰이 바뀌는 경우 대응
@@ -168,15 +174,15 @@ class NotificationService {
               isActive: true,
             );
             await userRepository.updateFCMToken(uid, fcmTokenEntity);
-            print("🔄 [FCM] Token Refreshed: $newToken");
+            logger.i("[FCM] Token Refreshed: $newToken");
           } catch (e) {
-            print("❌ [FCM] Error updating refreshed token: $e");
+            logger.e("[FCM] Error updating refreshed token: $e");
           }
         });
         _isTokenRefreshRegistered = true;
       }
     } catch (e) {
-      print("❌ [FCM] Unexpected Error: $e");
+      logger.e("[FCM] Unexpected Error: $e");
     }
   }
 
@@ -190,10 +196,10 @@ class NotificationService {
       if (token != null) {
         // Firestore에서 토큰 활성화 상태를 false로 변경 (상태 기반 관리)
         await userRepository.toggleFCMTokenStatus(uid, token, false);
-        print("FCM Token Deactivated (isActive: false) for $uid");
+        logger.i("FCM Token Deactivated (isActive: false) for $uid");
       }
     } catch (e) {
-      print("FCM Token Deactivate Error: $e");
+      logger.e("FCM Token Deactivate Error: $e");
     }
   }
 
@@ -209,7 +215,7 @@ class NotificationService {
 
     // [백그라운드/종료] 알림을 클릭해서 앱을 열었을 때
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("ℹ️ [FCM] Notification clicked (Background): ${message.data}");
+      logger.i("[FCM] Notification clicked (Background): ${message.data}");
       _handleMessageNavigation(message);
     });
   }
@@ -217,7 +223,7 @@ class NotificationService {
   /// 알림 데이터의 'type'과 'id'를 분석하여 적절한 화면으로 이동시킵니다.
   void _handleMessageNavigation(RemoteMessage message) {
     if (_router == null) {
-      print("⚠️ [FCM] Router not set. Navigation aborted.");
+      logger.w("[FCM] Router not set. Navigation aborted.");
       return;
     }
 
@@ -225,7 +231,7 @@ class NotificationService {
     final String? type = data['type'];
     final String? id = data['id'];
 
-    print("ℹ️ [FCM] Navigating to type: $type, id: $id");
+    logger.i("[FCM] Navigating to type: $type, id: $id");
 
     try {
       if (type == 'chat') {
@@ -242,7 +248,7 @@ class NotificationService {
         _router.go('/home');
       }
     } catch (e) {
-      print("❌ [FCM] Navigation Error: $e");
+      logger.e("[FCM] Navigation Error: $e");
     }
   }
 

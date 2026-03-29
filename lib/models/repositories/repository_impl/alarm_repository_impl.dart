@@ -15,10 +15,13 @@ class AlarmRepositoryImpl implements AlarmRepository {
       final snapshot = await _firestore
           .collection(_collectionPath)
           .where('receiver_id', isEqualTo: userId)
-          .orderBy('created_at', descending: true)
           .get();
 
       final alarms = snapshot.docs.map((doc) => Alarm.fromJson(doc.data())).toList();
+      
+      // 최신순 정렬 (index 에러 방지를 위해 클라이언트 단에서 수행)
+      alarms.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      
       return Success(alarms);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
@@ -32,11 +35,14 @@ class AlarmRepositoryImpl implements AlarmRepository {
     return _firestore
         .collection(_collectionPath)
         .where('receiver_id', isEqualTo: userId)
-        .orderBy('created_at', descending: true)
         .snapshots()
         .map((snapshot) {
       try {
         final alarms = snapshot.docs.map((doc) => Alarm.fromJson(doc.data())).toList();
+        
+        // 최신순 정렬 (index 에러 방지를 위해 클라이언트 단에서 수행)
+        alarms.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        
         return Success(alarms);
       } on FirebaseException catch (e) {
         return Error(FirebaseErrorMapper.toFailure(e));

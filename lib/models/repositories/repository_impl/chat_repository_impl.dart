@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/core/utils/logger.dart';
 import 'package:baton/models/entities/appointment_data.dart';
 import 'package:baton/models/entities/chat_room.dart';
 import 'package:baton/models/entities/message.dart';
@@ -13,7 +14,6 @@ import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/repositories/repository/chat_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
   final FirebaseFirestore _firestore;
@@ -257,7 +257,7 @@ class ChatRepositoryImpl implements ChatRepository {
         // (3) 채팅방 문서 삭제
         await roomRef.delete();
 
-        print('Chat: 채팅방($roomId) 데이터가 완전히 삭제되었습니다.');
+        logger.i('Chat: 채팅방($roomId) 데이터가 완전히 삭제되었습니다.');
       }
       return const Success(true);
     } catch (e) {
@@ -515,7 +515,7 @@ class ChatRepositoryImpl implements ChatRepository {
       });
       return const Success(null);
     } catch (e) {
-      debugPrint('수동 거래 확정 중 에러: $e');
+      logger.e('수동 거래 확정 중 에러: $e');
       return Error(UnknownFailure('거래 확정 중 오류가 발생했습니다.'));
     }
   }

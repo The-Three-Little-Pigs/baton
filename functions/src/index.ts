@@ -50,7 +50,8 @@ export const sendAlarmNotification = onDocumentCreated(
           body: content,
         },
         data: {
-          type: "alarm",
+          type: "product",
+          id: alarmData.post_id || "",
           click_action: "FLUTTER_NOTIFICATION_CLICK",
         },
         tokens: tokens,

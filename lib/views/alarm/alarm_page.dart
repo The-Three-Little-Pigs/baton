@@ -3,6 +3,7 @@ import 'package:baton/notifier/alarm/alarm_notifier.dart';
 import 'package:baton/views/alarm/widgets/alarm_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class AlarmPage extends ConsumerWidget {
@@ -51,7 +52,34 @@ class AlarmPage extends ConsumerWidget {
             ],
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, st) => Center(child: Text('알림을 불러오지 못했습니다: $e')),
+          error: (e, st) => Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "알림을 불러오지 못했습니다.",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    e.toString(), // 실제 에러 내용 출력 (인덱스 에러 시 링크 포함됨)
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () => ref.invalidate(alarmProvider),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text("다시 시도"),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -108,8 +136,13 @@ class _AlarmList extends ConsumerWidget {
             // 1. 읽음 처리
             ref.read(alarmProvider.notifier).markAsRead(alarm.alarmId);
 
-            // 2. 이동 (예: 상품 상세 페이지 등)
-            // TODO: 알림 타입에 따른 이동 로직 추가 (현재는 알림 상세가 없으므로 생략)
+            // 2. 게시물 이동 (postId가 있는 경우)
+            if (alarm.postId != null && alarm.postId!.isNotEmpty) {
+              context.pushNamed(
+                'productDetail',
+                pathParameters: {'postId': alarm.postId!},
+              );
+            }
           },
         );
       },

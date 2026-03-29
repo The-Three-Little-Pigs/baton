@@ -6,6 +6,7 @@ import 'package:baton/core/di/repository/user_provider.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/service/notification_service.dart';
 
+import 'package:baton/core/utils/logger.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -83,7 +84,7 @@ class SignUpProfile extends _$SignUpProfile {
 
       return true;
     } catch (e) {
-      print("가입 데이터 저장 에러: $e");
+      logger.e("가입 데이터 저장 에러: $e");
       return false;
     } finally {
       state = state.copyWith(isLoading: false);

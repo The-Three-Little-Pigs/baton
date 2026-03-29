@@ -63,7 +63,8 @@ class _HomeTapState extends ConsumerState<HomeTap> {
             },
             icon: Badge(
               isLabelVisible: ref.watch(unreadAlarmCountProvider) > 0,
-              label: Text(ref.watch(unreadAlarmCountProvider).toString()),
+              backgroundColor: Colors.orange,
+              smallSize: 8,
               child: const Icon(Icons.notifications),
             ),
           ),
@@ -132,7 +133,7 @@ class _HomeTapState extends ConsumerState<HomeTap> {
                         onTap: () {
                           ref.read(filterProvider.notifier).close();
                         },
-                        child: Container(color: Colors.black.withOpacity(0.3)),
+                        child: Container(color: Colors.black.withValues(alpha: 0.3)),
                       ),
                     ),
 

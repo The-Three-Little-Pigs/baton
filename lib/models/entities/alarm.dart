@@ -5,6 +5,7 @@ class Alarm {
   final String imageUrl; // 이미지
   final String authorId; // 작성자
   final String receiverId; // 수신자
+  final String? postId; // 연관 게시글 아이디 (이동용)
   final DateTime createdAt; // 생성 시간
   final bool isRead; // 읽음 여부
 
@@ -15,6 +16,7 @@ class Alarm {
     required this.imageUrl,
     required this.authorId,
     required this.receiverId,
+    this.postId,
     required this.createdAt,
     this.isRead = false,
   });
@@ -27,6 +29,7 @@ class Alarm {
       imageUrl: json['image_url'],
       authorId: json['author_id'],
       receiverId: json['receiver_id'],
+      postId: json['post_id'],
       createdAt: json['created_at'].toDate(),
       isRead: json['is_read'] ?? false,
     );
@@ -40,6 +43,7 @@ class Alarm {
       'image_url': imageUrl,
       'author_id': authorId,
       'receiver_id': receiverId,
+      'post_id': postId,
       'created_at': createdAt,
       'is_read': isRead,
     };
@@ -52,6 +56,7 @@ class Alarm {
     String? imageUrl,
     String? authorId,
     String? receiverId,
+    String? postId,
     DateTime? createdAt,
     bool? isRead,
   }) {
@@ -62,6 +67,7 @@ class Alarm {
       imageUrl: imageUrl ?? this.imageUrl,
       authorId: authorId ?? this.authorId,
       receiverId: receiverId ?? this.receiverId,
+      postId: postId ?? this.postId,
       createdAt: createdAt ?? this.createdAt,
       isRead: isRead ?? this.isRead,
     );
