@@ -6,6 +6,7 @@ import 'package:baton/models/enum/category.dart';
 import 'package:baton/models/repositories/repository/post_repository.dart';
 import 'package:baton/service/algolia/algolia_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' hide Category;
 
 class PostRepositoryImpl implements PostRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -65,9 +66,15 @@ class PostRepositoryImpl implements PostRepository {
 
       final snapshot = await query.limit(20).get();
 
-      final posts = snapshot.docs
-          .map((doc) => Post.fromJson(doc.data()))
-          .toList();
+      final posts = snapshot.docs.map((doc) {
+        try {
+          return Post.fromJson(doc.data());
+        } catch (e) {
+          // 파싱 에러 발생 시 로그를 남기고 해당 문서는 무시
+          debugPrint('Post parsing error (ID: ${doc.id}): $e');
+          return null;
+        }
+      }).whereType<Post>().toList();
 
       return Success(posts);
     } on FirebaseException catch (e) {

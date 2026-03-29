@@ -33,7 +33,7 @@ class ChatMessageList extends ConsumerWidget {
         : '';
     final opponentAsync = ref.watch(authorProvider(otherUserId));
     final opponentNickname = opponentAsync.when(
-      data: (user) => user?.nickname ?? '알 수 없는 사용자', // null 체크 추가
+      data: (user) => user.nickname,
       loading: () => '...',
       error: (_, __) => '알 수 없는 사용자',
     );
