@@ -17,6 +17,8 @@ class Post {
   final ProductStatus status; // 게시글 상태
   final int viewCount; // 🔥 추가: 조회수
   final String? buyerId; // 구매자 아이디
+  final bool hiddenBySeller; // 판매 내역에서 숨김 여부
+  final bool hiddenByBuyer; // 구매 내역에서 숨김 여부
 
   Post({
     required this.postId,
@@ -33,6 +35,8 @@ class Post {
     required this.status,
     this.viewCount = 0,
     this.buyerId,
+    this.hiddenBySeller = false,
+    this.hiddenByBuyer = false,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -52,11 +56,22 @@ class Post {
       authorId: json['author_id'] as String? ?? '',
       createdAt: _parseDateTime(json['created_at']),
       status: ProductStatus.values.firstWhere(
-        (e) => e.label == json['status'],
-        orElse: () => ProductStatus.available,
+        (e) => e.label == json['status'] || e.name == json['status'],
+        orElse: () {
+          final s = json['status']?.toString() ?? '';
+          if (s == '예약중' || s == '거래중' || s == '예약' || s == 'reserved') {
+            return ProductStatus.reserved;
+          }
+          if (s == '판매완료' || s == 'sold') {
+            return ProductStatus.sold;
+          }
+          return ProductStatus.available;
+        },
       ),
       viewCount: json['view_count'] as int? ?? 0,
       buyerId: json['buyer_id'] as String?,
+      hiddenBySeller: json['hidden_by_seller'] as bool? ?? false,
+      hiddenByBuyer: json['hidden_by_buyer'] as bool? ?? false,
     );
   }
 
@@ -93,6 +108,8 @@ class Post {
       'status': status.label,
       'view_count': viewCount,
       'buyer_id': buyerId,
+      'hidden_by_seller': hiddenBySeller,
+      'hidden_by_buyer': hiddenByBuyer,
     };
   }
 
@@ -111,6 +128,8 @@ class Post {
     ProductStatus? status,
     int? viewCount,
     String? buyerId,
+    bool? hiddenBySeller,
+    bool? hiddenByBuyer,
   }) {
     return Post(
       postId: postId ?? this.postId,
@@ -127,6 +146,8 @@ class Post {
       status: status ?? this.status,
       viewCount: viewCount ?? this.viewCount,
       buyerId: buyerId ?? this.buyerId,
+      hiddenBySeller: hiddenBySeller ?? this.hiddenBySeller,
+      hiddenByBuyer: hiddenByBuyer ?? this.hiddenByBuyer,
     );
   }
 }

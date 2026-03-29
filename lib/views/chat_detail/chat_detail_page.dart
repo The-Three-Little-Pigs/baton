@@ -78,20 +78,20 @@ class ChatDetailPage extends ConsumerWidget {
             roomId.split('_').length >= 3 ? roomId.split('_')[2] : '';
         if (productId.isEmpty) return;
 
-        ProductStatus? newProductStatus;
-        if (nextStatus == AppointmentStatus.confirmed.label) {
-          newProductStatus = ProductStatus.reserved;
-        } else if (nextStatus == AppointmentStatus.cancelled.label) {
-          newProductStatus = ProductStatus.available;
-        } else if (nextStatus == AppointmentStatus.completed.label) {
-          newProductStatus = ProductStatus.sold;
-        }
-
-        if (newProductStatus != null) {
-          // ✅ .state 직접 수정 대신 Notifier의 메서드 호출
-          ref
-              .read(productDetailPageViewModelProvider(productId).notifier)
-              .updateStatusLocally(newProductStatus);
+          if (nextStatus == AppointmentStatus.confirmed.label) {
+            newProductStatus = ProductStatus.reserved; // 확정되면 거래중으로
+          } else if (nextStatus == AppointmentStatus.cancelled.label) {
+            newProductStatus = ProductStatus.available; // 취소되면 판매중으로
+          } else if (nextStatus == AppointmentStatus.completed.label) {
+            newProductStatus = ProductStatus.sold; // 완료되면 판매완료로
+          }
+          // 상태가 다를 때만 0.001초만에 부드럽게 화면 바꿔치기 (상대방 폰 + 내 폰 모두 적용됨!)
+          if (newProductStatus != null &&
+              currentPost.status != newProductStatus) {
+            postNotifier.state = AsyncData(
+              currentPost.copyWith(status: newProductStatus),
+            );
+          }
         }
       }
     });
