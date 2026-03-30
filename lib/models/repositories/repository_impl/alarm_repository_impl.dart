@@ -9,7 +9,7 @@ class AlarmRepositoryImpl implements AlarmRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
-  Future<Result<List<Alarm>, Failure>> getAlarms(String receiverId) async {
+  Future<Result<List<Alarm>, Failure>> fetchAlarms(String receiverId) async {
     try {
       final snapshot = await _firestore
           .collection('alarms')
@@ -37,32 +37,43 @@ class AlarmRepositoryImpl implements AlarmRepository {
       for (final id in alarmIds) {
         batch.delete(_firestore.collection('alarms').doc(id));
       }
+      await batch.commit();
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('알림을 삭제하는 중 오류가 발생했습니다: $e'));
+    }
+  }
 
+  @override
   Stream<Result<List<Alarm>, Failure>> watchAlarms(String userId) {
     return _firestore
-        .collection(_collectionPath)
+        .collection('alarms')
         .where('receiver_id', isEqualTo: userId)
         .snapshots()
         .map((snapshot) {
-      try {
-        final alarms = snapshot.docs.map((doc) => Alarm.fromJson(doc.data())).toList();
-        
-        // 최신순 정렬 (index 에러 방지를 위해 클라이언트 단에서 수행)
-        alarms.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        
-        return Success(alarms);
-      } on FirebaseException catch (e) {
-        return Error(FirebaseErrorMapper.toFailure(e));
-      } catch (e) {
-        return Error(ServerFailure(e.toString()));
-      }
-    });
+          try {
+            final alarms = snapshot.docs
+                .map((doc) => Alarm.fromJson(doc.data()))
+                .toList();
+
+            // 최신순 정렬 (index 에러 방지를 위해 클라이언트 단에서 수행)
+            alarms.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+            return Success(alarms);
+          } on FirebaseException catch (e) {
+            return Error(FirebaseErrorMapper.toFailure(e));
+          } catch (e) {
+            return Error(ServerFailure(e.toString()));
+          }
+        });
   }
 
   @override
   Future<Result<void, Failure>> markAsRead(String alarmId) async {
     try {
-      await _firestore.collection(_collectionPath).doc(alarmId).update({
+      await _firestore.collection('alarms').doc(alarmId).update({
         'is_read': true,
       });
       return const Success(null);
@@ -77,7 +88,7 @@ class AlarmRepositoryImpl implements AlarmRepository {
   Future<Result<void, Failure>> markAllAsRead(String userId) async {
     try {
       final unreadAlarms = await _firestore
-          .collection(_collectionPath)
+          .collection('alarms')
           .where('receiver_id', isEqualTo: userId)
           .where('is_read', isEqualTo: false)
           .get();

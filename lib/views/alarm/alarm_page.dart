@@ -4,8 +4,6 @@ import 'package:baton/views/alarm/widgets/alarm_item.dart';
 import 'package:baton/views/alarm/widgets/edit_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 class AlarmPage extends ConsumerWidget {
   const AlarmPage({super.key});
@@ -61,8 +59,10 @@ class AlarmPage extends ConsumerWidget {
         bottomNavigationBar: isEditMode
             ? SafeArea(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   child: EditButton(
                     onCancel: () =>
                         ref.read(alarmProvider.notifier).toggleEditMode(),
@@ -75,29 +75,6 @@ class AlarmPage extends ConsumerWidget {
               )
             : null,
       ),
-    );
-  }
-
-  void _showMenu(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.done_all),
-                title: const Text('모든 알림 읽음 처리'),
-                onTap: () {
-                  ref.read(alarmProvider.notifier).markAllAsRead();
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
@@ -125,11 +102,16 @@ class AlarmItemList extends ConsumerWidget {
       itemBuilder: (context, index) {
         final alarm = alarms[index];
         return AlarmItem(
-          icon: Icons.favorite,
+          icon: _getIcon(alarm.title),
           header: alarm.title,
           date: alarm.createdAt.toString().split(' ')[0], // 간단한 포맷팅
           imageUrl: alarm.imageUrl,
-          content: Text(alarm.content),
+          content: Text(
+            alarm.content,
+            style: TextStyle(
+              color: alarm.isRead ? Colors.grey : Colors.black87,
+            ),
+          ),
           isEditMode: isEditMode,
           isSelected: selectedIds.contains(alarm.alarmId),
           onSelected: (_) =>

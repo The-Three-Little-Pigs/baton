@@ -18,7 +18,7 @@ class AlarmItem extends StatelessWidget {
   final String header;
   final String date;
   final String imageUrl;
-  final String content;
+  final Widget content; // Widget으로 변경 (Text 등)
   final IconData icon;
   final bool isEditMode;
   final bool isSelected;
@@ -74,7 +74,7 @@ class AlarmItem extends StatelessWidget {
                 ),
                 Row(
                   spacing: 11,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
@@ -98,7 +98,7 @@ class AlarmItem extends StatelessWidget {
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

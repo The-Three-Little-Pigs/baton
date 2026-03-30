@@ -80,8 +80,8 @@ class LikeRepositoryImpl implements LikeRepository {
           final alarmRef = _firestore.collection('alarms').doc();
           final alarm = Alarm(
             alarmId: alarmRef.id,
-            title: '새로운 찜 ❤️',
-            content: '$nickname님이 회원님의 [$title]을(를) 찜했습니다.',
+            title: '내 상품 관심',
+            content: '"$title" 상품이 새 관심을 받았어요.',
             imageUrl: firstImage,
             authorId: userId,
             receiverId: authorId,

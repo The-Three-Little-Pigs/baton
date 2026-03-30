@@ -39,7 +39,7 @@ class AlarmNotifier extends _$AlarmNotifier {
     if (user == null) return AlarmState(alarms: []);
 
     final alarmRepo = ref.read(alarmRepositoryProvider);
-    final result = await alarmRepo.getAlarms(user.uid);
+    final result = await alarmRepo.fetchAlarms(user.uid);
 
     return switch (result) {
       Success(value: final alarms) => AlarmState(alarms: alarms),
@@ -52,10 +52,12 @@ class AlarmNotifier extends _$AlarmNotifier {
     final currentState = state.value;
     if (currentState == null) return;
 
-    state = AsyncData(currentState.copyWith(
-      isEditMode: !currentState.isEditMode,
-      selectedAlarmIds: {}, // 모드 전환 시 선택 초기화
-    ));
+    state = AsyncData(
+      currentState.copyWith(
+        isEditMode: !currentState.isEditMode,
+        selectedAlarmIds: {}, // 모드 전환 시 선택 초기화
+      ),
+    );
   }
 
   /// 알림 선택/해제 토글
@@ -78,10 +80,33 @@ class AlarmNotifier extends _$AlarmNotifier {
     if (currentState == null || currentState.selectedAlarmIds.isEmpty) return;
 
     final alarmRepo = ref.read(alarmRepositoryProvider);
-    final result = await alarmRepo.deleteAlarms(currentState.selectedAlarmIds.toList());
+    final result = await alarmRepo.deleteAlarms(
+      currentState.selectedAlarmIds.toList(),
+    );
 
     if (result is Success) {
       // 로컬 상태에서 즉각 제거하거나 리프레시
+      ref.invalidateSelf();
+    }
+  }
+
+  Future<void> markAllAsRead() async {
+    final user = ref.read(userProvider).value;
+    if (user == null) return;
+
+    final alarmRepo = ref.read(alarmRepositoryProvider);
+    final result = await alarmRepo.markAllAsRead(user.uid);
+
+    if (result is Success) {
+      ref.invalidateSelf();
+    }
+  }
+
+  Future<void> markAsRead(String alarmId) async {
+    final alarmRepo = ref.read(alarmRepositoryProvider);
+    final result = await alarmRepo.markAsRead(alarmId);
+
+    if (result is Success) {
       ref.invalidateSelf();
     }
   }
@@ -90,4 +115,13 @@ class AlarmNotifier extends _$AlarmNotifier {
     ref.invalidateSelf();
     await future;
   }
+}
+
+@riverpod
+int unreadAlarmCount(Ref ref) {
+  final alarmState = ref.watch(alarmProvider);
+  return alarmState.maybeWhen(
+    data: (state) => state.alarms.where((alarm) => !alarm.isRead).length,
+    orElse: () => 0,
+  );
 }

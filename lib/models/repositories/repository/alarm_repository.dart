@@ -16,5 +16,5 @@ abstract class AlarmRepository {
   Future<Result<void, Failure>> markAllAsRead(String userId);
 
   /// 특정 알림을 삭제합니다.
-  Future<Result<void, Failure>> deleteAlarm(String alarmId);
+  Future<Result<void, Failure>> deleteAlarms(List<String> alarmIds);
 }
