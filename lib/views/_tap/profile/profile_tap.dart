@@ -67,11 +67,11 @@ class ProfileTap extends ConsumerWidget {
           ),
           SizedBox(height: 10),
           SectionTitle(title: '활동'),
-          MenuListItem(
-            svgPath: 'assets/icons/recently_view.svg',
-            content: '최근 본 상품',
-          ),
-          SizedBox(height: 8),
+          // MenuListItem(
+          //   svgPath: 'assets/icons/recently_view.svg',
+          //   content: '최근 본 상품',
+          // ),
+          // SizedBox(height: 8),
           MenuListItem(
             icon: Icons.favorite,
             content: '관심 상품',
