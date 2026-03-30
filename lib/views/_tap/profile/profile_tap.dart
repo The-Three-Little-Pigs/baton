@@ -166,9 +166,7 @@ class UserProfileCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProvider);
     return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      ),
+      decoration: BoxDecoration(color: Color.fromARGB(128, 230, 237, 245)),
       child: Padding(
         padding: const EdgeInsets.only(
           left: 30,
