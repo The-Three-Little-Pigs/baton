@@ -130,13 +130,45 @@ class ChatMessageList extends ConsumerWidget {
                           );
                         }
                         return Padding(
-                          padding: EdgeInsets.only(bottom: bottomMargin),
+                          padding: EdgeInsets.only(
+                            top: 8,
+                            bottom: bottomMargin,
+                          ),
                           child: Row(
                             mainAxisAlignment: isMyMessage
                                 ? MainAxisAlignment.end
                                 : MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               if (!isMyMessage) const SizedBox(width: 26),
+                              // 내 메시지일 때: 시간 / 읽음표시 영역 (왼쪽)
+                              if (isMyMessage)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    if (showReadStatus)
+                                      Text(
+                                        isReadByTarget ? '' : '1',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w400,
+                                          color: isReadByTarget
+                                              ? Colors.grey.shade500
+                                              : AppColors.primary,
+                                        ),
+                                      ),
+                                    if (showTime)
+                                      Text(
+                                        _timeFormat.format(msg.createdAt),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.grey.shade500,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              if (isMyMessage) const SizedBox(width: 8),
                               AppointmentCard(
                                 data: data,
                                 isMyCard: isMyMessage,
@@ -204,6 +236,17 @@ class ChatMessageList extends ConsumerWidget {
                                       );
                                 },
                               ),
+                              if (!isMyMessage) const SizedBox(width: 8),
+                              // 상대방 메시지일 때: 시간 표시 (오른쪽)
+                              if (!isMyMessage && showTime)
+                                Text(
+                                  _timeFormat.format(msg.createdAt),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
                               if (isMyMessage) const SizedBox(width: 26),
                             ],
                           ),
