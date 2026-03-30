@@ -22,7 +22,7 @@ class ChatInputField extends ConsumerStatefulWidget {
 class _ChatInputFieldState extends ConsumerState<ChatInputField> {
   // 텍스트를 감지하고 조작하기 위한 컨트롤러
   final TextEditingController _controller = TextEditingController();
-  // final FocusNode _focusNode = FocusNode();
+  final FocusNode _focusNode = FocusNode();
   bool _hasText = false; // 텍스트가 있는지 여부를 저장하는 상태 변수
 
   // 📸 이미지 피커 및 선택된 이미지 상태 관리
@@ -44,7 +44,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
   @override
   void dispose() {
     _controller.dispose();
-    // _focusNode.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -142,7 +142,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
     // ==========================================
     if (text.trim().isNotEmpty) {
       _controller.clear(); // 입력창 비우기
-      // _focusNode.requestFocus(); // 타자 치던 키보드가 내려가지 않게 계속 유지
+      _focusNode.requestFocus(); // 타자 치던 키보드가 내려가지 않게 계속 유지
 
       try {
         final errorMsg = await ref
@@ -269,7 +269,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
               Expanded(
                 child: TextField(
                   controller: _controller,
-                  // focusNode: _focusNode,
+                  focusNode: _focusNode,
                   textInputAction: TextInputAction.newline,
                   keyboardType: TextInputType.multiline,
                   maxLines: 7,

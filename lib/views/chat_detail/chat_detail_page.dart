@@ -109,7 +109,7 @@ class ChatDetailPage extends ConsumerWidget {
       }
     });
     return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
