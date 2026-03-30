@@ -116,41 +116,43 @@ class AppointmentButton extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Material(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
-                      child: InkWell(
-                        onTap: () =>
-                            AppointmentBottomSheet.showAppointmentDialog(
-                              context,
-                              initialDateTime: room.appointmentDateTime,
-                            ),
+                  if (currentStatus != AppointmentStatus.confirmed) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Material(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          width: double.infinity,
-                          height: 36,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 6,
+                        child: InkWell(
+                          onTap: () =>
+                              AppointmentBottomSheet.showAppointmentDialog(
+                            context,
+                            initialDateTime: room.appointmentDateTime,
                           ),
-                          child: Center(
-                            child: Text(
-                              '날짜 조정',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            width: double.infinity,
+                            height: 36,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 6,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '날짜 조정',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             );

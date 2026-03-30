@@ -317,7 +317,7 @@ class ChatRepositoryImpl implements ChatRepository {
         'createdAt': FieldValue.serverTimestamp(),
       });
       final updateData = {
-        'lastMessage': '약속',
+        'lastMessage': '새로운 약속이 있습니다.',
         'updatedAt': FieldValue.serverTimestamp(),
         'unreadCounts.$targetUserId': FieldValue.increment(1),
         'unreadCounts.$myUserId': 0,
@@ -393,12 +393,14 @@ class ChatRepositoryImpl implements ChatRepository {
         final chatroomRef = _firestore.collection(_collectionPath).doc(roomId);
         if (newStatus == AppointmentStatus.confirmed) {
           transaction.update(chatroomRef, {
+            'lastMessage': '약속이 확정되었습니다.',
             'appointmentStatus': AppointmentStatus.confirmed.label,
             'activeAppointmentId': messageId,
             'appointmentDateTime': Timestamp.fromDate(data.dateTime),
           });
         } else if (newStatus == AppointmentStatus.cancelled) {
           transaction.update(chatroomRef, {
+            'lastMessage': '약속이 취소되었습니다.',
             'appointmentStatus': AppointmentStatus.cancelled.label,
             'activeAppointmentId': null, // 취소 시 활성화된 약속 ID 제거
             'confirmedCompleteUids': <String>[], // 취소 시 확정 상태 초기화
@@ -406,6 +408,7 @@ class ChatRepositoryImpl implements ChatRepository {
           });
         } else if (newStatus == AppointmentStatus.completed) {
           transaction.update(chatroomRef, {
+            'lastMessage': '거래가 확정되었습니다.',
             'appointmentStatus': AppointmentStatus.completed.label,
             'activeAppointmentId': null,
           });
@@ -491,6 +494,7 @@ class ChatRepositoryImpl implements ChatRepository {
           // 채팅방(chatroomRef) 한 번에 업데이트
 
           transaction.update(chatroomRef, {
+            'lastMessage': '거래가 확정되었습니다',
             'confirmedCompleteUids': currentUids,
             'activeAppointmentId': null,
             'appointmentStatus': AppointmentStatus.completed.label,
@@ -527,6 +531,7 @@ class ChatRepositoryImpl implements ChatRepository {
           // 쌍방 확정이 아니라면 내 ID만 추가
           if (isListUpdated) {
             transaction.update(chatroomRef, {
+              'lastMessage': '거래 확정 대기 중...',
               'confirmedCompleteUids': currentUids,
             });
           }

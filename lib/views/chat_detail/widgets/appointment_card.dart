@@ -265,8 +265,8 @@ class AppointmentCard extends StatelessWidget {
         title = '약속 확정';
         description = isMyCard
             ? '$opponentNickname 님이 약속을 수락했습니다.' // 제안자(나)의 화면
-            : '약속을 확정했습니다!';
-        barColor = Colors.green;
+            : '약속을 확정했습니다.';
+        barColor = AppColors.primary;
         break;
       case AppointmentStatus.cancelled:
         title = '약속 취소';
