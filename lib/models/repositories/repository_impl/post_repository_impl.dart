@@ -137,9 +137,12 @@ class PostRepositoryImpl implements PostRepository {
   }
 
   @override
-  Future<Result<List<Post>, Failure>> getPostBySearch(String keyword) async {
+  Future<Result<List<Post>, Failure>> getPostBySearch(
+    String keyword, {
+    int page = 0,
+  }) async {
     try {
-      final hits = await _algoliaService.search(keyword);
+      final hits = await _algoliaService.search(keyword, page: page);
 
       final posts = hits.map((hit) {
         return Post.fromJson(hit);

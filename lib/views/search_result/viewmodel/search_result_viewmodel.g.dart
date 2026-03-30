@@ -13,7 +13,7 @@ part of 'search_result_viewmodel.dart';
 final searchResultViewModelProvider = SearchResultViewModelFamily._();
 
 final class SearchResultViewModelProvider
-    extends $AsyncNotifierProvider<SearchResultViewModel, List<Post>> {
+    extends $AsyncNotifierProvider<SearchResultViewModel, SearchResultState> {
   SearchResultViewModelProvider._({
     required SearchResultViewModelFamily super.from,
     required String super.argument,
@@ -51,15 +51,15 @@ final class SearchResultViewModelProvider
 }
 
 String _$searchResultViewModelHash() =>
-    r'76eb43ed9d5a2cc05f977689396688ea8ff2f905';
+    r'5461b16e60787220eda41138e1137a70695c2ef6';
 
 final class SearchResultViewModelFamily extends $Family
     with
         $ClassFamilyOverride<
           SearchResultViewModel,
-          AsyncValue<List<Post>>,
-          List<Post>,
-          FutureOr<List<Post>>,
+          AsyncValue<SearchResultState>,
+          SearchResultState,
+          FutureOr<SearchResultState>,
           String
         > {
   SearchResultViewModelFamily._()
@@ -78,20 +78,22 @@ final class SearchResultViewModelFamily extends $Family
   String toString() => r'searchResultViewModelProvider';
 }
 
-abstract class _$SearchResultViewModel extends $AsyncNotifier<List<Post>> {
+abstract class _$SearchResultViewModel
+    extends $AsyncNotifier<SearchResultState> {
   late final _$args = ref.$arg as String;
   String get keyword => _$args;
 
-  FutureOr<List<Post>> build(String keyword);
+  FutureOr<SearchResultState> build(String keyword);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<List<Post>>, List<Post>>;
+    final ref =
+        this.ref as $Ref<AsyncValue<SearchResultState>, SearchResultState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<Post>>, List<Post>>,
-              AsyncValue<List<Post>>,
+              AnyNotifier<AsyncValue<SearchResultState>, SearchResultState>,
+              AsyncValue<SearchResultState>,
               Object?,
               Object?
             >;

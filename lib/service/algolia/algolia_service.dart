@@ -12,7 +12,10 @@ class AlgoliaService {
         apiKey: AlgoliaConfig.apiKey,
       );
 
-  Future<List<Map<String, dynamic>>> search(String query) async {
+  Future<List<Map<String, dynamic>>> search(
+    String query, {
+    int page = 0,
+  }) async {
     if (AlgoliaConfig.appId.isEmpty ||
         AlgoliaConfig.apiKey.isEmpty ||
         AlgoliaConfig.appId == 'YOUR_APP_ID') {
@@ -28,6 +31,7 @@ class AlgoliaService {
               indexName: AlgoliaConfig.indexName,
               query: query,
               hitsPerPage: 20,
+              page: page,
             ),
           ],
         ),

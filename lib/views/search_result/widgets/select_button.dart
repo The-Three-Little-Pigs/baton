@@ -1,33 +1,31 @@
+import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class SelectButton extends StatelessWidget {
-  const SelectButton({
+class SelectCircle extends StatelessWidget {
+  const SelectCircle({
     super.key,
-    required this.label,
     required this.isSelected,
   });
 
-  final String label;
   final bool isSelected;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      width: 18,
+      height: 18,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: Color(0xFFCDD8E7)),
+        color: isSelected ? AppColors.primary : const Color(0xFFFCFDFF),
+        shape: BoxShape.circle,
+        border: isSelected ? null : Border.all(color: AppColors.divider),
       ),
-      child: Row(
-        spacing: 4,
-        children: [
-          Icon(Icons.circle, size: 18),
-          Text(
-            label,
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
+      child: isSelected
+          ? const Icon(
+              Icons.check,
+              size: 14,
+              color: Colors.white,
+            )
+          : null,
     );
   }
 }
