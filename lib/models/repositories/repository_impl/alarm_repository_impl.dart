@@ -7,30 +7,37 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AlarmRepositoryImpl implements AlarmRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  static const String _collectionPath = "alarms";
 
   @override
-  Future<Result<List<Alarm>, Failure>> fetchAlarms(String userId) async {
+  Future<Result<List<Alarm>, Failure>> getAlarms(String receiverId) async {
     try {
       final snapshot = await _firestore
-          .collection(_collectionPath)
-          .where('receiver_id', isEqualTo: userId)
+          .collection('alarms')
+          .where('receiver_id', isEqualTo: receiverId)
+          .orderBy('created_at', descending: true)
           .get();
 
-      final alarms = snapshot.docs.map((doc) => Alarm.fromJson(doc.data())).toList();
-      
-      // 최신순 정렬 (index 에러 방지를 위해 클라이언트 단에서 수행)
-      alarms.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      
+      final alarms = snapshot.docs
+          .map((doc) => Alarm.fromJson(doc.data()))
+          .toList();
+
       return Success(alarms);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
-      return Error(ServerFailure(e.toString()));
+      return Error(ServerFailure('알림을 불러오는 중 오류가 발생했습니다: $e'));
     }
   }
 
   @override
+  Future<Result<void, Failure>> deleteAlarms(List<String> alarmIds) async {
+    try {
+      final batch = _firestore.batch();
+
+      for (final id in alarmIds) {
+        batch.delete(_firestore.collection('alarms').doc(id));
+      }
+
   Stream<Result<List<Alarm>, Failure>> watchAlarms(String userId) {
     return _firestore
         .collection(_collectionPath)
@@ -84,19 +91,7 @@ class AlarmRepositoryImpl implements AlarmRepository {
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
-      return Error(ServerFailure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Result<void, Failure>> deleteAlarm(String alarmId) async {
-    try {
-      await _firestore.collection(_collectionPath).doc(alarmId).delete();
-      return const Success(null);
-    } on FirebaseException catch (e) {
-      return Error(FirebaseErrorMapper.toFailure(e));
-    } catch (e) {
-      return Error(ServerFailure(e.toString()));
+      return Error(ServerFailure('알림 삭제 중 오류가 발생했습니다: $e'));
     }
   }
 }

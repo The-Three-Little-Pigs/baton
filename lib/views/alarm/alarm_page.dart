@@ -1,6 +1,7 @@
 import 'package:baton/models/entities/alarm.dart';
 import 'package:baton/notifier/alarm/alarm_notifier.dart';
 import 'package:baton/views/alarm/widgets/alarm_item.dart';
+import 'package:baton/views/alarm/widgets/edit_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,22 +12,24 @@ class AlarmPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final alarmAsyncValue = ref.watch(alarmProvider);
+    final alarmAsync = ref.watch(alarmProvider);
+    final isEditMode = alarmAsync.value?.isEditMode ?? false;
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("알림"),
-          actions: [
-            IconButton(
-              onPressed: () {
-                // 상단 메뉴 (모두 읽음 처리 등)
-                _showMenu(context, ref);
-              },
-              icon: const Icon(Icons.more_vert),
-            ),
-          ],
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("알림"),
+              IconButton(
+                onPressed: () =>
+                    ref.read(alarmProvider.notifier).toggleEditMode(),
+                icon: const Icon(Icons.more_vert),
+              ),
+            ],
+          ),
           bottom: const TabBar(
             tabs: [
               Tab(text: "전체 알림"),
@@ -34,53 +37,43 @@ class AlarmPage extends ConsumerWidget {
             ],
           ),
         ),
-        body: alarmAsyncValue.when(
-          data: (alarms) => TabBarView(
-            children: [
-              // 전체 알림
-              _AlarmList(alarms: alarms),
-              // 상품 알림 (필터링 예시: 제목에 '찜'이나 '상품'이 들어간 것만)
-              _AlarmList(
-                alarms:
-                    alarms
-                        .where(
-                          (a) =>
-                              a.title.contains('찜') || a.title.contains('상품'),
-                        )
-                        .toList(),
-              ),
-            ],
-          ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, st) => Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "알림을 불러오지 못했습니다.",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    e.toString(), // 실제 에러 내용 출력 (인덱스 에러 시 링크 포함됨)
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () => ref.invalidate(alarmProvider),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text("다시 시도"),
-                  ),
-                ],
-              ),
+        body: alarmAsync.when(
+          data: (state) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: TabBarView(
+              children: [
+                AlarmItemList(
+                  alarms: state.alarms,
+                  isEditMode: state.isEditMode,
+                  selectedIds: state.selectedAlarmIds,
+                ),
+                AlarmItemList(
+                  alarms: state.alarms, // 필터링 필요 시 여기서 처리
+                  isEditMode: state.isEditMode,
+                  selectedIds: state.selectedAlarmIds,
+                ),
+              ],
             ),
           ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, st) => Center(child: Text(e.toString())),
         ),
+        bottomNavigationBar: isEditMode
+            ? SafeArea(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: EditButton(
+                    onCancel: () =>
+                        ref.read(alarmProvider.notifier).toggleEditMode(),
+                    onDelete: () =>
+                        ref.read(alarmProvider.notifier).deleteSelected(),
+                    isDeleteEnabled:
+                        alarmAsync.value?.selectedAlarmIds.isNotEmpty ?? false,
+                  ),
+                ),
+              )
+            : null,
       ),
     );
   }
@@ -109,10 +102,17 @@ class AlarmPage extends ConsumerWidget {
   }
 }
 
-class _AlarmList extends ConsumerWidget {
-  const _AlarmList({required this.alarms});
+class AlarmItemList extends ConsumerWidget {
+  const AlarmItemList({
+    super.key,
+    required this.alarms,
+    required this.isEditMode,
+    required this.selectedIds,
+  });
 
   final List<Alarm> alarms;
+  final bool isEditMode;
+  final Set<String> selectedIds;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -121,29 +121,19 @@ class _AlarmList extends ConsumerWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       itemCount: alarms.length,
       itemBuilder: (context, index) {
         final alarm = alarms[index];
         return AlarmItem(
-          icon: _getIcon(alarm.title),
+          icon: Icons.favorite,
           header: alarm.title,
-          date: DateFormat('yyyy.MM.dd').format(alarm.createdAt),
+          date: alarm.createdAt.toString().split(' ')[0], // 간단한 포맷팅
           imageUrl: alarm.imageUrl,
-          content: alarm.content,
-          isRead: alarm.isRead,
-          onTap: () {
-            // 1. 읽음 처리
-            ref.read(alarmProvider.notifier).markAsRead(alarm.alarmId);
-
-            // 2. 게시물 이동 (postId가 있는 경우)
-            if (alarm.postId != null && alarm.postId!.isNotEmpty) {
-              context.pushNamed(
-                'productDetail',
-                pathParameters: {'postId': alarm.postId!},
-              );
-            }
-          },
+          content: Text(alarm.content),
+          isEditMode: isEditMode,
+          isSelected: selectedIds.contains(alarm.alarmId),
+          onSelected: (_) =>
+              ref.read(alarmProvider.notifier).toggleSelection(alarm.alarmId),
         );
       },
       separatorBuilder: (context, index) {

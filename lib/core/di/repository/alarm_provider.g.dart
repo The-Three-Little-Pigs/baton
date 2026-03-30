@@ -22,7 +22,7 @@ final class AlarmRepositoryProvider
         argument: null,
         retry: null,
         name: r'alarmRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -49,4 +49,4 @@ final class AlarmRepositoryProvider
   }
 }
 
-String _$alarmRepositoryHash() => r'787f80c9c6e616fd1172f468feca67ce069a47e4';
+String _$alarmRepositoryHash() => r'3086481c2cff2606319175638a837f151bde5dcb';

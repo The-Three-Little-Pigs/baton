@@ -6,49 +6,88 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'alarm_notifier.g.dart';
 
-@riverpod
-class AlarmNotifier extends _$AlarmNotifier {
-  @override
-  Stream<List<Alarm>> build() {
-    // 1. 현재 로그인한 유저 정보 감시
-    final user = ref.watch(userProvider).value;
-    
-    // 유저 정보가 없으면 빈 스트림 반환
-    if (user == null || user.uid.isEmpty) {
-      return Stream.value([]);
-    }
+class AlarmState {
+  final List<Alarm> alarms;
+  final bool isEditMode;
+  final Set<String> selectedAlarmIds;
 
-    // 2. Repository를 통해 실시간 알림 스트림 구독
-    return ref.watch(alarmRepositoryProvider).watchAlarms(user.uid).map((result) {
-      return switch (result) {
-        Success(:final value) => value,
-        Error() => [], // 에러 시 빈 리스트 (필요 시 에러 처리 추가 가능)
-      };
-    });
-  }
+  AlarmState({
+    required this.alarms,
+    this.isEditMode = false,
+    this.selectedAlarmIds = const {},
+  });
 
-  /// 특정 알림을 읽음 처리합니다.
-  Future<void> markAsRead(String alarmId) async {
-    await ref.read(alarmRepositoryProvider).markAsRead(alarmId);
-  }
-
-  /// 모든 알림을 읽음 처리합니다.
-  Future<void> markAllAsRead() async {
-    final user = ref.read(userProvider).value;
-    if (user != null) {
-      await ref.read(alarmRepositoryProvider).markAllAsRead(user.uid);
-    }
-  }
-
-  /// 특정 알림을 삭제합니다.
-  Future<void> deleteAlarm(String alarmId) async {
-    await ref.read(alarmRepositoryProvider).deleteAlarm(alarmId);
+  AlarmState copyWith({
+    List<Alarm>? alarms,
+    bool? isEditMode,
+    Set<String>? selectedAlarmIds,
+  }) {
+    return AlarmState(
+      alarms: alarms ?? this.alarms,
+      isEditMode: isEditMode ?? this.isEditMode,
+      selectedAlarmIds: selectedAlarmIds ?? this.selectedAlarmIds,
+    );
   }
 }
 
-/// 읽지 않은 알림 개수를 계산하는 Provider
 @riverpod
-int unreadAlarmCount(Ref ref) {
-  final alarms = ref.watch(alarmProvider).value ?? [];
-  return alarms.where((alarm) => !alarm.isRead).length;
+class AlarmNotifier extends _$AlarmNotifier {
+  @override
+  FutureOr<AlarmState> build() async {
+    // 유저 정보를 구독하여 변경 시 자동 재로드
+    final user = ref.watch(userProvider).value;
+    if (user == null) return AlarmState(alarms: []);
+
+    final alarmRepo = ref.read(alarmRepositoryProvider);
+    final result = await alarmRepo.getAlarms(user.uid);
+
+    return switch (result) {
+      Success(value: final alarms) => AlarmState(alarms: alarms),
+      Error(failure: final failure) => throw failure.message,
+    };
+  }
+
+  /// 편집 모드 토글
+  void toggleEditMode() {
+    final currentState = state.value;
+    if (currentState == null) return;
+
+    state = AsyncData(currentState.copyWith(
+      isEditMode: !currentState.isEditMode,
+      selectedAlarmIds: {}, // 모드 전환 시 선택 초기화
+    ));
+  }
+
+  /// 알림 선택/해제 토글
+  void toggleSelection(String alarmId) {
+    final currentState = state.value;
+    if (currentState == null) return;
+
+    final updated = Set<String>.from(currentState.selectedAlarmIds);
+    if (updated.contains(alarmId)) {
+      updated.remove(alarmId);
+    } else {
+      updated.add(alarmId);
+    }
+    state = AsyncData(currentState.copyWith(selectedAlarmIds: updated));
+  }
+
+  /// 선택된 알림들 삭제
+  Future<void> deleteSelected() async {
+    final currentState = state.value;
+    if (currentState == null || currentState.selectedAlarmIds.isEmpty) return;
+
+    final alarmRepo = ref.read(alarmRepositoryProvider);
+    final result = await alarmRepo.deleteAlarms(currentState.selectedAlarmIds.toList());
+
+    if (result is Success) {
+      // 로컬 상태에서 즉각 제거하거나 리프레시
+      ref.invalidateSelf();
+    }
+  }
+
+  Future<void> refresh() async {
+    ref.invalidateSelf();
+    await future;
+  }
 }

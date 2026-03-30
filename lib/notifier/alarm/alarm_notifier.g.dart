@@ -13,7 +13,7 @@ part of 'alarm_notifier.dart';
 final alarmProvider = AlarmNotifierProvider._();
 
 final class AlarmNotifierProvider
-    extends $StreamNotifierProvider<AlarmNotifier, List<Alarm>> {
+    extends $AsyncNotifierProvider<AlarmNotifier, AlarmState> {
   AlarmNotifierProvider._()
     : super(
         from: null,
@@ -33,67 +33,22 @@ final class AlarmNotifierProvider
   AlarmNotifier create() => AlarmNotifier();
 }
 
-String _$alarmNotifierHash() => r'394dbf85d8e0e9e4f45f6ff19a09964c2be91ae0';
+String _$alarmNotifierHash() => r'cc1e7c6462d33fd7a02f53852393d983bb6c064e';
 
-abstract class _$AlarmNotifier extends $StreamNotifier<List<Alarm>> {
-  Stream<List<Alarm>> build();
+abstract class _$AlarmNotifier extends $AsyncNotifier<AlarmState> {
+  FutureOr<AlarmState> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<List<Alarm>>, List<Alarm>>;
+    final ref = this.ref as $Ref<AsyncValue<AlarmState>, AlarmState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<Alarm>>, List<Alarm>>,
-              AsyncValue<List<Alarm>>,
+              AnyNotifier<AsyncValue<AlarmState>, AlarmState>,
+              AsyncValue<AlarmState>,
               Object?,
               Object?
             >;
     element.handleCreate(ref, build);
   }
 }
-
-/// 읽지 않은 알림 개수를 계산하는 Provider
-
-@ProviderFor(unreadAlarmCount)
-final unreadAlarmCountProvider = UnreadAlarmCountProvider._();
-
-/// 읽지 않은 알림 개수를 계산하는 Provider
-
-final class UnreadAlarmCountProvider extends $FunctionalProvider<int, int, int>
-    with $Provider<int> {
-  /// 읽지 않은 알림 개수를 계산하는 Provider
-  UnreadAlarmCountProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'unreadAlarmCountProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$unreadAlarmCountHash();
-
-  @$internal
-  @override
-  $ProviderElement<int> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  int create(Ref ref) {
-    return unreadAlarmCount(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
-  }
-}
-
-String _$unreadAlarmCountHash() => r'ad0e2da5c0af67e440714287d6b382a107bec2f7';

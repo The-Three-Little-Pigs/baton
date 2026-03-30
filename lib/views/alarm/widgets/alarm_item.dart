@@ -1,3 +1,4 @@
+import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -9,8 +10,9 @@ class AlarmItem extends StatelessWidget {
     required this.imageUrl,
     required this.content,
     required this.icon,
-    required this.isRead,
-    this.onTap,
+    this.isEditMode = false,
+    this.isSelected = false,
+    this.onSelected,
   });
 
   final String header;
@@ -18,75 +20,83 @@ class AlarmItem extends StatelessWidget {
   final String imageUrl;
   final String content;
   final IconData icon;
-  final bool isRead;
-  final VoidCallback? onTap;
+  final bool isEditMode;
+  final bool isSelected;
+  final ValueChanged<bool?>? onSelected;
 
   @override
   Widget build(BuildContext context) {
-    // 읽은 알림은 0.5 투명도 적용하여 연하게 표시
     return InkWell(
-      onTap: onTap,
-      child: Opacity(
-        opacity: isRead ? 0.5 : 1.0,
-        child: SizedBox(
-          width: double.infinity,
-          child: Column(
-            spacing: 8,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                spacing: 8,
-                children: [
-                  Icon(icon, color: Theme.of(context).colorScheme.primary),
-                  Text(
-                    header,
-                    style: TextStyle(
-                      fontWeight: isRead ? FontWeight.normal : FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(date, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                ],
+      onTap: isEditMode ? () => onSelected?.call(!isSelected) : null,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (isEditMode) ...[
+            Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? AppColors.primary : const Color(0xFFFCFDFF),
+                border: isSelected ? null : Border.all(color: AppColors.divider),
               ),
-              Row(
-                spacing: 11,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: imageUrl.isNotEmpty
-                        ? Image.network(
-                            imageUrl,
-                            fit: BoxFit.cover,
-                            width: 60,
-                            height: 60,
-                            errorBuilder: (context, error, stackTrace) => Container(
+              child: isSelected
+                  ? const Icon(
+                      Icons.check,
+                      size: 14,
+                      color: Colors.white,
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 16),
+          ],
+          Expanded(
+            child: Column(
+              spacing: 8,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  spacing: 8,
+                  children: [
+                    Icon(icon,
+                        color: Theme.of(context).colorScheme.primary, size: 20),
+                    Text(header,
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                    const Spacer(),
+                    Text(
+                      date,
+                      style: const TextStyle(
+                        color: Color(0xFFBCBCBC),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  spacing: 11,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: imageUrl.isNotEmpty
+                          ? Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
                               width: 60,
                               height: 60,
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.image_not_supported, size: 20),
+                            )
+                          : SvgPicture.asset(
+                              'assets/images/empty_image.svg',
+                              fit: BoxFit.cover,
+                              width: 60,
+                              height: 60,
                             ),
-                          )
-                        : SvgPicture.asset(
-                            'assets/images/empty_image.svg',
-                            fit: BoxFit.cover,
-                            width: 60,
-                            height: 60,
-                          ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      content,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isRead ? Colors.grey : Colors.black87,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    Expanded(child: content),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

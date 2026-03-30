@@ -15,7 +15,7 @@ abstract class PostRepository {
   Future<Result<List<Post>, Failure>> getSalesHistory(String userId);
   Future<Result<List<Post>, Failure>> getPurchaseHistory(String userId);
   Future<Result<Post, Failure>> getPostById(String postId);
-  Future<Result<List<Post>, Failure>> getPostBySearch(String keyword);
+  Future<Result<List<Post>, Failure>> getPostBySearch(String keyword, {int page = 0});
   Future<Result<void, Failure>> incrementViewCount(String postId);
   Stream<Result<Post, Failure>> watchPost(String postId);
   Stream<Result<int, Failure>> watchChatCount(String postId);
