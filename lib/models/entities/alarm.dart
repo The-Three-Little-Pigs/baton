@@ -23,16 +23,27 @@ class Alarm {
 
   factory Alarm.fromJson(Map<String, dynamic> json) {
     return Alarm(
-      alarmId: json['alarm_id'],
-      title: json['title'],
-      content: json['content'],
-      imageUrl: json['image_url'],
-      authorId: json['author_id'],
-      receiverId: json['receiver_id'],
-      postId: json['post_id'],
-      createdAt: json['created_at'].toDate(),
-      isRead: json['is_read'] ?? false,
+      alarmId: json['alarm_id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      content: json['content'] as String? ?? '',
+      imageUrl: json['image_url'] as String? ?? '',
+      authorId: json['author_id'] as String? ?? '',
+      receiverId: json['receiver_id'] as String? ?? '',
+      postId: json['post_id'] as String?,
+      createdAt: _parseDateTime(json['created_at']),
+      isRead: json['is_read'] as bool? ?? false,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    // Firestore Timestamp
+    if (value.runtimeType.toString().contains('Timestamp')) {
+      return (value as dynamic).toDate() as DateTime;
+    }
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
   }
 
   Map<String, dynamic> toJson() {
@@ -44,10 +55,11 @@ class Alarm {
       'author_id': authorId,
       'receiver_id': receiverId,
       'post_id': postId,
-      'created_at': createdAt,
+      'created_at': createdAt, // Firestore SDK가 자동으로 Timestamp로 변환
       'is_read': isRead,
     };
   }
+
 
   Alarm copyWith({
     String? alarmId,
