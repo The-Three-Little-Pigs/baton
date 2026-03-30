@@ -27,9 +27,17 @@ class ProductDetailPageViewModel extends _$ProductDetailPageViewModel {
   }
 
   Future<Result<void, Failure>> deletePost() async {
+    final post = state.value;
+    if (post == null) return Error(ServerFailure('게시글 정보를 불러올 수 없습니다.'));
+
+    // 삭제 전 상태 확인 (방어 로직)
+    if (post.status == ProductStatus.reserved) {
+      return Error(ServerFailure('거래 중인 게시글은 삭제할 수 없습니다.'));
+    }
+
     final result = await ref
         .read(postRepositoryProvider)
-        .deletePost(state.value!.postId);
+        .deletePost(post.postId);
 
     return switch (result) {
       Success() => result,

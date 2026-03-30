@@ -3,6 +3,7 @@ import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/category.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/repositories/repository/post_repository.dart';
 import 'package:baton/service/algolia/algolia_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,11 +36,25 @@ class PostRepositoryImpl implements PostRepository {
   Future<Result<void, Failure>> deletePost(String postId) async {
     try {
       final docRef = _firestore.collection('posts').doc(postId);
+
+      // 데이터 정합성을 위해 삭제 전 상태 확인
+      final snapshot = await docRef.get();
+      if (!snapshot.exists) {
+        return Error(ServerFailure('게시글을 찾을 수 없습니다.'));
+      }
+
+      final post = Post.fromJson(snapshot.data()!);
+      if (post.status == ProductStatus.reserved) {
+        return Error(ServerFailure('거래 중인 게시글은 삭제할 수 없습니다.'));
+      }
+
       await docRef.delete();
 
       return Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('게시글 삭제 중 오류가 발생했습니다: $e'));
     }
   }
 

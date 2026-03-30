@@ -96,4 +96,4 @@ final class UnreadAlarmCountProvider extends $FunctionalProvider<int, int, int>
   }
 }
 
-String _$unreadAlarmCountHash() => r'aaa0d83cf104a2235f9047f98c4008b0bf4f3451';
+String _$unreadAlarmCountHash() => r'ad0e2da5c0af67e440714287d6b382a107bec2f7';
