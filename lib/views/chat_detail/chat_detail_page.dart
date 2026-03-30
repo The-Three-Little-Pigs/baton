@@ -40,6 +40,7 @@ class ChatDetailPage extends ConsumerWidget {
         : '';
     final chatroomState = ref.watch(chatRoomStreamProvider(roomId));
     final chatroom = chatroomState.value;
+
     final opponentAsync = ref.watch(authorProvider(otherUid));
     final opponentNickname = opponentAsync.when(
       data: (user) => user.nickname,
@@ -49,13 +50,15 @@ class ChatDetailPage extends ConsumerWidget {
     final blockState = ref.watch(blockProvider);
     final bool iBlockedHim = blockState.isBlockedByMe(otherUid);
     final bool heBlockedMe = blockState.isBlockedMe(otherUid);
-    final bool isExited = chatroom?.deletedByUids.contains(otherUid) ?? false;
-    final bool isInteractionBlocked = iBlockedHim || heBlockedMe || isExited;
+    final bool isOtherExited =
+        chatroom?.deletedByUids.contains(otherUid) ?? false;
+    final bool isInteractionBlocked =
+        iBlockedHim || heBlockedMe || isOtherExited;
 
     String blockedMessage = '';
     if (iBlockedHim) {
       blockedMessage = '차단한 사용자입니다. 대화할 수 없습니다.';
-    } else if (heBlockedMe || isExited) {
+    } else if (heBlockedMe || isOtherExited) {
       blockedMessage = '채팅이 종료되었습니다.';
     }
 
@@ -75,8 +78,9 @@ class ChatDetailPage extends ConsumerWidget {
 
       // 약속 상태(대기->확정 등)가 변했다면?
       if (prevStatus != nextStatus && nextStatus != null) {
-        final productId =
-            roomId.split('_').length >= 3 ? roomId.split('_')[2] : '';
+        final productId = roomId.split('_').length >= 3
+            ? roomId.split('_')[2]
+            : '';
         if (productId.isEmpty) return;
 
         ProductStatus? newProductStatus;
@@ -89,10 +93,13 @@ class ChatDetailPage extends ConsumerWidget {
         }
 
         if (newProductStatus != null) {
-          final postState = ref.read(productDetailPageViewModelProvider(productId));
+          final postState = ref.read(
+            productDetailPageViewModelProvider(productId),
+          );
           final currentPost = postState.value;
-          final postNotifier =
-              ref.read(productDetailPageViewModelProvider(productId).notifier);
+          final postNotifier = ref.read(
+            productDetailPageViewModelProvider(productId).notifier,
+          );
 
           // 상태가 다를 때만 업데이트 (상대방 폰 + 내 폰 모두 적용됨!)
           if (currentPost != null && currentPost.status != newProductStatus) {
@@ -102,7 +109,7 @@ class ChatDetailPage extends ConsumerWidget {
       }
     });
     return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
@@ -241,9 +248,10 @@ class _BlockedInputPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
+      height: 44,
+      alignment: Alignment.center,
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(22),

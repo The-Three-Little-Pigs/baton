@@ -5,6 +5,7 @@ import 'package:baton/views/chat_detail/viewmodel/has_written_review_provider.da
 import 'package:baton/views/chat_detail/dialog/apponitment_bottom_sheet.dart';
 import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/notifier/block/block_notifier.dart';
 import 'package:baton/views/product_detail/viewmodel/author_notifier.dart';
 import 'package:baton/views/widgets/common_dialog.dart';
 import 'package:flutter/material.dart';
@@ -20,11 +21,15 @@ class AppointmentButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myUserId = ref.watch(userProvider).value?.uid ?? '';
+    final String myUserId = ref.watch(userProvider).value?.uid ?? '';
     final parts = roomId.split('_');
-    final otherUserId = (parts.length >= 2)
-        ? (parts[0] == myUserId ? parts[1] : parts[0])
-        : '';
+
+    // 👑 [보완] 내 ID가 로드되지 않은 상태에서는 상대방 ID를 정확히 특정할 수 없음
+    String otherUserId = '';
+    if (parts.length >= 2 && myUserId.isNotEmpty) {
+      otherUserId = (parts[0] == myUserId) ? parts[1] : parts[0];
+    }
+
     final postId = parts.length >= 3 ? parts[2] : '';
     final chatRoomAsync = ref.watch(chatRoomStreamProvider(roomId));
     final otherUserAsync = ref.watch(
@@ -35,7 +40,9 @@ class AppointmentButton extends ConsumerWidget {
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 6),
       child: chatRoomAsync.when(
         data: (room) {
-          if (room == null) return const SizedBox.shrink();
+          if (room == null || myUserId.isEmpty || otherUserId.isEmpty) {
+            return const SizedBox.shrink();
+          }
           final opponentName =
               otherUserAsync.value?.nickname ?? '상대방'; // ✅ 닉네임 추출
 
@@ -47,6 +54,23 @@ class AppointmentButton extends ConsumerWidget {
                   e.name == room.appointmentStatus,
               orElse: () => AppointmentStatus.cancelled,
             );
+          }
+
+          // 👑 [추가] 차단 또는 퇴장 상태 확인
+          final blockState = ref.watch(blockProvider);
+          final bool iBlockedHim = blockState.isBlockedByMe(otherUserId);
+          final bool heBlockedMe = blockState.isBlockedMe(otherUserId);
+          final bool isMeExited = room.deletedByUids.contains(myUserId);
+          final bool isOtherExited = room.deletedByUids.contains(otherUserId);
+
+          // 👑 [수정] 내가 차단한 경우 명확한 안내 노출 (B안 적용)
+          if (iBlockedHim) {
+            return const SizedBox.shrink();
+          }
+
+          // 그 외 비활성화(상대방 차단/퇴장 등)는 영역 숨김
+          if (heBlockedMe || isMeExited || isOtherExited) {
+            return const SizedBox.shrink();
           }
           if (currentStatus == AppointmentStatus.pending ||
               currentStatus == AppointmentStatus.confirmed) {
@@ -116,41 +140,43 @@ class AppointmentButton extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Material(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
-                      child: InkWell(
-                        onTap: () =>
-                            AppointmentBottomSheet.showAppointmentDialog(
-                              context,
-                              initialDateTime: room.appointmentDateTime,
-                            ),
+                  if (currentStatus != AppointmentStatus.confirmed) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Material(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          width: double.infinity,
-                          height: 36,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 6,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '날짜 조정',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
+                        child: InkWell(
+                          onTap: () =>
+                              AppointmentBottomSheet.showAppointmentDialog(
+                                context,
+                                initialDateTime: room.appointmentDateTime,
+                              ),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            width: double.infinity,
+                            height: 36,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 6,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '날짜 조정',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             );

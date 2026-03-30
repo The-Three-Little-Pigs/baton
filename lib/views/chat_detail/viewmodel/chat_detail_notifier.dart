@@ -26,7 +26,7 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
   Stream<List<Message>> build(String roomId) {
     _myUserId = ref.watch(userProvider).value?.uid ?? '';
     final repository = ref.watch(chatRepositoryProvider);
-
+    _checkAndJoinAgain(roomId);
     return repository.watchMessages(roomId);
   }
 
@@ -136,14 +136,16 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
 
     // 1. [핵심] 채팅방과 게시글 정보를 병렬로 가져와서 정확한 구매자 식별
     final chatroomFuture = ref.read(chatRoomStreamProvider(roomId).future);
-    final postResult = await ref.read(postRepositoryProvider).getPostById(postId);
+    final postResult = await ref
+        .read(postRepositoryProvider)
+        .getPostById(postId);
 
     final chatroom = await chatroomFuture;
-    
+
     if (postResult case Error(:final failure)) {
       return "게시글 정보를 불러올 수 없습니다: ${failure.message}";
     }
-    
+
     final post = (postResult as Success<Post, Failure>).value;
     final sellerId = post.authorId;
 
@@ -232,6 +234,26 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
         break;
       case Error(:final failure):
         debugPrint('거래 확정 실패: ${failure.message}');
+    }
+  }
+
+  Future<void> joinAgainChatRoom(String roomId) async {
+    final repository = ref.read(chatRepositoryProvider);
+
+    // 리포지토리 메서드는 규칙대로 Result를 반환하지만,
+    // 여기서는 '자동 보정'이므로 내부적으로만 에러를 확인하고 끝냅니다.
+    final result = await repository.joinAgainChatRoom(roomId, _myUserId);
+
+    if (result case Error(:final failure)) {
+      debugPrint('채팅방 재진입 처리 실패: ${failure.message}');
+    }
+  }
+
+  Future<void> _checkAndJoinAgain(String roomId) async {
+    // 현재 방의 정보를 한 번 가져와서 내가 나갔는지 확인
+    final chatroom = await ref.read(chatRoomStreamProvider(roomId).future);
+    if (chatroom?.deletedByUids.contains(_myUserId) == true) {
+      await joinAgainChatRoom(roomId);
     }
   }
 }
