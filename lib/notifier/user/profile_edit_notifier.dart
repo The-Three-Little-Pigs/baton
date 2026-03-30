@@ -63,16 +63,25 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
   }
 
   Future<void> checkDuplicate() async {
-    if (state.nickname.isEmpty) return;
+    if (state.nickname.trim().isEmpty) {
+      state = state.copyWith(
+        errorMessage: '닉네임을 입력해 주세요.',
+        isNicknameDuplicate: true,
+      );
+      return;
+    }
     
     // 현재 내 닉네임과 동일한 경우 중복 아님으로 처리
     final currentUser = ref.read(userProvider).value;
     if (state.nickname == currentUser?.nickname) {
-      state = state.copyWith(isNicknameDuplicate: false);
+      state = state.copyWith(
+        isNicknameDuplicate: false,
+        errorMessage: '현재 사용 중인 닉네임입니다.',
+      );
       return;
     }
 
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, errorMessage: null);
     final result = await ref.read(userRepositoryProvider).checkNicknameDuplicate(state.nickname);
     
     state = switch (result) {
@@ -94,7 +103,10 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
     required void Function(String) onError,
   }) async {
     final user = ref.read(userProvider).value;
-    if (user == null) return;
+    if (user == null) {
+      onError('사용자 정보를 찾을 수 없습니다.');
+      return;
+    }
 
     state = state.copyWith(isLoading: true);
 
