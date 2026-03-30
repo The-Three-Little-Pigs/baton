@@ -2,6 +2,8 @@ import 'package:baton/core/database/baton_database.dart';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/core/utils/logger.dart';
+import 'package:baton/models/entities/alarm.dart';
 import 'package:baton/models/entities/like.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/repositories/repository/like_repository.dart';
@@ -53,16 +55,55 @@ class LikeRepositoryImpl implements LikeRepository {
         final like = Like(liker: userId, postId: postId);
         batch.set(docRef, like.toJson());
         batch.update(postRef, {'like_count': FieldValue.increment(1)});
+
+        final postData = postDoc.data()!;
+        final String authorId = postData['author_id'];
+
+        // --- Alarm 생성 연동 ---
+        // 본인 게시글에 찜한 경우에는 알림을 보내지 않음
+        if (userId != authorId) {
+          // 찜한 사람의 닉네임 가져오기
+          final currentUserDoc = await _firestore
+              .collection('user')
+              .doc(userId)
+              .get();
+          final String nickname = currentUserDoc.data()?['nickname'] ?? '누군가';
+
+          final String title = postData['title']?.toString() ?? '제목 없음';
+          final List<dynamic> imageUrls = postData['image_url'] is List
+              ? postData['image_url']
+              : [];
+          final String firstImage = imageUrls.isNotEmpty
+              ? imageUrls.first.toString()
+              : '';
+
+          final alarmRef = _firestore.collection('alarms').doc();
+          final alarm = Alarm(
+            alarmId: alarmRef.id,
+            title: '새로운 찜 ❤️',
+            content: '$nickname님이 회원님의 [$title]을(를) 찜했습니다.',
+            imageUrl: firstImage,
+            authorId: userId,
+            receiverId: authorId,
+            postId: postId, // 연관 게시물 아이디 추가
+            createdAt: DateTime.now(),
+            isRead: false,
+          );
+
+          batch.set(alarmRef, alarm.toJson());
+        }
       }
       await batch.commit();
       return Success(null);
-    } on FirebaseException catch (e) {
+    } on FirebaseException catch (e, st) {
+      logger.e('🔥 찜하기 실패 (FirebaseException): $e', stackTrace: st);
       // 실패 시 로컬 원복 (다시 토글하여 원래대로 되돌림)
       if (isLocalSuccess) {
         await _database.toggleFavorite(postId).catchError((_) {});
       }
       return Error(FirebaseErrorMapper.toFailure(e));
-    } catch (e) {
+    } catch (e, st) {
+      logger.e('🔥 찜하기 실패 (일반에러): $e', stackTrace: st);
       if (isLocalSuccess) {
         await _database.toggleFavorite(postId).catchError((_) {});
       }

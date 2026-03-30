@@ -1,4 +1,5 @@
 import 'package:baton/core/di/repository/auth_provider.dart';
+import 'package:baton/core/utils/logger.dart';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/core/di/repository/user_provider.dart';
@@ -29,7 +30,6 @@ class UserNotifier extends _$UserNotifier {
     final userRepo = ref.read(userRepositoryProvider);
 
     // 최초 1회만 FCM 토큰 업데이트 수행
-    // (이후 토큰 갱신은 FirebaseMessaging.instance.onTokenRefresh 등에서 별도 처리 권장)
     Future.microtask(() {
       NotificationService().updateFCMToken(
         firebaseUser.uid,
@@ -37,8 +37,11 @@ class UserNotifier extends _$UserNotifier {
       );
     });
 
+    logger.i("[UserNotifier] Initializing Stream... Starting watchUserData for ${firebaseUser.uid}");
+
     // ⭐️ 실시간 감시 시작 (Stream)
     return userRepo.watchUserData(firebaseUser.uid).map((result) {
+      logger.i("[UserNotifier] 🔥 FIRST/NEW DATA RECEIVED from Firestore for ${firebaseUser.uid}");
       final user = switch (result) {
         Success(:final value) => value,
         Error() => null,

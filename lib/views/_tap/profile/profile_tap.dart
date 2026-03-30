@@ -22,7 +22,7 @@ class ProfileTap extends ConsumerWidget {
           '마이페이지',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
-        actions: [Icon(Icons.more_vert, size: 24)],
+        // actions: [Icon(Icons.more_vert, size: 24)],
         backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       //추가하면서 일단 컬럼 리스트뷰로 바뀌났어용
@@ -67,11 +67,11 @@ class ProfileTap extends ConsumerWidget {
           ),
           SizedBox(height: 10),
           SectionTitle(title: '활동'),
-          MenuListItem(
-            svgPath: 'assets/icons/recently_view.svg',
-            content: '최근 본 상품',
-          ),
-          SizedBox(height: 8),
+          // MenuListItem(
+          //   svgPath: 'assets/icons/recently_view.svg',
+          //   content: '최근 본 상품',
+          // ),
+          // SizedBox(height: 8),
           MenuListItem(
             icon: Icons.favorite,
             content: '관심 상품',
@@ -81,14 +81,14 @@ class ProfileTap extends ConsumerWidget {
           MenuListItem(
             svgPath: 'assets/icons/blok_person_icon.svg',
             content: '차단 관리',
-            routePath: '/',
+            routePath: '/blockUser',
           ),
           SizedBox(height: 8),
-          MenuListItem(
-            svgPath: 'assets/icons/block_product_icon.svg',
-            content: '가린 상품 관리',
-            routePath: '/',
-          ),
+          // MenuListItem(
+          //   svgPath: 'assets/icons/block_product_icon.svg',
+          //   content: '가린 상품 관리',
+          //   routePath: '/',
+          // ),
 
           /// 로그아웃 및 탈퇴 버튼
           Padding(
@@ -166,9 +166,7 @@ class UserProfileCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProvider);
     return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      ),
+      decoration: BoxDecoration(color: Color.fromARGB(128, 230, 237, 245)),
       child: Padding(
         padding: const EdgeInsets.only(
           left: 30,
@@ -234,12 +232,17 @@ class UserProfileCard extends ConsumerWidget {
                         const Text('에러 발생', style: TextStyle(fontSize: 16)),
                   ),
 
-                  Text(
-                    '프로필 수정',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textTertiary,
+                  GestureDetector(
+                    onTap: () {
+                      context.push('/profile/edit');
+                    },
+                    child: Text(
+                      '프로필 수정',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textTertiary,
+                      ),
                     ),
                   ),
                 ],
@@ -412,7 +415,7 @@ class MenuListItem extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

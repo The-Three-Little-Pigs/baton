@@ -40,6 +40,10 @@ abstract class ChatRepository {
 
   /// 채팅방 나가기 (삭제)
   Future<Result<bool, Failure>> leaveRoom(String roomId, String myUserId);
+  Future<Result<void, Failure>> joinAgainChatRoom(
+    String roomId,
+    String myUserId,
+  );
 
   /// 시스템 메시지 전송
   // Future<Result<void, Failure>> sendSystemMessage(
@@ -75,4 +79,5 @@ abstract class ChatRepository {
   });
 
   /// 특정 상품에 대한 채팅방 개수 실시간 구독
+  Stream<int> watchChatCount(String postId);
 }

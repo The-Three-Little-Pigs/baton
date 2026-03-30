@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/core/utils/logger.dart';
 import 'package:baton/models/entities/appointment_data.dart';
 import 'package:baton/models/entities/chat_room.dart';
 import 'package:baton/models/entities/message.dart';
@@ -13,7 +14,6 @@ import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/repositories/repository/chat_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
   final FirebaseFirestore _firestore;
@@ -208,6 +208,7 @@ class ChatRepositoryImpl implements ChatRepository {
     if (!hasRoom) {
       batch.set(chatroomDocRef, {
         'roomId': roomId,
+        'postId': _extractPostId(roomId),
         'lastMessage': lastMessage,
         'updatedAt': FieldValue.serverTimestamp(),
         'unreadCounts': {targetUserId: FieldValue.increment(1), myUserId: 0},
@@ -217,6 +218,7 @@ class ChatRepositoryImpl implements ChatRepository {
           targetUserId: Timestamp(0, 0),
         },
         'prdImageUrl': '', // 추후 상품 이미지 URL 로직 연동
+        'deletedByUids': [],
       });
     } else {
       batch.update(chatroomDocRef, {
@@ -225,6 +227,7 @@ class ChatRepositoryImpl implements ChatRepository {
         'unreadCounts.$targetUserId': FieldValue.increment(1),
         'unreadCounts.$myUserId': 0,
         'lastReadAt.$myUserId': FieldValue.serverTimestamp(),
+        'deletedByUids': FieldValue.arrayRemove([myUserId]),
       });
     }
   }
@@ -257,11 +260,26 @@ class ChatRepositoryImpl implements ChatRepository {
         // (3) 채팅방 문서 삭제
         await roomRef.delete();
 
-        print('Chat: 채팅방($roomId) 데이터가 완전히 삭제되었습니다.');
+        logger.i('Chat: 채팅방($roomId) 데이터가 완전히 삭제되었습니다.');
       }
       return const Success(true);
     } catch (e) {
       return Error(UnknownFailure('방 나가기 처리 중 오류 발생: $e'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> joinAgainChatRoom(
+    String roomId,
+    String myUserId,
+  ) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(roomId).update({
+        'deletedByUids': FieldValue.arrayRemove([myUserId]),
+      });
+      return const Success(null);
+    } catch (e) {
+      return Error(UnknownFailure('방 재진입 실패: $e'));
     }
   }
 
@@ -299,7 +317,7 @@ class ChatRepositoryImpl implements ChatRepository {
         'createdAt': FieldValue.serverTimestamp(),
       });
       final updateData = {
-        'lastMessage': '약속',
+        'lastMessage': '새로운 약속이 있습니다.',
         'updatedAt': FieldValue.serverTimestamp(),
         'unreadCounts.$targetUserId': FieldValue.increment(1),
         'unreadCounts.$myUserId': 0,
@@ -375,11 +393,14 @@ class ChatRepositoryImpl implements ChatRepository {
         final chatroomRef = _firestore.collection(_collectionPath).doc(roomId);
         if (newStatus == AppointmentStatus.confirmed) {
           transaction.update(chatroomRef, {
+            'lastMessage': '약속이 확정되었습니다.',
             'appointmentStatus': AppointmentStatus.confirmed.label,
             'activeAppointmentId': messageId,
+            'appointmentDateTime': Timestamp.fromDate(data.dateTime),
           });
         } else if (newStatus == AppointmentStatus.cancelled) {
           transaction.update(chatroomRef, {
+            'lastMessage': '약속이 취소되었습니다.',
             'appointmentStatus': AppointmentStatus.cancelled.label,
             'activeAppointmentId': null, // 취소 시 활성화된 약속 ID 제거
             'confirmedCompleteUids': <String>[], // 취소 시 확정 상태 초기화
@@ -387,6 +408,7 @@ class ChatRepositoryImpl implements ChatRepository {
           });
         } else if (newStatus == AppointmentStatus.completed) {
           transaction.update(chatroomRef, {
+            'lastMessage': '거래가 확정되었습니다.',
             'appointmentStatus': AppointmentStatus.completed.label,
             'activeAppointmentId': null,
           });
@@ -472,6 +494,7 @@ class ChatRepositoryImpl implements ChatRepository {
           // 채팅방(chatroomRef) 한 번에 업데이트
 
           transaction.update(chatroomRef, {
+            'lastMessage': '거래가 확정되었습니다',
             'confirmedCompleteUids': currentUids,
             'activeAppointmentId': null,
             'appointmentStatus': AppointmentStatus.completed.label,
@@ -508,6 +531,7 @@ class ChatRepositoryImpl implements ChatRepository {
           // 쌍방 확정이 아니라면 내 ID만 추가
           if (isListUpdated) {
             transaction.update(chatroomRef, {
+              'lastMessage': '거래 확정 대기 중...',
               'confirmedCompleteUids': currentUids,
             });
           }
@@ -515,8 +539,22 @@ class ChatRepositoryImpl implements ChatRepository {
       });
       return const Success(null);
     } catch (e) {
-      debugPrint('수동 거래 확정 중 에러: $e');
+      logger.e('수동 거래 확정 중 에러: $e');
       return Error(UnknownFailure('거래 확정 중 오류가 발생했습니다.'));
     }
+  }
+
+  @override
+  Stream<int> watchChatCount(String postId) {
+    return _firestore
+        .collection(_collectionPath)
+        .where('postId', isEqualTo: postId)
+        .snapshots()
+        .map((snapshot) => snapshot.size);
+  }
+
+  String _extractPostId(String roomId) {
+    final parts = roomId.split('_');
+    return parts.length >= 3 ? parts.last : '';
   }
 }

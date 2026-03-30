@@ -7,6 +7,7 @@ import 'package:baton/views/chat_detail/viewmodel/chat_detail_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:baton/core/utils/logger.dart';
 import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ChatInputField extends ConsumerStatefulWidget {
@@ -26,7 +27,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
 
   // 📸 이미지 피커 및 선택된 이미지 상태 관리
   final ImagePicker _picker = ImagePicker();
-  XFile? _selectedImage; // 🌟 1. 유저가 선택한 이미지를 임시로 담아두는 변수
+  final List<XFile> _selectedImages = []; // 🌟 다중 이미지를 담기 위한 리스트
   bool _isUploading = false; // 업로드 중 로딩 표시용
 
   @override
@@ -47,17 +48,16 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
     super.dispose();
   }
 
-  // 🌟 2. 갤러리를 띄워서 사진만 선택하고 화면(UI)에 미리보기로 띄움 (서버 전송 X)
+  // 🌟 2. 갤러리를 띄워서 사진들을 선택하고 화면(UI)에 미리보기로 띄움 (서버 전송 X)
   Future<void> _pickImageOnly() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
+    final List<XFile> pickedFiles = await _picker.pickMultiImage(
       imageQuality: 70, // 용량 최적화
       maxWidth: 1080,
       maxHeight: 1080,
     );
-    if (pickedFile != null) {
+    if (pickedFiles.isNotEmpty) {
       setState(() {
-        _selectedImage = pickedFile; // 상태 업데이트 -> UI에 미리보기 박스가 나타남
+        _selectedImages.addAll(pickedFiles); // 기존 리스트에 추가
       });
     }
   }
@@ -67,7 +67,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
     final text = _controller.text;
 
     // 텍스트도 없고 이미지도 안 골랐으면 무시
-    if (text.trim().isEmpty && _selectedImage == null) return;
+    if (text.trim().isEmpty && _selectedImages.isEmpty) return;
 
     final myUserId = ref.read(userProvider).value?.uid;
     if (myUserId == null) return;
@@ -91,8 +91,8 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
 
     if (targetUserId.isEmpty) {
       AppSnackBar.show(context, '에러: 대화 상대를 찾을 수 없습니다.');
-      print(
-        '디버그: widget.roomId=${widget.roomId}, myUserId=$myUserId, targetUserId가 빈칸입니다. 파싱 실패.',
+      logger.w(
+        '디버그: widget.roomId=${widget.roomId}, myUserId=$myUserId, targetUserId 파싱 실패.',
       );
       return;
     }
@@ -100,32 +100,35 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
     // ==========================================
     // [A] 이미지가 선택되어 있다면 이미지부터 앱 서버에 업로드 후 전송
     // ==========================================
-    if (_selectedImage != null) {
+    if (_selectedImages.isNotEmpty) {
       setState(() {
         _isUploading = true; // 로딩 스피너 작동
       });
 
       try {
-        final errorMsg = await ref
-            .read(chatDetailProvider(widget.roomId).notifier)
-            .sendImageMessage(
-              widget.roomId,
-              targetUserId,
-              File(_selectedImage!.path),
-              hasRoom,
-            );
+        // 선택된 이미지들을 하나씩 순차적으로 전송
+        for (final image in List<XFile>.from(_selectedImages)) {
+          final errorMsg = await ref
+              .read(chatDetailProvider(widget.roomId).notifier)
+              .sendImageMessage(
+                widget.roomId,
+                targetUserId,
+                File(image.path),
+                hasRoom,
+              );
 
-        if (errorMsg != null) {
-          throw Exception(errorMsg);
+          if (errorMsg != null) {
+            throw Exception(errorMsg);
+          }
+
+          // 전송 성공한 이미지는 리스트에서 제거
+          setState(() {
+            _selectedImages.remove(image);
+          });
         }
-
-        // 이미지 전송 성공 시 화면의 미리보기 박스 지우기
-        setState(() {
-          _selectedImage = null;
-        });
       } catch (e) {
         if (mounted) {
-          AppSnackBar.show(context, '이미지 전송에 실패했습니다.');
+          AppSnackBar.show(context, '일부 이미지 전송에 실패했습니다.');
         }
       } finally {
         if (mounted) {
@@ -152,8 +155,7 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
           throw Exception(errorMsg);
         }
       } catch (e, st) {
-        print('메시지 전송 에러: $e');
-        print(st);
+        logger.e('메시지 전송 에러: $e', stackTrace: st);
         if (mounted) {
           AppSnackBar.show(context, '메시지 전송 실패: $e');
         }
@@ -164,100 +166,123 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
   @override
   Widget build(BuildContext context) {
     // 🌟 4. '입력한 텍스트'가 있거나 '선택한 사진'이 1개라도 있으면 전송 버튼을 파란색으로 활성화
-    final canSend = _hasText || _selectedImage != null;
+    final canSend = _hasText || _selectedImages.isNotEmpty;
 
     return Column(
       mainAxisSize: MainAxisSize.min, // 키보드 위쪽 공간만큼만 차지
       crossAxisAlignment: CrossAxisAlignment.start, // 왼쪽 정렬
       children: [
-        // 🌟 5. 선택된 이미지가 있을 때 입력창 위에 보여줄 미리보기 컨테이너
-        if (_selectedImage != null)
-          Container(
-            margin: const EdgeInsets.only(left: 10, bottom: 8),
-            height: 60,
-            width: 60,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // 사진 썸네일
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.file(
-                    File(_selectedImage!.path),
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                // 🌟 업로드 중일 때는 사진 위에 반투명 검은 배경과 로딩 스피너 띄우기
-                if (_isUploading)
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        strokeWidth: 2,
-                      ),
-                    ),
-                  ),
-                // 사진 취소(X) 버튼 (업로드 중이 아닐 때만 보임)
-                if (!_isUploading)
-                  Positioned(
-                    top: -6,
-                    right: -6,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedImage = null; // 취소하면 변수 초기화로 컨테이너가 닫힘
-                        });
-                      },
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          shape: BoxShape.circle,
+        // 🌟 5. 선택된 이미지가 있을 때 입력창 위에 보여줄 미리보기 영역
+        if (_selectedImages.isNotEmpty)
+          SizedBox(
+            height: 80,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                children: _selectedImages.map((image) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // 사진 썸네일
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            File(image.path),
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.close,
-                          size: 14,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                      ),
+                        // 🌟 업로드 중일 때는 사진 위에 반투명 검은 배경과 로딩 스피너 띄우기
+                        if (_isUploading)
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          ),
+                        // 사진 취소(X) 버튼 (업로드 중이 아닐 때만 보임)
+                        if (!_isUploading)
+                          Positioned(
+                            top: -6,
+                            right: -6,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedImages.remove(image);
+                                });
+                              },
+                              child: Container(
+                                width: 22,
+                                height: 22,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.2),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 14,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-              ],
+                  );
+                }).toList(),
+              ),
             ),
           ),
 
         // 기존 텍스트 입력창 (Row)
         Container(
+          constraints: const BoxConstraints(minHeight: 44),
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.secondary),
             borderRadius: BorderRadius.circular(22), // 둥근 입력창
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end, // 여러 줄일 때 하단 맞춤
+            crossAxisAlignment: CrossAxisAlignment.center, // 여러 줄일 때 하단 맞춤
             children: [
               // 갤러리 띄우기 버튼
               Padding(
                 padding: const EdgeInsets.only(left: 4.0),
                 child: IconButton(
+                  visualDensity: VisualDensity.compact, // 💡 1. 아이콘 버튼 밀도 압축
+                  constraints: const BoxConstraints(
+                    minHeight: 32,
+                    minWidth: 32,
+                  ),
                   // 업로드 중이 아닐 때만 갤러리 열기 허용!
                   onPressed: _isUploading ? null : _pickImageOnly,
                   icon: Icon(
                     Icons.image,
-                    size: 24,
+                    size: 22,
                     color: Colors.grey.shade500,
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
                 ),
               ),
               // 텍스트 치는 영역
@@ -271,9 +296,10 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
                   minLines: 1,
                   // 무제한 줄바꿈 가능
                   decoration: const InputDecoration(
+                    isDense: true, // 💡 3. 핵심: 텍스트필드 내부 여백 압축
                     hintText: '메세지 입력',
                     hintStyle: TextStyle(color: AppColors.secondary),
-                    contentPadding: EdgeInsets.symmetric(vertical: 12), // 패딩 조절
+                    contentPadding: EdgeInsets.symmetric(vertical: 8), // 패딩 조절
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
@@ -284,19 +310,23 @@ class _ChatInputFieldState extends ConsumerState<ChatInputField> {
               ),
               // 🌟 전송 버튼
               Padding(
-                padding: const EdgeInsets.only(right: 4.0, bottom: 4.0),
+                padding: const EdgeInsets.only(right: 4.0),
                 child: IconButton(
+                  visualDensity: VisualDensity.compact, // 💡 왼쪽과 동일하게 압축
+                  constraints: const BoxConstraints(
+                    minHeight: 32,
+                    minWidth: 32,
+                  ), // 💡 크기 제약
                   // 텍스트나 사진이 1개라도 있고, 현재 업로드 중이 아닐 때만 전송 가동
                   onPressed: (canSend && !_isUploading) ? _sendMessage : null,
                   icon: Icon(
                     Icons.send,
-                    size: 24,
+                    size: 22,
                     color: (canSend && !_isUploading)
                         ? AppColors.primary
                         : Colors.grey.shade500, // 활성화 시 파란색
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
                 ),
               ),
             ],

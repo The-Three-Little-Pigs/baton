@@ -19,4 +19,6 @@ abstract class PostRepository {
   Future<Result<void, Failure>> incrementViewCount(String postId);
   Stream<Result<Post, Failure>> watchPost(String postId);
   Stream<Result<int, Failure>> watchChatCount(String postId);
+  Future<Result<void, Failure>> hidePostFromSalesHistory(String postId);
+  Future<Result<void, Failure>> hidePostFromPurchaseHistory(String postId);
 }

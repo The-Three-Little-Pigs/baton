@@ -85,7 +85,7 @@ final class UserNotifierProvider
   UserNotifier create() => UserNotifier();
 }
 
-String _$userNotifierHash() => r'e8e99182a43783e5f204b25ee74fbac54bf49c0e';
+String _$userNotifierHash() => r'e3b96dea9e8c699e9533b972c0a481f316590de4';
 
 abstract class _$UserNotifier extends $StreamNotifier<entity.User?> {
   Stream<entity.User?> build();

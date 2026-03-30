@@ -18,7 +18,7 @@ class AlarmItem extends StatelessWidget {
   final String header;
   final String date;
   final String imageUrl;
-  final Text content;
+  final String content;
   final IconData icon;
   final bool isEditMode;
   final bool isSelected;
@@ -98,7 +98,7 @@ class AlarmItem extends StatelessWidget {
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
