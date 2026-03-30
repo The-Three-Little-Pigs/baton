@@ -165,7 +165,10 @@ class _ItemInfo extends ConsumerWidget {
                 onTap: () {
                   final actions = ref
                       .read(productItemProvider.notifier)
-                      .getAvailableActions(post.authorId);
+                      .getAvailableActions(
+                        authorId: post.authorId,
+                        status: post.status,
+                      );
 
                   if (actions.isEmpty) return;
 

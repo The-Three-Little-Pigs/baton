@@ -4,6 +4,7 @@ import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/chat_tap.dart';
 import 'package:baton/views/_tap/home/home_tap.dart';
 import 'package:baton/views/_tap/profile/profile_tap.dart';
+import 'package:baton/views/_tap/profile/profile_edit_page.dart'; // NEW
 import 'package:baton/views/alarm/alarm_page.dart';
 import 'package:baton/views/block_user/block_user_page.dart';
 import 'package:baton/views/chat_detail/chat_detail_page.dart';
@@ -182,6 +183,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           return const BlockUserPage();
         },
+      ),
+      GoRoute(
+        path: '/profile/edit',
+        name: 'profileEdit',
+        builder: (context, state) => const ProfileEditPage(),
       ),
     ],
 

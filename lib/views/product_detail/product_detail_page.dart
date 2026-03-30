@@ -146,7 +146,7 @@ class MoreVerButton extends ConsumerWidget {
       onPressed: () {
         final actions = ref
             .read(productItemProvider.notifier)
-            .getAvailableActions(post.authorId);
+            .getAvailableActions(authorId: post.authorId, status: post.status);
 
         showCupertinoModalPopup(
           context: context,
@@ -226,13 +226,6 @@ class MoreVerButton extends ConsumerWidget {
                                         context,
                                         '게시글이 삭제되었습니다.',
                                       );
-                                      ref
-                                          .read(
-                                            productDetailPageViewModelProvider(
-                                              post.postId,
-                                            ).notifier,
-                                          )
-                                          .deletePost();
                                       break;
                                     case Error(failure: final f):
                                       AppSnackBar.show(

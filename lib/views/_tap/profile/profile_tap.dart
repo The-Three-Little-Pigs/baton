@@ -232,12 +232,17 @@ class UserProfileCard extends ConsumerWidget {
                         const Text('에러 발생', style: TextStyle(fontSize: 16)),
                   ),
 
-                  Text(
-                    '프로필 수정',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textTertiary,
+                  GestureDetector(
+                    onTap: () {
+                      context.push('/profile/edit');
+                    },
+                    child: Text(
+                      '프로필 수정',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textTertiary,
+                      ),
                     ),
                   ),
                 ],
