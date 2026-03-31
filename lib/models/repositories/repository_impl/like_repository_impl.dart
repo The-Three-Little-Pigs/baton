@@ -62,13 +62,6 @@ class LikeRepositoryImpl implements LikeRepository {
         // --- Alarm 생성 연동 ---
         // 본인 게시글에 찜한 경우에는 알림을 보내지 않음
         if (userId != authorId) {
-          // 찜한 사람의 닉네임 가져오기
-          final currentUserDoc = await _firestore
-              .collection('user')
-              .doc(userId)
-              .get();
-          final String nickname = currentUserDoc.data()?['nickname'] ?? '누군가';
-
           final String title = postData['title']?.toString() ?? '제목 없음';
           final List<dynamic> imageUrls = postData['image_url'] is List
               ? postData['image_url']

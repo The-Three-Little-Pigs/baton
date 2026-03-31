@@ -102,7 +102,8 @@ class AlarmItemList extends ConsumerWidget {
       itemBuilder: (context, index) {
         final alarm = alarms[index];
         return AlarmItem(
-          icon: _getIcon(alarm.title),
+          postId: alarm.postId,
+          icon: Icons.favorite,
           header: alarm.title,
           date: alarm.createdAt.toString().split(' ')[0], // 간단한 포맷팅
           imageUrl: alarm.imageUrl,

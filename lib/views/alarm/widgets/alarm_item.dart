@@ -1,6 +1,8 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 
 class AlarmItem extends StatelessWidget {
   const AlarmItem({
@@ -13,6 +15,7 @@ class AlarmItem extends StatelessWidget {
     this.isEditMode = false,
     this.isSelected = false,
     this.onSelected,
+    this.postId,
   });
 
   final String header;
@@ -23,6 +26,7 @@ class AlarmItem extends StatelessWidget {
   final bool isEditMode;
   final bool isSelected;
   final ValueChanged<bool?>? onSelected;
+  final String? postId;
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +42,12 @@ class AlarmItem extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected ? AppColors.primary : const Color(0xFFFCFDFF),
-                border: isSelected ? null : Border.all(color: AppColors.divider),
+                border: isSelected
+                    ? null
+                    : Border.all(color: AppColors.divider),
               ),
               child: isSelected
-                  ? const Icon(
-                      Icons.check,
-                      size: 14,
-                      color: Colors.white,
-                    )
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)
                   : null,
             ),
             const SizedBox(width: 16),
@@ -58,10 +60,15 @@ class AlarmItem extends StatelessWidget {
                 Row(
                   spacing: 8,
                   children: [
-                    Icon(icon,
-                        color: Theme.of(context).colorScheme.primary, size: 20),
-                    Text(header,
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Icon(
+                      icon,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
+                    Text(
+                      header,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     const Spacer(),
                     Text(
                       date,
@@ -72,28 +79,38 @@ class AlarmItem extends StatelessWidget {
                     ),
                   ],
                 ),
-                Row(
-                  spacing: 11,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: imageUrl.isNotEmpty
-                          ? Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              width: 60,
-                              height: 60,
-                            )
-                          : SvgPicture.asset(
-                              'assets/images/empty_image.svg',
-                              fit: BoxFit.cover,
-                              width: 60,
-                              height: 60,
-                            ),
-                    ),
-                    Expanded(child: content),
-                  ],
+                GestureDetector(
+                  onTap: () {
+                    // if (postId != null) {
+                    //   context.pushNamed(
+                    //     'postDetail',
+                    //     pathParameters: {'postId': postId!},
+                    //   );
+                    // }
+                  },
+                  child: Row(
+                    spacing: 11,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: imageUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                fit: BoxFit.cover,
+                                width: 60,
+                                height: 60,
+                              )
+                            : SvgPicture.asset(
+                                'assets/images/empty_image.svg',
+                                fit: BoxFit.cover,
+                                width: 60,
+                                height: 60,
+                              ),
+                      ),
+                      Expanded(child: content),
+                    ],
+                  ),
                 ),
               ],
             ),
