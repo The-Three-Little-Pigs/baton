@@ -72,6 +72,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
         return Scaffold(
           backgroundColor: AppColors.white,
+          resizeToAvoidBottomInset: false,
           appBar: AppBar(
             backgroundColor: AppColors.white,
             elevation: 0,

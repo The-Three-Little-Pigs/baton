@@ -22,6 +22,7 @@ class WritePage extends ConsumerWidget {
     return Stack(
       children: [
         Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: AppBar(
             title: Text(
               postId != null ? "게시글 수정" : "물건 팔기",
