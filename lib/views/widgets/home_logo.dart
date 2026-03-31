@@ -12,7 +12,7 @@ class HomeLogo extends StatelessWidget {
       onTap: onTap,
       child: SvgPicture.asset(
         'assets/images/home_logo.svg',
-        height: 30,
+        height: 20,
         fit: BoxFit.cover,
       ),
     );
