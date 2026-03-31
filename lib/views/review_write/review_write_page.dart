@@ -75,6 +75,7 @@ class _ReviewWritePageState extends ConsumerState<ReviewWritePage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
