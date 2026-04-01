@@ -55,15 +55,19 @@ class ChatRoomListTile extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      otherUserAsync.when(
-                        data: (user) => user.nickname,
-                        loading: () => '...',
-                        error: (_, __) => '알 수 없는 사용자',
-                      ),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                    Flexible(
+                      child: Text(
+                        otherUserAsync.when(
+                          data: (user) => user.nickname,
+                          loading: () => '...',
+                          error: (_, __) => '알 수 없는 사용자',
+                        ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis, // 넘치는 부분을 '...'으로 표시
+                        maxLines: 1,
                       ),
                     ),
                     Padding(

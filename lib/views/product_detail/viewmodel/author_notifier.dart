@@ -14,26 +14,18 @@ class AuthorNotifier extends _$AuthorNotifier {
         .fetchUserData(authorId);
 
     return switch (result) {
-      Success(value: final user) =>
-        user ??
-            User(
-              uid: "알 수 없는 사용자",
-              nickname: "알 수 없는 사용자",
-              profileUrl: null,
-              score: 0,
-              favorites: {},
-              blockedUsers: [],
-              blockedBy: [],
-            ),
-      Error() => User(
-        uid: "알 수 없는 사용자",
-        nickname: "알 수 없는 사용자",
-        profileUrl: null,
-        score: 0,
-        favorites: {},
-        blockedUsers: [],
-        blockedBy: [],
-      ),
+      Success(value: final user) => user ?? _emptyUser(authorId),
+      Error() => _emptyUser(authorId),
     };
   }
+
+  User _emptyUser(String id) => User(
+    uid: id,
+    nickname: "알 수 없는 사용자",
+    profileUrl: null,
+    score: 5.0,
+    favorites: {},
+
+    deletedAt: null,
+  );
 }

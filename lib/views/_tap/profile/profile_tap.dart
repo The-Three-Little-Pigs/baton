@@ -1,31 +1,59 @@
 import 'package:baton/core/theme/app_tokens/app_colors.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/review/viewmodel/review_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
+import 'package:baton/core/utils/time_helper.dart';
 
 class ProfileTap extends ConsumerWidget {
   const ProfileTap({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 💡 유저 정보 변화를 감시하여 페이지 전체가 동기화되어 리빌드되도록 함 (레이아웃 틀어짐 방지)
+    ref.watch(userProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           '마이페이지',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
-        actions: [Icon(Icons.more_vert, size: 24)],
+        // actions: [Icon(Icons.more_vert, size: 24)],
+        backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       //추가하면서 일단 컬럼 리스트뷰로 바뀌났어용
       body: ListView(
         children: [
           UserProfileCard(),
-          SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(right: 30),
+            child: Row(
+              children: [
+                SectionTitle(title: '후기'),
+                Spacer(),
+                GestureDetector(
+                  onTap: () {
+                    context.push('/review');
+                  },
+                  child: Text(
+                    '전체 보기',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const _RecentReviewsSection(),
+          const SizedBox(height: 16),
           SectionTitle(title: '거래 관리'),
-          MenuListItem(icon: Icons.local_offer, content: '내 상품 관리'),
-          SizedBox(height: 8),
           MenuListItem(
             svgPath: 'assets/icons/sales_history.svg',
             content: '판매내역',
@@ -39,16 +67,28 @@ class ProfileTap extends ConsumerWidget {
           ),
           SizedBox(height: 10),
           SectionTitle(title: '활동'),
-          MenuListItem(
-            svgPath: 'assets/icons/recently_view.svg',
-            content: '최근 본 상품',
-          ),
-          SizedBox(height: 8),
+          // MenuListItem(
+          //   svgPath: 'assets/icons/recently_view.svg',
+          //   content: '최근 본 상품',
+          // ),
+          // SizedBox(height: 8),
           MenuListItem(
             icon: Icons.favorite,
             content: '관심 상품',
             routePath: '/like',
           ),
+          SizedBox(height: 8),
+          MenuListItem(
+            svgPath: 'assets/icons/blok_person_icon.svg',
+            content: '차단 관리',
+            routePath: '/blockUser',
+          ),
+          SizedBox(height: 8),
+          // MenuListItem(
+          //   svgPath: 'assets/icons/block_product_icon.svg',
+          //   content: '가린 상품 관리',
+          //   routePath: '/',
+          // ),
 
           /// 로그아웃 및 탈퇴 버튼
           Padding(
@@ -91,9 +131,7 @@ class ProfileTap extends ConsumerWidget {
                           },
                           onError: (message) {
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('탈퇴 실패: $message')),
-                              );
+                              AppSnackBar.show(context, '탈퇴 실패: $message');
                             }
                           },
                         );
@@ -128,11 +166,7 @@ class UserProfileCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProvider);
     return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.secondary, width: 1),
-        ),
-      ),
+      decoration: BoxDecoration(color: Color.fromARGB(128, 230, 237, 245)),
       child: Padding(
         padding: const EdgeInsets.only(
           left: 30,
@@ -198,21 +232,132 @@ class UserProfileCard extends ConsumerWidget {
                         const Text('에러 발생', style: TextStyle(fontSize: 16)),
                   ),
 
-                  Text(
-                    '프로필 수정',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade500,
+                  GestureDetector(
+                    onTap: () {
+                      context.push('/profile/edit');
+                    },
+                    child: Text(
+                      '프로필 수정',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textTertiary,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
             Icon(Icons.star_rounded, color: AppColors.primary, size: 24),
-            Text('5.0'),
+            userAsync.when(
+              data: (user) => Text(
+                user?.score.toStringAsFixed(1) ?? '5.0',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              loading: () => const Text('5.0'),
+              error: (_, _) => const Text('5.0'),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _RecentReviewsSection extends ConsumerWidget {
+  const _RecentReviewsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final myUserId = ref.watch(userProvider).value?.uid ?? '';
+    if (myUserId.isEmpty) return const SizedBox.shrink();
+
+    final reviewsAsync = ref.watch(receivedReviewsProvider(myUserId));
+
+    return reviewsAsync.when(
+      data: (reviews) {
+        if (reviews.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            child: Text(
+              '아직 받은 후기가 없어요.',
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
+          );
+        }
+
+        return SizedBox(
+          height: 100,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            scrollDirection: Axis.horizontal,
+            itemCount: reviews.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final review = reviews[index];
+              return Container(
+                width: 211,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star_rounded,
+                          color: AppColors.primary,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          review.rating.toStringAsFixed(1),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Spacer(),
+                        Text(
+                          TimeHelper.formatTimeAgo(review.createdAt),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 13),
+                    Expanded(
+                      child: Text(
+                        review.content ?? '',
+                        style: const TextStyle(fontSize: 13),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, st) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Text('Error: $e'),
       ),
     );
   }
@@ -228,9 +373,13 @@ class SectionTitle extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-        child: Text(
-          title,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        child: Row(
+          children: [
+            Text(
+              title,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ],
         ),
       ),
     );
@@ -242,6 +391,7 @@ class MenuListItem extends StatelessWidget {
   final String content;
   final String? svgPath;
   final String? routePath;
+
   const MenuListItem({
     super.key,
     this.icon,
@@ -254,47 +404,74 @@ class MenuListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Ink(
+      child: Container(
+        height: 64,
+        // alignment: Alignment.center,
         decoration: BoxDecoration(
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: InkWell(
-          onTap: () {
-            if (routePath != null) {
-              context.push(routePath!);
-            }
-          },
+
+        child: Material(
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(16),
-          child: SizedBox(
-            height: 64,
+          child: InkWell(
+            onTap: () {
+              if (routePath != null) {
+                context.push(routePath!);
+              }
+            },
+            borderRadius: BorderRadius.circular(16),
             child: Padding(
-              padding: const EdgeInsets.only(
-                left: 20,
-                right: 14,
-                top: 20,
-                bottom: 20,
-              ),
+              padding: const EdgeInsets.only(left: 20, right: 14),
+
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   if (svgPath != null)
                     SvgPicture.asset(
                       svgPath!,
                       width: 24,
                       height: 24,
-                      colorFilter: ColorFilter.mode(
+                      colorFilter: const ColorFilter.mode(
                         AppColors.primary,
                         BlendMode.srcIn,
                       ),
                     ),
                   if (icon != null)
                     Icon(icon!, color: AppColors.primary, size: 24),
-                  SizedBox(width: 12),
-                  Text(content),
-                  Spacer(),
-                  Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      content,
+                      strutStyle: const StrutStyle(
+                        fontSize: 16,
+                        forceStrutHeight: true,
+                      ),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                        leadingDistribution: TextLeadingDistribution.even,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                    color: const Color(0xFFB3B3B3),
+                  ),
                 ],
               ),
             ),

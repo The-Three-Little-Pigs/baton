@@ -25,6 +25,7 @@ class ChipButton extends StatelessWidget {
       label: Text(label),
       selected: isSelected,
       onSelected: onSelected,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       backgroundColor: Colors.transparent,
       selectedColor: colors.primary,
       surfaceTintColor: Colors.transparent,

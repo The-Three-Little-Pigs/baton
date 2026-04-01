@@ -6,6 +6,7 @@ import 'package:baton/core/di/repository/user_provider.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/service/notification_service.dart';
 
+import 'package:baton/core/utils/logger.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -56,21 +57,16 @@ class SignUpProfile extends _$SignUpProfile {
         }
       }
 
-      // 2. 가입 시점에 기기 토큰 가져오기 (비어있지 않도록)
-      String fcmToken = '';
-      try {
-        fcmToken = await NotificationService().getToken() ?? '';
-      } catch (e) {}
-
       // 3. 넘겨받은 UID와 닉네임, 업로드된 이미지 URL로 'user' 엔티티 생성
       final newUser = User(
         uid: uid,
         nickname: nickname,
         profileUrl: profileUrl,
-        score: 36.5,
+        score: 5.0,
         favorites: {},
-        blockedUsers: [],
-        blockedBy: [],
+        
+        deletedAt: null,
+        
       );
 
       // 4. Firestore 'user' 컬렉션에 저장
@@ -88,7 +84,7 @@ class SignUpProfile extends _$SignUpProfile {
 
       return true;
     } catch (e) {
-      print("가입 데이터 저장 에러: $e");
+      logger.e("가입 데이터 저장 에러: $e");
       return false;
     } finally {
       state = state.copyWith(isLoading: false);

@@ -3,9 +3,11 @@ import 'package:baton/core/theme/app_color_extension.dart';
 import 'package:baton/core/utils/format_currency.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/post_action_type.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/mapper/format_time_mapper.dart';
 import 'package:baton/notifier/post/product_item_notifier.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/product_chat_count_provider.dart';
 import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
 import 'package:baton/views/product_detail/widgets/bottom_chat_bar.dart';
 import 'package:baton/views/product_detail/widgets/image_section.dart';
@@ -17,6 +19,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ProductDetailPage extends ConsumerWidget {
   const ProductDetailPage({super.key, required this.postId});
@@ -30,6 +33,7 @@ class ProductDetailPage extends ConsumerWidget {
     final appColors = theme.extension<AppColorExtension>();
 
     final postAsync = ref.watch(productDetailPageViewModelProvider(postId));
+    final chatCountAsync = ref.watch(productChatCountProvider(postId));
 
     return Scaffold(
       body: postAsync.when(
@@ -37,9 +41,6 @@ class ProductDetailPage extends ConsumerWidget {
           slivers: [
             post.imageUrls.isEmpty
                 ? SliverAppBar(actions: [MoreVerButton(post: post)])
-                // ? SliverAppBar(
-                //     actions: [MoreVerButton(authorId: post.authorId)],
-                //   )
                 : SliverAppBar(
                     expandedHeight: 300,
                     pinned: true,
@@ -63,6 +64,7 @@ class ProductDetailPage extends ConsumerWidget {
                   Padding(
                     padding: EdgeInsets.all(20),
                     child: ProductDetailInfo(
+                      productStatus: post.status,
                       title: post.title,
                       purchasePrice: post.purchasePrice == null
                           ? "0원"
@@ -74,7 +76,7 @@ class ProductDetailPage extends ConsumerWidget {
                       createdAt: formatTime(post.createdAt),
                       content: post.content,
                       likeCount: post.likeCount,
-                      chatCount: post.chatCount,
+                      chatCount: chatCountAsync.value ?? post.chatCount,
                       viewCount: post.viewCount,
                     ),
                   ),
@@ -102,17 +104,21 @@ class ProductDetailPage extends ConsumerWidget {
       ),
       bottomNavigationBar: postAsync.when(
         // 1. 성공 시: 데이터(post)가 완벽히 보장되므로 강제 추출(!) 없이 안전하게 호출
-        data: (post) => post.authorId == ref.read(userProvider).value?.uid
-            ? const SizedBox.shrink()
-            : SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: BottomChatBar(
-                    productId: postId,
-                    authorId: post.authorId, // ⭐️ post 객체에서 바로 꺼냄 (null 걱정 제로!)
-                  ),
-                ),
-              ),
+        data: (post) {
+          final isMyPost = post.authorId == ref.read(userProvider).value?.uid;
+          final isAvailable = post.status == ProductStatus.available;
+
+          if (isMyPost || !isAvailable) {
+            return const SizedBox.shrink();
+          }
+
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: BottomChatBar(post: post, productId: postId),
+            ),
+          );
+        },
         // 2. 로딩 중이거나 에러 날 때는 바텀 바를 그리지 않음 (SizedBox.shrink)
         loading: () => const SizedBox.shrink(),
         error: (error, stackTrace) => const SizedBox.shrink(),
@@ -140,7 +146,7 @@ class MoreVerButton extends ConsumerWidget {
       onPressed: () {
         final actions = ref
             .read(productItemProvider.notifier)
-            .getAvailableActions(post.authorId);
+            .getAvailableActions(authorId: post.authorId, status: post.status);
 
         showCupertinoModalPopup(
           context: context,
@@ -157,7 +163,38 @@ class MoreVerButton extends ConsumerWidget {
                       );
                       break;
                     case PostActionType.report:
-                      // TODO: 신고하기 로직 실행
+                      // 신고/차단 팝업 띄우기
+                      showCupertinoDialog(
+                        context: context,
+                        builder: (dialogContext) => CupertinoAlertDialog(
+                          title: const Text("신고/차단하기"),
+                          content: const Text(
+                            '상대방을 신고/차단하시겠습니까?\n차단 시 점수가 감점되며 더 이상 게시글이 보이지 않습니다.',
+                          ),
+                          actions: [
+                            CupertinoDialogAction(
+                              child: const Text("취소"),
+                              onPressed: () => Navigator.pop(dialogContext),
+                            ),
+                            CupertinoDialogAction(
+                              isDestructiveAction: true,
+                              child: const Text("신고/차단"),
+                              onPressed: () async {
+                                Navigator.pop(dialogContext);
+                                await ref
+                                    .read(userProvider.notifier)
+                                    .toggleBlockUser(post.authorId);
+                                if (context.mounted) {
+                                  AppSnackBar.show(
+                                    context,
+                                    '신고 및 차단이 완료되었습니다.',
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      );
                       break;
                     case PostActionType.delete:
                       showCupertinoDialog(
@@ -185,28 +222,15 @@ class MoreVerButton extends ConsumerWidget {
 
                                   switch (result) {
                                     case Success():
-                                      ScaffoldMessenger.of(
+                                      AppSnackBar.show(
                                         context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('게시글이 삭제되었습니다.'),
-                                        ),
+                                        '게시글이 삭제되었습니다.',
                                       );
-                                      ref
-                                          .read(
-                                            productDetailPageViewModelProvider(
-                                              post.postId,
-                                            ).notifier,
-                                          )
-                                          .deletePost();
                                       break;
                                     case Error(failure: final f):
-                                      ScaffoldMessenger.of(
+                                      AppSnackBar.show(
                                         context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text('삭제 실패: ${f.message}'),
-                                        ),
+                                        '삭제 실패: ${f.message}',
                                       );
                                       break;
                                   }

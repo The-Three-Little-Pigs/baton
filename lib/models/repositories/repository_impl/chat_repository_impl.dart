@@ -1,11 +1,16 @@
 // lib/models/repositories/repository_impl/chat_repository_impl.dart
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/core/utils/logger.dart';
+import 'package:baton/models/entities/appointment_data.dart';
 import 'package:baton/models/entities/chat_room.dart';
 import 'package:baton/models/entities/message.dart';
+import 'package:baton/models/enum/appointment_status.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/repositories/repository/chat_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -13,7 +18,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 class ChatRepositoryImpl implements ChatRepository {
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
-  final _collectionPath = 'chatrooms';
+  static const String _collectionPath = 'chatrooms';
 
   ChatRepositoryImpl(this._firestore, this._storage);
 
@@ -203,6 +208,7 @@ class ChatRepositoryImpl implements ChatRepository {
     if (!hasRoom) {
       batch.set(chatroomDocRef, {
         'roomId': roomId,
+        'postId': _extractPostId(roomId),
         'lastMessage': lastMessage,
         'updatedAt': FieldValue.serverTimestamp(),
         'unreadCounts': {targetUserId: FieldValue.increment(1), myUserId: 0},
@@ -212,6 +218,7 @@ class ChatRepositoryImpl implements ChatRepository {
           targetUserId: Timestamp(0, 0),
         },
         'prdImageUrl': '', // 추후 상품 이미지 URL 로직 연동
+        'deletedByUids': [],
       });
     } else {
       batch.update(chatroomDocRef, {
@@ -220,6 +227,7 @@ class ChatRepositoryImpl implements ChatRepository {
         'unreadCounts.$targetUserId': FieldValue.increment(1),
         'unreadCounts.$myUserId': 0,
         'lastReadAt.$myUserId': FieldValue.serverTimestamp(),
+        'deletedByUids': FieldValue.arrayRemove([myUserId]),
       });
     }
   }
@@ -246,16 +254,32 @@ class ChatRepositoryImpl implements ChatRepository {
         await _deleteStorageFolder(roomId);
 
         // (2) 메시지 컬렉션 삭제
-        await _deleteAllMessages(roomId);
+        // TODO: 메시지 컬렉션 삭제/ 잘 작동하는지 확인 필요
+        // await _deleteAllMessages(roomId);
 
         // (3) 채팅방 문서 삭제
         await roomRef.delete();
 
-        print('Chat: 채팅방($roomId) 데이터가 완전히 삭제되었습니다.');
+        logger.i('Chat: 채팅방($roomId) 데이터가 완전히 삭제되었습니다.');
       }
       return const Success(true);
     } catch (e) {
       return Error(UnknownFailure('방 나가기 처리 중 오류 발생: $e'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> joinAgainChatRoom(
+    String roomId,
+    String myUserId,
+  ) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(roomId).update({
+        'deletedByUids': FieldValue.arrayRemove([myUserId]),
+      });
+      return const Success(null);
+    } catch (e) {
+      return Error(UnknownFailure('방 재진입 실패: $e'));
     }
   }
 
@@ -267,48 +291,270 @@ class ChatRepositoryImpl implements ChatRepository {
     await Future.wait(deleteTasks);
   }
 
-  // 💡 메시지 컬렉션의 모든 문서 삭제 (Batch 처리)
-  Future<void> _deleteAllMessages(String roomId) async {
-    final messagesRef = _firestore
-        .collection(_collectionPath)
-        .doc(roomId)
-        .collection('messages');
-    final snapshots = await messagesRef.get();
-
-    if (snapshots.docs.isEmpty) return;
-    final batch = _firestore.batch();
-    for (var doc in snapshots.docs) {
-      batch.delete(doc.reference);
-    }
-    await batch.commit();
-  }
-
-  // TODO: 약속하기로 활용
   @override
-  Future<Result<void, Failure>> sendSystemMessage(
-    String roomId,
-    String content,
-  ) async {
+  Future<Result<void, Failure>> sendAppointmentMessage({
+    required String roomId,
+    required String myUserId,
+    required String targetUserId,
+    required AppointmentData data,
+    required bool hasRoom,
+    AppointmentData? previousData,
+  }) async {
     try {
-      final roomRef = _firestore.collection(_collectionPath).doc(roomId);
-      final messageRef = roomRef.collection('messages').doc();
-      final now = FieldValue.serverTimestamp();
-      await messageRef.set({
-        'id': messageRef.id,
+      final chatroomDocRef = _firestore.collection(_collectionPath).doc(roomId);
+      final messageDocRef = chatroomDocRef.collection('messages').doc();
+
+      // 🔥 [핵심 버그 수정] Firestore에서 자동 생성된 문서 ID를 데이터에 채워줍니다.
+      final actualData = data.copyWith(appointmentId: messageDocRef.id);
+
+      final batch = _firestore.batch();
+      batch.set(messageDocRef, {
+        'id': messageDocRef.id,
         'roomId': roomId,
-        'senderId': 'system', // ★ 시스템 메시지 식별자
-        'content': content,
-        'type': 'system', // ★ MessageType.system
-        'createdAt': now,
-        'isPending': false,
+        'senderId': myUserId,
+        'content': jsonEncode(actualData.toJson()),
+        'type': 'appointment',
+        'createdAt': FieldValue.serverTimestamp(),
       });
-      // 채팅방의 lastMessage도 업데이트
-      await roomRef.update({'lastMessage': content, 'updatedAt': now});
+      final updateData = {
+        'lastMessage': '새로운 약속이 있습니다.',
+        'updatedAt': FieldValue.serverTimestamp(),
+        'unreadCounts.$targetUserId': FieldValue.increment(1),
+        'unreadCounts.$myUserId': 0,
+        'appointmentStatus': actualData.status.label,
+        'appointmentDateTime': Timestamp.fromDate(actualData.dateTime),
+        'activeAppointmentId':
+            actualData.appointmentId, // 이제 빈 문자열이 아니라 진짜 ID가 들어갑니다!
+        'confirmedCompleteUids': <String>[], // 새 약속 시 확정 상태 초기화
+        'confirmedAt': null, // 확정 시간 초기화
+      };
+      // 방이 처음 생길 때의 초기 데이터 포함( 생략 가능하나 안전을 위해)
+      if (!hasRoom) {
+        batch.set(chatroomDocRef, {
+          ...updateData,
+          'roomId': roomId,
+          'participants': [myUserId, targetUserId],
+          'lastReadAt': {
+            myUserId: FieldValue.serverTimestamp(),
+            targetUserId: Timestamp(0, 0),
+          },
+          'deletedByUids': [],
+          'unreadCounts': {myUserId: 0, targetUserId: 1},
+          'prdImageUrl': '',
+        }, SetOptions(merge: true));
+      } else {
+        batch.update(chatroomDocRef, updateData);
+      }
+
+      if (data.previousMessageId != null && previousData != null) {
+        final prevMsgRef = chatroomDocRef
+            .collection('messages')
+            .doc(data.previousMessageId);
+        // 🔥 [버그 수정] 새 약속(data)이 아닌, 기존 약속(previousData) 정보를 사용하여 상태만 변경합니다.
+        // 이렇게 해야 이전 카드의 시간/장소 정보가 보존됩니다.
+        final replaceData = previousData.copyWith(
+          status: AppointmentStatus.replaced,
+        );
+        batch.update(prevMsgRef, {'content': jsonEncode(replaceData.toJson())});
+      }
+      await batch.commit();
       return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
-      return Error(ServerFailure('시스템 메시지 전송 실패: $e'));
+      return Error(UnknownFailure('약속 전송 실패'));
     }
+  }
+
+  @override
+  Future<Result<void, Failure>> updateAppointmentStatus({
+    required String roomId,
+    required String messageId,
+    required AppointmentStatus newStatus,
+  }) async {
+    try {
+      final msgRef = _firestore
+          .collection(_collectionPath)
+          .doc(roomId)
+          .collection('messages')
+          .doc(messageId);
+      await _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(msgRef);
+        if (!snapshot.exists) return;
+        final content = jsonDecode(snapshot.get('content') as String);
+        final data = AppointmentData.fromJson(content);
+        final updatedData = data.copyWith(status: newStatus);
+
+        transaction.update(msgRef, {
+          'content': jsonEncode(updatedData.toJson()),
+        });
+
+        // 채팅방 정보 업데이트 (확정/취소/완료 등 상태 변화 반영)
+        final chatroomRef = _firestore.collection(_collectionPath).doc(roomId);
+        if (newStatus == AppointmentStatus.confirmed) {
+          transaction.update(chatroomRef, {
+            'lastMessage': '약속이 확정되었습니다.',
+            'appointmentStatus': AppointmentStatus.confirmed.label,
+            'activeAppointmentId': messageId,
+            'appointmentDateTime': Timestamp.fromDate(data.dateTime),
+          });
+        } else if (newStatus == AppointmentStatus.cancelled) {
+          transaction.update(chatroomRef, {
+            'lastMessage': '약속이 취소되었습니다.',
+            'appointmentStatus': AppointmentStatus.cancelled.label,
+            'activeAppointmentId': null, // 취소 시 활성화된 약속 ID 제거
+            'confirmedCompleteUids': <String>[], // 취소 시 확정 상태 초기화
+            'confirmedAt': null, // 취소 시 확정 시간 초기화
+          });
+        } else if (newStatus == AppointmentStatus.completed) {
+          transaction.update(chatroomRef, {
+            'lastMessage': '거래가 확정되었습니다.',
+            'appointmentStatus': AppointmentStatus.completed.label,
+            'activeAppointmentId': null,
+          });
+        }
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(UnknownFailure('약속 상태 변경 실패: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> updatePostStatus({
+    required String postId,
+    required ProductStatus newStatus,
+    String? buyerId,
+  }) async {
+    try {
+      final Map<String, dynamic> updateData = {'status': newStatus.label};
+
+      // 💡 예약/판매 시점에 구매자 정보를 함께 업데이트
+      if (buyerId != null) {
+        updateData['buyer_id'] = buyerId;
+      }
+
+      await _firestore.collection('posts').doc(postId).update(updateData);
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(UnknownFailure('게시글 상태 변경 실패: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> confirmTransactionManually({
+    required String roomId,
+    required String postId,
+    required String myUserId,
+  }) async {
+    final chatroomRef = _firestore.collection(_collectionPath).doc(roomId);
+    try {
+      // 1. [핵심] await를 붙이지 않으면 트랜잭션이 끝나기도 전에 Success가 반환되는 타이밍 에러가 발생합니다.
+      await _firestore.runTransaction((transaction) async {
+        // ==========================================
+        // [READ 시작] 모든 읽기 작업을 먼저 수행합니다
+        // ==========================================
+        final roomSnapshot = await transaction.get(chatroomRef);
+        if (!roomSnapshot.exists) return;
+        final roomData = roomSnapshot.data()!;
+
+        final activeAppointmentId = roomData['activeAppointmentId'] as String?;
+        if (activeAppointmentId == null) return;
+
+        final postRef = _firestore.collection('posts').doc(postId);
+        final postSnapshot = await transaction.get(postRef);
+        if (!postSnapshot.exists) return;
+        final postData = postSnapshot.data()!;
+        final String authorId =
+            postData['author_id'] ?? postData['authorId'] ?? "";
+
+        final msgRef = chatroomRef
+            .collection('messages')
+            .doc(activeAppointmentId);
+        final msgSnapshot = await transaction.get(msgRef);
+
+        // ==========================================
+        // [WRITE 시작] 판단 후 데이터를 업데이트합니다
+        // ==========================================
+        var currentUids = List<String>.from(
+          roomData['confirmedCompleteUids'] ?? [],
+        );
+
+        bool isListUpdated = false;
+        if (!currentUids.contains(myUserId)) {
+          currentUids.add(myUserId);
+          isListUpdated = true;
+        }
+
+        if (currentUids.length >= 2) {
+          // 채팅방(chatroomRef) 한 번에 업데이트
+
+          transaction.update(chatroomRef, {
+            'lastMessage': '거래가 확정되었습니다',
+            'confirmedCompleteUids': currentUids,
+            'activeAppointmentId': null,
+            'appointmentStatus': AppointmentStatus.completed.label,
+            'confirmedAt': FieldValue.serverTimestamp(),
+          });
+
+          // 메시지(msgRef) 업데이트
+          if (msgSnapshot.exists) {
+            final content = jsonDecode(msgSnapshot.get('content') as String);
+            final data = AppointmentData.fromJson(content);
+            final updatedData = data.copyWith(
+              status: AppointmentStatus.completed,
+            );
+            transaction.update(msgRef, {
+              'content': jsonEncode(updatedData.toJson()),
+            });
+          }
+
+          // 게시글(postRef) 업데이트
+          if (postId.isNotEmpty) {
+            final participants = List<String>.from(
+              roomData['participants'] ?? [],
+            );
+            final buyerId = participants.firstWhere(
+              (id) => id != authorId,
+              orElse: () => "",
+            );
+            transaction.update(_firestore.collection('posts').doc(postId), {
+              'status': ProductStatus.sold.label,
+              'buyer_id': buyerId,
+            });
+          }
+        } else {
+          // 쌍방 확정이 아니라면 내 ID만 추가
+          if (isListUpdated) {
+            transaction.update(chatroomRef, {
+              'lastMessage': '거래 확정 대기 중...',
+              'confirmedCompleteUids': currentUids,
+            });
+          }
+        }
+      });
+      return const Success(null);
+    } catch (e) {
+      logger.e('수동 거래 확정 중 에러: $e');
+      return Error(UnknownFailure('거래 확정 중 오류가 발생했습니다.'));
+    }
+  }
+
+  @override
+  Stream<int> watchChatCount(String postId) {
+    return _firestore
+        .collection(_collectionPath)
+        .where('postId', isEqualTo: postId)
+        .snapshots()
+        .map((snapshot) => snapshot.size);
+  }
+
+  String _extractPostId(String roomId) {
+    final parts = roomId.split('_');
+    return parts.length >= 3 ? parts.last : '';
   }
 }

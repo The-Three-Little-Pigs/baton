@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 
 class AppointmentBottomSheet extends StatefulWidget {
-  const AppointmentBottomSheet({super.key});
+  final DateTime? initialDateTime;
+  const AppointmentBottomSheet({super.key, this.initialDateTime});
 
   @override
   State<AppointmentBottomSheet> createState() => _AppointmentBottomSheetState();
 
   static Future<Map<String, dynamic>?> showAppointmentDialog(
-    BuildContext context,
-  ) {
+    BuildContext context, {
+    DateTime? initialDateTime,
+  }) {
     return showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AppointmentBottomSheet(),
+      builder: (context) =>
+          AppointmentBottomSheet(initialDateTime: initialDateTime),
     );
   }
 }
@@ -25,13 +28,18 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
   late int _selectedDay;
   late int _selectedHour;
   late int _selectedMinute;
+  late FixedExtentScrollController _dayController;
   bool _isAm = true;
-  String _selectedMethod = '직거래';
+  final String _selectedMethod = '직거래';
+  int get _daysInMonth {
+    final now = DateTime.now();
+    return DateTime(now.year, _selectedMonth + 1, 0).day;
+  }
 
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
+    final now = widget.initialDateTime ?? DateTime.now();
     _selectedMonth = now.month;
     _selectedDay = now.day;
     _selectedHour = now.hour > 12
@@ -39,6 +47,15 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
         : (now.hour == 0 ? 12 : now.hour);
     _selectedMinute = now.minute;
     _isAm = now.hour < 12;
+    _dayController = FixedExtentScrollController(
+      initialItem: _selectedDay - 1 + (31 * _kInfiniteOffset),
+    );
+  }
+
+  @override
+  void dispose() {
+    _dayController.dispose();
+    super.dispose();
   }
 
   DateTime get _selectedDateTime {
@@ -70,7 +87,7 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final sheetHeight = MediaQuery.of(context).size.height * 0.7;
+    final sheetHeight = MediaQuery.of(context).size.height * 0.75;
     return SizedBox(
       height: sheetHeight,
       child: Container(
@@ -81,17 +98,18 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
             topRight: Radius.circular(30),
           ),
         ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 20.5, right: 20.5, top: 14),
-              child: BottomSheetHeader(),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(left: 20.5, right: 20.5, top: 14),
+                child: BottomSheetHeader(),
+              ),
+              Expanded(
                 child: Column(
                   children: [
+                    // const SizedBox(height: 10),
                     // --- 날짜 섹션 ---
                     Padding(
                       padding: const EdgeInsets.only(left: 28, right: 32),
@@ -109,38 +127,45 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
                         child: _buildExpansionSection(
                           title: '날짜',
                           displayValue: '$_selectedMonth 월   $_selectedDay 일',
-                          expandedChild: Padding(
-                            // TODO: 휠 좌우 간격 임의 조정
-                            padding: const EdgeInsets.only(left: 0, right: 30),
-                            child: SizedBox(
-                              height: 120,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildWheel(
-                                    count: 12,
-                                    initialItem: _selectedMonth - 1,
-                                    onChanged: (value) => setState(
-                                      () => _selectedMonth = (value % 12) + 1,
-                                    ),
-                                    suffix: '월',
+                          expandedChild: SizedBox(
+                            height: 115,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildWheel(
+                                  count: 12,
+                                  initialItem: _selectedMonth - 1,
+                                  onChanged: (value) => setState(() {
+                                    _selectedMonth = (value % 12) + 1;
+                                    if (_selectedDay > _daysInMonth) {
+                                      _selectedDay = _daysInMonth;
+                                    }
+                                    _dayController.jumpToItem(
+                                      _selectedDay -
+                                          1 +
+                                          (_daysInMonth * _kInfiniteOffset),
+                                    );
+                                  }),
+                                  suffix: '월',
+                                ),
+                                const SizedBox(width: 42),
+                                _buildWheel(
+                                  count: _daysInMonth,
+                                  initialItem: _selectedDay - 1,
+                                  controller: _dayController,
+                                  onChanged: (value) => setState(
+                                    () => _selectedDay =
+                                        (value % _daysInMonth) + 1,
                                   ),
-                                  const SizedBox(width: 42),
-                                  _buildWheel(
-                                    count: 31,
-                                    initialItem: _selectedDay - 1,
-                                    onChanged: (value) => setState(
-                                      () => _selectedDay = (value % 31) + 1,
-                                    ),
-                                    suffix: '일',
-                                  ),
-                                ],
-                              ),
+                                  suffix: '일',
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
                     ),
+                    const SizedBox(height: 18),
                     // --- 시간 섹션 ---
                     Padding(
                       padding: const EdgeInsets.only(left: 28, right: 32),
@@ -159,156 +184,151 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
                           title: '시간',
                           displayValue:
                               '${_isAm ? "오전" : "오후"}   $_selectedHour 시   ${_selectedMinute.toString().padLeft(2, "0")} 분',
-                          expandedChild: Padding(
-                            // TODO:휠 좌우 간격 임의 조정
-                            padding: const EdgeInsets.only(left: 0, right: 36),
-                            child: SizedBox(
-                              height: 120,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildWheel(
-                                    count: 2,
-                                    initialItem: _isAm ? 0 : 1,
-                                    onChanged: (value) => setState(
-                                      () => _isAm = (value % 2) == 0,
-                                    ),
-                                    items: ['오전', '오후'],
-                                    isInfinite: false,
+                          expandedChild: SizedBox(
+                            height: 115,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildWheel(
+                                  count: 2,
+                                  initialItem: _isAm ? 0 : 1,
+                                  onChanged: (value) =>
+                                      setState(() => _isAm = (value % 2) == 0),
+                                  items: ['오전', '오후'],
+                                  isInfinite: false,
+                                ),
+                                const SizedBox(width: 58),
+                                _buildWheel(
+                                  count: 12,
+                                  initialItem: _selectedHour - 1,
+                                  onChanged: (value) => setState(
+                                    () => _selectedHour = (value % 12) + 1,
                                   ),
-                                  const SizedBox(width: 58),
-                                  _buildWheel(
-                                    count: 12,
-                                    initialItem: _selectedHour - 1,
-                                    onChanged: (value) => setState(
-                                      () => _selectedHour = (value % 12) + 1,
-                                    ),
-                                    suffix: '시',
+                                  suffix: '시',
+                                ),
+                                const SizedBox(width: 42),
+                                _buildWheel(
+                                  count: 60,
+                                  initialItem: _selectedMinute,
+                                  onChanged: (value) => setState(
+                                    () => _selectedMinute = value % 60,
                                   ),
-                                  const SizedBox(width: 42),
-                                  _buildWheel(
-                                    count: 60,
-                                    initialItem: _selectedMinute,
-                                    onChanged: (value) => setState(
-                                      () => _selectedMinute = value % 60,
-                                    ),
-                                    suffix: '분',
-                                  ),
-                                ],
-                              ),
+                                  suffix: '분',
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
                     ),
                     // --- 거래 방법 ---
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 28,
-                      ),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          '거래 방법',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30),
-                        child: Container(
-                          height: 46,
-                          width: 74,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '직거래',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    // Padding(
+                    //   padding: const EdgeInsets.symmetric(
+                    //     vertical: 10,
+                    //     horizontal: 28,
+                    //   ),
+                    //   child: Align(
+                    //     alignment: Alignment.centerLeft,
+                    //     child: Text(
+                    //       '거래 방법',
+                    //       style: TextStyle(
+                    //         fontSize: 16,
+                    //         fontWeight: FontWeight.w500,
+                    //         color: Theme.of(context).colorScheme.onSurface,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // SizedBox(height: 4),
+                    // Align(
+                    //   alignment: Alignment.centerLeft,
+                    //   child: Padding(
+                    //     padding: const EdgeInsets.symmetric(horizontal: 30),
+                    //     child: Container(
+                    //       height: 46,
+                    //       width: 74,
+                    //       decoration: BoxDecoration(
+                    //         borderRadius: BorderRadius.circular(16),
+                    //         color: Theme.of(context).colorScheme.primary,
+                    //       ),
+                    //       child: Center(
+                    //         child: Text(
+                    //           '직거래',
+                    //           style: TextStyle(
+                    //             fontSize: 16,
+                    //             fontWeight: FontWeight.w500,
+                    //             color: Theme.of(context).colorScheme.onPrimary,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
-            ),
-            SizedBox(height: 32),
-            // --- 하단 요약 및 버튼 ---
-            Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: Theme.of(context).colorScheme.secondary,
+              SizedBox(height: 32),
+              // --- 하단 요약 및 버튼 ---
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                   ),
                 ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Center(
-                  child: Text(
-                    _summaryText,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Theme.of(context).colorScheme.onSurface,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Center(
+                    child: Text(
+                      _summaryText,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 10,
-                bottom: 30,
-              ),
-              child: SizedBox(
-                height: 54,
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final result = {
-                      'dateTime': _selectedDateTime,
-                      'method': _selectedMethod,
-                    };
-                    Navigator.pop(context, result);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 10,
+                  bottom: 30,
+                ),
+                child: SizedBox(
+                  height: 54,
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final result = {
+                        'dateTime': _selectedDateTime,
+                        'method': _selectedMethod,
+                      };
+                      Navigator.pop(context, result);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    '약속 신청',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.onPrimary,
+                    child: Text(
+                      '약속 신청',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -369,6 +389,7 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
     required int count,
     required int initialItem,
     required ValueChanged<int> onChanged,
+    FixedExtentScrollController? controller,
     List<String>? items,
     String suffix = '',
     bool isInfinite = true,
@@ -384,9 +405,9 @@ class _AppointmentBottomSheetState extends State<AppointmentBottomSheet> {
           child: ListWheelScrollView.useDelegate(
             itemExtent: 40,
             physics: FixedExtentScrollPhysics(),
-            controller: FixedExtentScrollController(
-              initialItem: finalInitialItem,
-            ),
+            controller:
+                controller ??
+                FixedExtentScrollController(initialItem: finalInitialItem),
             onSelectedItemChanged: onChanged,
             childDelegate: ListWheelChildBuilderDelegate(
               childCount: isInfinite ? null : count,

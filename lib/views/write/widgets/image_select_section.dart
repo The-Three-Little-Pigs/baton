@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:baton/views/write/viewmodel/image_notifier.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:baton/core/utils/ui/app_snackbar.dart';
 
 class ImageSelectSection extends ConsumerWidget {
   const ImageSelectSection({super.key});
@@ -20,7 +21,7 @@ class ImageSelectSection extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const SubTitle(title: "사진 등록", required: false),
+            const SubTitle(title: "사진 등록", required: true),
             Text(
               "(${images.length}/10)",
               style: TextStyle(color: const Color(0xFFB3B3B3), fontSize: 14),
@@ -32,15 +33,27 @@ class ImageSelectSection extends ConsumerWidget {
           child: Row(
             spacing: 14,
             children: [
-              ProudctAddButton(
-                onTap: () async {
-                  final xFile = await ImagePicker().pickImage(
-                    source: ImageSource.gallery,
-                  );
-                  if (xFile == null) return;
-                  ref.read(imageProvider.notifier).addImage(xFile.path);
-                },
-              ),
+              if (images.length < 10)
+                ProudctAddButton(
+                  onTap: () async {
+                    FocusScope.of(context).unfocus();
+                    final xFiles = await ImagePicker().pickMultiImage();
+                    if (xFiles.isEmpty) return;
+
+                    final notifier = ref.read(imageProvider.notifier);
+                    final remaining = 10 - images.length;
+
+                    if (xFiles.length > remaining) {
+                      if (context.mounted) {
+                        AppSnackBar.show(context, '갯수 초과 사진은 제외되었습니다.');
+                      }
+                    }
+
+                    for (final xFile in xFiles.take(remaining)) {
+                      notifier.addImage(xFile.path);
+                    }
+                  },
+                ),
               Expanded(
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
@@ -114,7 +127,9 @@ class _ItemImage extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.file(File(imagePath), fit: BoxFit.cover),
+            child: imagePath.startsWith('http')
+                ? Image.network(imagePath, fit: BoxFit.cover)
+                : Image.file(File(imagePath), fit: BoxFit.cover),
           ),
         ),
         Positioned(

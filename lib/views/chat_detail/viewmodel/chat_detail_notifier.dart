@@ -2,10 +2,18 @@ import 'dart:core' hide Error;
 import 'dart:io';
 
 import 'package:baton/core/di/repository/chat_provider.dart';
+import 'package:baton/core/di/repository/post_provider.dart';
+import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/models/entities/appointment_data.dart';
 import 'package:baton/models/entities/chat_room.dart';
+import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/entities/message.dart';
+import 'package:baton/models/enum/appointment_status.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/views/product_detail/viewmodel/product_detail_page_view_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'chat_detail_notifier.g.dart';
@@ -18,20 +26,20 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
   Stream<List<Message>> build(String roomId) {
     _myUserId = ref.watch(userProvider).value?.uid ?? '';
     final repository = ref.watch(chatRepositoryProvider);
-
+    _checkAndJoinAgain(roomId);
     return repository.watchMessages(roomId);
   }
 
   /// 읽음 처리 로직
   Future<void> markAsRead(String roomId) async {
-    final repository = ref.read(chatRepositoryProvider); // 액션(함수) 안에서는 read 사용
+    final repository = ref.read(chatRepositoryProvider);
 
     final result = await repository.markAsRead(roomId, _myUserId);
     switch (result) {
       case Success():
-        break; // 성공 시는 조용히 넘어감
+        break;
       case Error(:final failure):
-        print('읽음 처리 실패: ${failure.message}');
+        debugPrint('읽음 처리 실패: ${failure.message}');
     }
   }
 
@@ -79,15 +87,173 @@ class ChatDetailNotifier extends _$ChatDetailNotifier {
     };
   }
 
-  // TODO: 약속하기로 활용
-  Future<void> sendSystemMessage(String roomId, String message) async {
+  // 약속카드 전송
+  Future<String?> sendAppointmentMessage(
+    String roomId,
+    String targetUserId,
+    AppointmentData data,
+    bool hasRoom, {
+    AppointmentData? previousData,
+  }) async {
     final repository = ref.read(chatRepositoryProvider);
-    final result = await repository.sendSystemMessage(roomId, message);
+    final result = await repository.sendAppointmentMessage(
+      roomId: roomId,
+      myUserId: _myUserId,
+      targetUserId: targetUserId,
+      data: data,
+      hasRoom: hasRoom,
+      previousData: previousData,
+    );
+    return switch (result) {
+      Success() => null,
+      Error(:final failure) => failure.message,
+    };
+  }
+
+  Future<String?> updateAppointmentStatus(
+    String roomId,
+    String messageId,
+    AppointmentStatus newStatus,
+  ) async {
+    final repository = ref.read(chatRepositoryProvider);
+    final result = await repository.updateAppointmentStatus(
+      roomId: roomId,
+      messageId: messageId,
+      newStatus: newStatus,
+    );
+    return switch (result) {
+      Success() => null,
+      Error(:final failure) => failure.message,
+    };
+  }
+
+  Future<String?> confirmAppointment(
+    String roomId,
+    String messageId,
+    String postId,
+  ) async {
+    final repository = ref.read(chatRepositoryProvider);
+
+    // 1. [핵심] 채팅방과 게시글 정보를 병렬로 가져와서 정확한 구매자 식별
+    final chatroomFuture = ref.read(chatRoomStreamProvider(roomId).future);
+    final postResult = await ref
+        .read(postRepositoryProvider)
+        .getPostById(postId);
+
+    final chatroom = await chatroomFuture;
+
+    if (postResult case Error(:final failure)) {
+      return "게시글 정보를 불러올 수 없습니다: ${failure.message}";
+    }
+
+    final post = (postResult as Success<Post, Failure>).value;
+    final sellerId = post.authorId;
+
+    // 2. 구매자 식별: 채팅방 참여자 중 판매자(authorId)가 아닌 사람을 구매자로 확정
+    final buyerId = chatroom?.participants.firstWhere(
+      (id) => id != sellerId,
+      orElse: () => '',
+    );
+
+    if (buyerId == null || buyerId.isEmpty) {
+      return "구매자 정보를 확인할 수 없습니다. 채팅 참여자를 확인해 주세요.";
+    }
+
+    // 3. 약속 상태 변경 (메시지 상태: 확정됨)
+    await repository.updateAppointmentStatus(
+      roomId: roomId,
+      messageId: messageId,
+      newStatus: AppointmentStatus.confirmed,
+    );
+
+    // 4. 상품 상태 업데이트 (구매자 ID와 함께 저장)
+    await repository.updatePostStatus(
+      postId: postId,
+      newStatus: ProductStatus.reserved,
+      buyerId: buyerId,
+    );
+
+    debugPrint('✅ 상품 상태가 [거래중]으로 변경되었으며, 구매자($buyerId)가 지정되었습니다.');
+    return null;
+  }
+
+  Future<void> cancelAppointment(
+    String roomId,
+    String messageId,
+    String postId,
+  ) async {
+    final repository = ref.read(chatRepositoryProvider);
+
+    // 1. 상태를 취소로 변경
+    final result = await repository.updateAppointmentStatus(
+      roomId: roomId,
+      messageId: messageId,
+      newStatus: AppointmentStatus.cancelled,
+    );
+
+    // switch 문을 사용하여 Result 처리
     switch (result) {
       case Success():
+        // 2. 취소되었으니 특정 상품(Post)을 다시 판매중으로 롤백
+        if (postId.isNotEmpty) {
+          final postResult = await repository.updatePostStatus(
+            postId: postId,
+            newStatus: ProductStatus.available,
+            buyerId: null,
+          );
+          if (postResult case Error(:final failure)) {
+            debugPrint('상품 상태 업데이트 실패: ${failure.message}');
+          } else {
+            // 🔥 [구조적 개선: Invalidation 전략]
+            ref.invalidate(productDetailPageViewModelProvider(postId));
+            debugPrint('✅ 게시글 상태가 [판매중]으로 롤백되었으며, 프로바이더가 무효화되었습니다!');
+          }
+        }
+        break;
+
+      case Error(:final failure):
+        debugPrint(failure.message);
+    }
+  }
+
+  // [추가] UI에서 '거래 확정하기' 버튼을 누르면 이 함수를 호출합니다!
+  Future<void> confirmTransactionManually(String roomId, String postId) async {
+    final repository = ref.read(chatRepositoryProvider);
+    final result = await repository.confirmTransactionManually(
+      roomId: roomId,
+      postId: postId,
+      myUserId: _myUserId,
+    );
+    switch (result) {
+      case Success():
+        // 🔥 [구조적 개선: Invalidation 전략]
+        if (postId.isNotEmpty) {
+          ref.invalidate(productDetailPageViewModelProvider(postId));
+        }
+        debugPrint('✅ 수동 확정 처리 완료 및 프로바이더 무효화');
         break;
       case Error(:final failure):
-        print('시스템 메시지 전송 실패: ${failure.message}');
+        debugPrint('거래 확정 실패: ${failure.message}');
+    }
+  }
+
+  Future<void> joinAgainChatRoom(String roomId) async {
+    final repository = ref.read(chatRepositoryProvider);
+
+    // 리포지토리 메서드는 규칙대로 Result를 반환하지만,
+    // 여기서는 '자동 보정'이므로 내부적으로만 에러를 확인하고 끝냅니다.
+    final result = await repository.joinAgainChatRoom(roomId, _myUserId);
+
+    if (result case Error(:final failure)) {
+      debugPrint('채팅방 재진입 처리 실패: ${failure.message}');
+    }
+  }
+
+  Future<void> _checkAndJoinAgain(String roomId) async {
+    // 현재 방의 정보를 한 번 가져와서 내가 나갔는지 확인
+    final chatroom = await ref.read(chatRoomStreamProvider(roomId).future);
+    if (chatroom?.deletedByUids.contains(_myUserId) == true) {
+      await joinAgainChatRoom(roomId);
     }
   }
 }
@@ -115,12 +281,8 @@ AsyncValue<List<ChatMessageUiModel>> chatMessageUiModel(
   final myUserId = ref.watch(userProvider).value?.uid ?? '';
 
   // Debugging logs to track exactly why it might be stuck in loading
-  print(
-    'chatMessageUiModelProvider ($roomId): messagesAsync=$messagesAsync, chatRoomAsync=$chatRoomAsync',
-  );
 
   return messagesAsync.whenData((messages) {
-    print('messages count: ${messages.length}');
     final chatroom = chatRoomAsync.value;
     final targetUserId =
         chatroom?.participants.firstWhere(

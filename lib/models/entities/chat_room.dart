@@ -1,6 +1,17 @@
 import 'package:baton/models/enum/chat_status.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+DateTime? _parseDate(dynamic date) {
+  if (date == null) return null;
+  if (date is Timestamp) return date.toDate();
+  if (date is String) return DateTime.tryParse(date);
+  if (date is int) {
+    // milliseconds 처리
+    return DateTime.fromMillisecondsSinceEpoch(date);
+  }
+  return null;
+}
+
 class Chatroom {
   final String roomId; // 채팅방 아이디
   final List<String> participants; // 채팅방 참여자
@@ -11,6 +22,12 @@ class Chatroom {
   final Map<String, dynamic> lastReadAt; // 마지막 읽은 시간
   final ChatStatus status; // 채팅방 상태(거래중, 거래완료, 거래취소)
   final List<String> deletedByUids; // 채팅방 삭제자
+  final String? appointmentStatus; // 현재 약속 상태
+  final DateTime? appointmentDateTime; // 마지막으로 확정/제안된 약속 시간
+  final String? activeAppointmentId; // 현재 활성화된 약속 ID
+  final List<String> confirmedCompleteUids; // 거래확정 완료자
+  final DateTime? confirmedAt; // 거래확정 시간
+  final String postId; // 상품 아이디
 
   Chatroom({
     required this.roomId,
@@ -22,22 +39,37 @@ class Chatroom {
     required this.lastReadAt,
     required this.status,
     required this.deletedByUids,
+    this.appointmentStatus,
+    this.appointmentDateTime,
+    this.activeAppointmentId,
+    this.confirmedCompleteUids = const [],
+    this.confirmedAt,
+    required this.postId,
   });
 
   factory Chatroom.fromJson(Map<String, dynamic> json) {
     return Chatroom(
-      roomId: json['roomId'] ?? '',
+      roomId: json['roomId'] as String,
       participants: List<String>.from(json['participants'] ?? []),
       unreadCounts: Map<String, int>.from(json['unreadCounts'] ?? {}),
       updatedAt: (json['updatedAt'] as Timestamp).toDate(),
-      prdImageUrl: json['prdImageUrl'] ?? '',
-      lastMessage: json['lastMessage'] ?? '',
+      prdImageUrl: json['prdImageUrl'] as String,
+      lastMessage: json['lastMessage'] as String,
       lastReadAt: Map<String, dynamic>.from(json['lastReadAt'] ?? {}),
       status: ChatStatus.values.firstWhere(
-        (e) => e.name == json['status'],
+        (e) => e.label == json['status'],
         orElse: () => ChatStatus.all,
       ),
       deletedByUids: List<String>.from(json['deletedByUids'] ?? []),
+      appointmentStatus: json['appointmentStatus'] as String?,
+      appointmentDateTime: (json['appointmentDateTime'] as Timestamp?)
+          ?.toDate(),
+      activeAppointmentId: json['activeAppointmentId'] as String?,
+      confirmedCompleteUids: List<String>.from(
+        json['confirmedCompleteUids'] ?? [],
+      ),
+      confirmedAt: (json['confirmedAt'] as Timestamp?)?.toDate(),
+      postId: json['postId'] as String,
     );
   }
 
@@ -52,6 +84,12 @@ class Chatroom {
       'lastReadAt': lastReadAt,
       'status': status,
       'deletedByUids': deletedByUids,
+      'appointmentStatus': appointmentStatus,
+      'appointmentDateTime': appointmentDateTime,
+      'activeAppointmentId': activeAppointmentId,
+      'confirmedCompleteUids': confirmedCompleteUids,
+      'confirmedAt': confirmedAt,
+      'postId': postId,
     };
   }
 
@@ -65,6 +103,12 @@ class Chatroom {
     Map<String, dynamic>? lastReadAt,
     ChatStatus? status,
     List<String>? deletedByUids,
+    String? appointmentStatus,
+    DateTime? appointmentDateTime,
+    String? activeAppointmentId,
+    List<String>? confirmedCompleteUids,
+    DateTime? confirmedAt,
+    String? postId,
   }) {
     return Chatroom(
       roomId: roomId ?? this.roomId,
@@ -76,6 +120,13 @@ class Chatroom {
       lastReadAt: lastReadAt ?? this.lastReadAt,
       status: status ?? this.status,
       deletedByUids: deletedByUids ?? this.deletedByUids,
+      appointmentStatus: appointmentStatus ?? this.appointmentStatus,
+      appointmentDateTime: appointmentDateTime ?? this.appointmentDateTime,
+      activeAppointmentId: activeAppointmentId ?? this.activeAppointmentId,
+      confirmedCompleteUids:
+          confirmedCompleteUids ?? this.confirmedCompleteUids,
+      confirmedAt: confirmedAt ?? this.confirmedAt,
+      postId: postId ?? this.postId,
     );
   }
 
@@ -110,15 +161,23 @@ class Chatroom {
       roomId: data['roomId']?.toString() ?? '',
       participants: parsedParticipants,
       unreadCounts: parsedUnreadCounts,
-      updatedAt: DateTime.now(),
+      updatedAt: _parseDate(data['updatedAt']) ?? DateTime.now(),
       prdImageUrl: data['prdImageUrl']?.toString() ?? '',
       lastMessage: data['lastMessage']?.toString() ?? '',
       lastReadAt: parsedLastReadAt,
       status: ChatStatus.values.firstWhere(
-        (e) => e.name == data['status'],
+        (e) => e.label == data['status'],
         orElse: () => ChatStatus.all,
       ),
       deletedByUids: List<String>.from(data['deletedByUids'] ?? []),
+      appointmentStatus: data['appointmentStatus']?.toString(),
+      appointmentDateTime: _parseDate(data['appointmentDateTime']),
+      activeAppointmentId: data['activeAppointmentId']?.toString(),
+      confirmedCompleteUids: List<String>.from(
+        data['confirmedCompleteUids'] ?? [],
+      ),
+      confirmedAt: _parseDate(data['confirmedAt']),
+      postId: data['postId']?.toString() ?? '',
     );
   }
 }

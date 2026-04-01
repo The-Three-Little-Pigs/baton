@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:baton/core/error/failure.dart';
 import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
+import 'package:baton/models/entities/fcm_token.dart';
 import 'package:baton/models/entities/user.dart';
 import 'package:baton/models/repositories/repository/user_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -79,11 +80,36 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateFCMToken(String uid, String token) async {
+  Future<Result<void, Failure>> updateFCMToken(
+    String uid,
+    FCMToken token,
+  ) async {
     try {
-      await _firestore.collection(_collectionPath).doc(uid).update({
-        'fcmToken': token,
-      });
+      await _firestore
+          .collection(_collectionPath)
+          .doc(uid)
+          .collection('fcm_tokens')
+          .doc(token.token)
+          .set(token.toJson(), SetOptions(merge: true));
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> toggleFCMTokenStatus(
+    String uid,
+    String token,
+    bool isActive,
+  ) async {
+    try {
+      await _firestore
+          .collection(_collectionPath)
+          .doc(uid)
+          .collection('fcm_tokens')
+          .doc(token)
+          .update({'isActive': isActive});
       return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
@@ -143,7 +169,7 @@ class UserRepositoryImpl implements UserRepository {
 
       await docRef.update({
         'isDeleted': true,
-        'deleted_at': FieldValue.serverTimestamp(),
+        'deletedAt': FieldValue.serverTimestamp(),
         // 닉네임을 해방하기 위해 뒤에 타임스탬프를 붙입니다.
         'nickname': '${currentNickname}_deleted_$timestamp',
       });
@@ -188,15 +214,27 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<Result<void, Failure>> addBlockedBy(
     String targetUid,
-    String blokerUid,
+    String blockerUid,
   ) async {
     try {
-      await _firestore.collection(_collectionPath).doc(targetUid).update({
-        'blockedBy': FieldValue.arrayUnion([blokerUid]),
+      final docRef = _firestore.collection(_collectionPath).doc(targetUid);
+      final doc = await docRef.get();
+
+      if (!doc.exists) return Error(ServerFailure('사용자 정보를 찾을 수 없습니다.'));
+
+      final data = doc.data();
+      final double currentScore = (data?['score'] ?? 5.0).toDouble();
+      
+      // 🔥 점수 계산: 2.0씩 차감하되, 최저 2.0점 유지
+      final double newScore = (currentScore - 2.0).clamp(2.0, 5.0);
+
+      await docRef.update({
+        'blockedBy': FieldValue.arrayUnion([blockerUid]),
+        'score': newScore,
       });
       return const Success(null);
     } catch (e) {
-      return Error(ServerFailure('차단 처리 실패: $e'));
+      return Error(ServerFailure('차단 처리 및 감점 실패: $e'));
     }
   }
 

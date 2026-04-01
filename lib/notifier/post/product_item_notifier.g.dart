@@ -42,7 +42,7 @@ final class ProductItemNotifierProvider
 }
 
 String _$productItemNotifierHash() =>
-    r'af77f92fc453054f5ab5f78766536a14577294a8';
+    r'ec0b5edc59ed34bde90380b130d33b8d0283179c';
 
 abstract class _$ProductItemNotifier extends $Notifier<void> {
   void build();

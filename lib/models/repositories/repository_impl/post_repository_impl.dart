@@ -3,11 +3,18 @@ import 'package:baton/core/error/mapper/firebase_error_mapper.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/category.dart';
+import 'package:baton/models/enum/product_status.dart';
 import 'package:baton/models/repositories/repository/post_repository.dart';
+import 'package:baton/service/algolia/algolia_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' hide Category;
 
 class PostRepositoryImpl implements PostRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final AlgoliaService _algoliaService;
+
+  PostRepositoryImpl({required AlgoliaService algoliaService})
+    : _algoliaService = algoliaService;
 
   @override
   Future<Result<void, Failure>> createPost(Post post) async {
@@ -29,11 +36,25 @@ class PostRepositoryImpl implements PostRepository {
   Future<Result<void, Failure>> deletePost(String postId) async {
     try {
       final docRef = _firestore.collection('posts').doc(postId);
+
+      // 데이터 정합성을 위해 삭제 전 상태 확인
+      final snapshot = await docRef.get();
+      if (!snapshot.exists) {
+        return Error(ServerFailure('게시글을 찾을 수 없습니다.'));
+      }
+
+      final post = Post.fromJson(snapshot.data()!);
+      if (post.status == ProductStatus.reserved) {
+        return Error(ServerFailure('거래 중인 게시글은 삭제할 수 없습니다.'));
+      }
+
       await docRef.delete();
 
       return Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('게시글 삭제 중 오류가 발생했습니다: $e'));
     }
   }
 
@@ -60,9 +81,15 @@ class PostRepositoryImpl implements PostRepository {
 
       final snapshot = await query.limit(20).get();
 
-      final posts = snapshot.docs
-          .map((doc) => Post.fromJson(doc.data()))
-          .toList();
+      final posts = snapshot.docs.map((doc) {
+        try {
+          return Post.fromJson(doc.data());
+        } catch (e) {
+          // 파싱 에러 발생 시 로그를 남기고 해당 문서는 무시
+          debugPrint('Post parsing error (ID: ${doc.id}): $e');
+          return null;
+        }
+      }).whereType<Post>().toList();
 
       return Success(posts);
     } on FirebaseException catch (e) {
@@ -77,14 +104,17 @@ class PostRepositoryImpl implements PostRepository {
     try {
       final query = _firestore
           .collection('posts')
-          .where('author_id', isEqualTo: userId);
+          .where('author_id', isEqualTo: userId.trim());
 
       final snapshot = await query.get();
-      final posts = snapshot.docs.map((doc) => Post.fromJson(doc.data())).toList();
-      
+      final posts = snapshot.docs
+          .map((doc) => Post.fromJson(doc.data()))
+          .where((post) => !post.hiddenBySeller) // 클라이언트 측 필터링 (isNotEqualTo: true 시 null 필드 누락 방지)
+          .toList();
+
       // 로컬에서 최신순 정렬 (Firestore 복합 인덱스 에러 방지)
       posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      
+
       return Success(posts);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
@@ -96,9 +126,22 @@ class PostRepositoryImpl implements PostRepository {
   @override
   Future<Result<List<Post>, Failure>> getPurchaseHistory(String userId) async {
     try {
-      // TODO: 추후 구매 트랜잭션 컬렉션이 구체화되면 쿼리를 변경해야 합니다.
-      // 일단은 에러가 나지 않도록 임시로 빈 리스트를 반환합니다.
-      return const Success([]);
+      final query = _firestore
+          .collection('posts')
+          .where('buyer_id', isEqualTo: userId.trim());
+
+      final snapshot = await query.get();
+      final posts = snapshot.docs
+          .map((doc) => Post.fromJson(doc.data()))
+          .where((post) => !post.hiddenByBuyer) // 클라이언트 측 필터링 (isNotEqualTo: true 시 null 필드 누락 방지)
+          .toList();
+
+      // 로컬 정렬 (최신순)
+      posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      return Success(posts);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
     } catch (e) {
       return Error(ServerFailure('구매 내역을 불러오는 중 오류가 발생했습니다: $e'));
     }
@@ -121,12 +164,8 @@ class PostRepositoryImpl implements PostRepository {
     try {
       final docRef = _firestore.collection('posts').doc(postId);
       final doc = await docRef.get();
-
-      if (!doc.exists) {
-        return Error(ServerFailure('Post not found'));
-      }
-
       final post = Post.fromJson(doc.data()!);
+
       return Success(post);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
@@ -134,12 +173,28 @@ class PostRepositoryImpl implements PostRepository {
   }
 
   @override
+  Future<Result<List<Post>, Failure>> getPostBySearch(
+    String keyword, {
+    int page = 0,
+  }) async {
+    try {
+      final hits = await _algoliaService.search(keyword, page: page);
+
+      final posts = hits.map((hit) {
+        return Post.fromJson(hit);
+      }).toList();
+
+      return Success(posts);
+    } catch (e) {
+      return Error(ServerFailure('검색 중 오류가 발생했습니다: $e'));
+    }
+  }
+
+  @override
   Future<Result<void, Failure>> incrementViewCount(String postId) async {
     try {
       final docRef = _firestore.collection('posts').doc(postId);
-      await docRef.update({
-        'view_count': FieldValue.increment(1),
-      });
+      await docRef.update({'view_count': FieldValue.increment(1)});
       return const Success(null);
     } on FirebaseException catch (e) {
       return Error(FirebaseErrorMapper.toFailure(e));
@@ -147,4 +202,66 @@ class PostRepositoryImpl implements PostRepository {
       return Error(ServerFailure('조회수 업데이트 중 오류가 발생했습니다: $e'));
     }
   }
-}
+
+  @override
+  Stream<Result<Post, Failure>> watchPost(String postId) async* {
+    final snapshots = _firestore.collection('posts').doc(postId).snapshots();
+    try {
+      yield* snapshots.map((snapshot) {
+        if (!snapshot.exists || snapshot.data() == null) {
+          return Error(ServerFailure('게시글이 존재하지 않습니다.'));
+        }
+        try {
+          final post = Post.fromJson(snapshot.data()!);
+          return Success(post);
+        } catch (e) {
+          return Error(ServerFailure('데이터 파싱 오류: $e'));
+        }
+      });
+    } catch (e) {
+      if (e is FirebaseException) {
+        yield Error(FirebaseErrorMapper.toFailure(e));
+      } else {
+        yield Error(ServerFailure('알 수 없는 오류 발생: $e'));
+      }
+    }
+  }
+
+  @override
+  Stream<Result<int, Failure>> watchChatCount(String postId) {
+    return _firestore.collection('posts').doc(postId).snapshots().map((
+      snapshot,
+    ) {
+      final data = snapshot.data();
+      return data?['chat_count'] ?? 0;
+    });
+  }
+
+  @override
+  Future<Result<void, Failure>> hidePostFromSalesHistory(String postId) async {
+    try {
+      await _firestore.collection('posts').doc(postId).update({
+        'hidden_by_seller': true,
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('판매 내역 숨김 처리 중 오류 발생: $e'));
+    }
+  }
+
+  @override
+  Future<Result<void, Failure>> hidePostFromPurchaseHistory(String postId) async {
+    try {
+      await _firestore.collection('posts').doc(postId).update({
+        'hidden_by_buyer': true,
+      });
+      return const Success(null);
+    } on FirebaseException catch (e) {
+      return Error(FirebaseErrorMapper.toFailure(e));
+    } catch (e) {
+      return Error(ServerFailure('구매 내역 숨김 처리 중 오류 발생: $e'));
+    }
+  }
+} // ⬅️ 이 중괄호가 파일의 가장 마지막에 있어야 합니다!

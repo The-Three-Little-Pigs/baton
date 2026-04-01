@@ -2,7 +2,7 @@ import 'package:baton/core/di/repository/post_provider.dart';
 import 'package:baton/core/result/result.dart';
 import 'package:baton/models/entities/post.dart';
 import 'package:baton/models/enum/category.dart';
-import 'package:baton/notifier/user/user_notifier.dart';
+import 'package:baton/notifier/block/block_notifier.dart';
 import 'package:baton/views/_tap/home/viewmodel/category_chips_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -48,9 +48,7 @@ class HomeTapViewModel extends _$HomeTapViewModel {
     // ⭐️ 최적화 포인트 1: '내가 차단한 목록'의 실제 내용물이 바뀔 때만 새로고침 트리거
     // .join(',')을 통해 List(객체 비교)가 아닌 String(값 비교)으로 감시 범위를 좁혔습니다.
     // 상대방이 나를 차단해서 내 데이터가 업데이트되어도, 내 차단 목록이 그대로면 무시됩니다.
-    ref.watch(
-      userProvider.select((user) => user.value?.blockedUsers.join(',')),
-    );
+    ref.watch(blockProvider.select((state) => state.blockedUserIds.join(',')));
 
     // 카테고리 변경 감시
     final categories = ref.watch(categoryChipsProvider);
@@ -124,16 +122,7 @@ class HomeTapViewModel extends _$HomeTapViewModel {
 
   /// 차단한 사용자 및 나를 차단한 사용자의 게시물을 필터링
   List<Post> filterBlockedPosts(List<Post> posts) {
-    // ⭐️ 최적화 포인트 3: 여기서는 watch 대신 read를 사용합니다.
-    // build에서 이미 필요한 시점에만 새로고침을 수행하므로, 여기서 watch를 하면 필터링이 꼬이게 됩니다.
-    final currentUser = ref.read(userProvider).value;
-    if (currentUser == null) return posts;
-
-    final blockedUsers = currentUser.blockedUsers;
-    final blockedByUsers = currentUser.blockedBy;
-
-    // 내가 차단한 사람 + 나를 차단한 사람 모두 합침
-    final allHiddenUsers = {...blockedUsers, ...blockedByUsers};
+    final allHiddenUsers = ref.read(blockProvider).allHiddenUserIds;
     if (allHiddenUsers.isEmpty) return posts;
 
     return posts

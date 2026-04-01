@@ -1,28 +1,33 @@
 import 'package:baton/models/enum/chat_status.dart';
+import 'package:baton/views/_tap/chat/viewmodel/selected_chat_status_provider.dart';
+import 'package:baton/views/widgets/category_tag.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChatCategoryChips extends StatelessWidget {
+class ChatCategoryChips extends ConsumerWidget {
   const ChatCategoryChips({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedStatus = ref.watch(selectedChatStatusProvider);
+
     return SizedBox(
-      height: 50,
+      height: 38,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.only(left: 20, right: 0, top: 8, bottom: 8),
         itemCount: ChatStatus.values.length,
-        separatorBuilder: (context, index) {
-          return const SizedBox(width: 8);
-        },
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          return ChoiceChip(
-            label: Text(ChatStatus.values[index].label),
-            selected: false,
-            onSelected: (value) {},
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(999)),
-            ),
+          final chatStatus = ChatStatus.values[index];
+          return CategoryTag(
+            label: chatStatus.label,
+            isSelected: selectedStatus == chatStatus,
+            onTap: () {
+              ref
+                  .read(selectedChatStatusProvider.notifier)
+                  .setStatus(chatStatus);
+            },
+            showDeleteIcon: false,
           );
         },
       ),

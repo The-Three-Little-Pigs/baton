@@ -4,17 +4,25 @@ import 'package:baton/notifier/user/user_notifier.dart';
 import 'package:baton/views/_tap/chat/chat_tap.dart';
 import 'package:baton/views/_tap/home/home_tap.dart';
 import 'package:baton/views/_tap/profile/profile_tap.dart';
+import 'package:baton/views/_tap/profile/profile_edit_page.dart'; // NEW
+import 'package:baton/views/alarm/alarm_page.dart';
+import 'package:baton/views/block_user/block_user_page.dart';
 import 'package:baton/views/chat_detail/chat_detail_page.dart';
 
 import 'package:baton/views/like/like_page.dart';
 import 'package:baton/views/login/login_page.dart';
 import 'package:baton/views/product_detail/product_detail_page.dart';
+import 'package:baton/views/review/review_page.dart';
+import 'package:baton/views/review_write/review_write_page.dart';
+import 'package:baton/views/search/search_page.dart';
+import 'package:baton/views/search_result/search_result_page.dart';
 import 'package:baton/views/sign_up/sign_up_page.dart';
 import 'package:baton/views/sign_up_profile_page/widgets/sign_up_profile_page.dart';
 import 'package:baton/views/purchase_history/purchase_history_page.dart';
 import 'package:baton/views/sales_history/sales_history_page.dart';
 import 'package:baton/views/widgets/main_scaffold.dart';
 import 'package:baton/views/write/write_page.dart';
+import 'package:baton/core/utils/logger.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -129,26 +137,86 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'purchaseHistory',
         builder: (context, state) => const PurchaseHistoryPage(),
       ),
+      GoRoute(
+        path: '/alarm',
+        name: 'alarm',
+        builder: (context, state) => const AlarmPage(),
+      ),
+      GoRoute(
+        path: '/search',
+        name: 'search',
+        builder: (context, state) => const SearchPage(),
+      ),
+      GoRoute(
+        path: '/searchResult/:keyword',
+        name: 'searchResult',
+        builder: (context, state) {
+          final keyword = state.pathParameters['keyword'] ?? '';
+          return SearchResultPage(keyword: keyword);
+        },
+      ),
+      GoRoute(
+        path: '/review',
+        name: 'review',
+        builder: (context, state) => const ReviewPage(),
+      ),
+      GoRoute(
+        path: '/review/write',
+        name: 'review_write',
+        builder: (context, state) {
+          final extras = state.extra as Map<String, dynamic>;
+          return ReviewWritePage(
+            opponentName: extras['opponentName'] as String,
+            receiverId: extras['receiverId'] as String,
+            postId: extras['postId'] as String,
+            roomId: extras['roomId'] as String,
+            productTitle: extras['productTitle'] as String,
+            productPrice: extras['productPrice'] as String,
+            productImageUrl: extras['productImageUrl'] as String?,
+            confirmedAt: extras['confirmedAt'] as DateTime?, // ✅ 추가
+          );
+        },
+      ),
+      GoRoute(
+        path: '/blockUser',
+        name: 'blockUser',
+        builder: (context, state) {
+          return const BlockUserPage();
+        },
+      ),
+      GoRoute(
+        path: '/profile/edit',
+        name: 'profileEdit',
+        builder: (context, state) => const ProfileEditPage(),
+      ),
     ],
 
     redirect: (context, state) {
+      final isTransitioning = ref.watch(authTransitionProvider);
+      final location = state.matchedLocation;
+      
+      // 0. 인증 상태 전환 중(로그인/탈퇴/로그아웃 진행 중)이면 내비게이션 유보
+      if (isTransitioning) {
+        logger.d("[Router] Transitioning... Current: $location");
+        return null;
+      }
+
       final authUser = FirebaseAuth.instance.currentUser;
       final isLoggedIn = authUser != null;
-      final location = state.matchedLocation;
+
+      logger.d("[Router] Redirect Check: $location, LoggedIn: $isLoggedIn, UserLoading: ${userAsync.isLoading}");
 
       // 1. 비로그인 상태
       if (!isLoggedIn) {
         // 비로그인 시에는 오직 로그인 페이지('/')만 허용합니다.
-        if (location == '/') {
-          return null;
-        }
+        if (location == '/') return null;
+        logger.i("[Router] Not logged in, redirecting to login. Original: $location");
         return '/';
       }
 
       // 2. 로그인 상태 + 유저 정보 로딩 중
-      // 가주입된 데이터가 있거나 로딩 중이 아닐 때만 아래 로직 진행
       if (userAsync.isLoading || userAsync.isRefreshing) {
-        // 가입 완료 직후라면 /home으로 가려고 할 텐데, 이때 로딩 때문에 가로막히면 안 됨
+        logger.d("[Router] User Data Loading... staying at $location");
         return null;
       }
 
@@ -156,28 +224,39 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 3. DB에 유저 정보(닉네임)가 없는 경우 (미가입자)
       if (nickname.isEmpty) {
-        // [중요] 만약 userProvider가 데이터를 가지고 있는데 null이라면 (로딩 완료 후에도 데이터 없음),
-        // 그때 비로소 미가입자로 판단하고 이동시킵니다.
-        // 유저 정보가 정말로 없는 것이 확실할 때만 리다이렉트
+        // [중요] 유저 데이터가 '확실히' 없는 경우(null)에만 미가입자로 판단합니다.
+        // isLoading이나 isRefreshing 중에는 위에서 걸러지므로, 여기서는 hasValue를 더 엄격하게 체크합니다.
         if (userAsync.hasValue) {
-          // 이미 가입 관련 페이지로 가고 있다면 허용
-          if (location == '/signUp' || location == '/signUpProfile') {
-            if (location == '/signUpProfile') {
-              if (state.extra == null || (state.extra as String).isEmpty) {
-                return '/signUp';
+          final userValue = ref.read(userProvider).value;
+
+          // 실시간 데이터가 null임이 완전히 확인된 경우에만 미가입 처리
+          if (userValue == null) {
+            // 이미 가입 관련 페이지로 가고 있다면 허용
+            if (location == '/signUp' || location == '/signUpProfile') {
+              if (location == '/signUpProfile') {
+                if (state.extra == null || (state.extra as String).isEmpty) {
+                  return '/signUp';
+                }
               }
+              return null;
             }
-            return null;
+
+            // [원복] 로그인 페이지('/')에서 유저 정보가 없는 것이 확인되면 signUp으로 보냅니다.
+            if (location == '/') {
+              return '/signUp';
+            }
+
+            // 가입 관련 페이지에 있는 경우는 그대로 둡니다.
+            if (location == '/signUp' || location == '/signUpProfile') {
+              return null;
+            }
+
+            // 그 외의 유저 정보가 필요한 페이지에서 유저가 없으면 로그인으로 보냅니다.
+            return '/';
           }
-
-          // 로그인 페이지('/')에 있다면 -> 신규 가입 페이지로 자동 이동 (복구)
-          if (location == '/') return '/signUp';
-
-          // 그 외 보호된 페이지(예: /home) 접근 시 로그인 페이지('/')로 유도
-          return '/';
         }
 
-        // 아직 유저 정보 유무가 불확실하면 현재 위치 유지 (Loading 상태 등)
+        // 아직 유저 정보 유무가 불확실하면 현재 위치 유지
         return null;
       }
       // 4. 가입 완료된 유저
